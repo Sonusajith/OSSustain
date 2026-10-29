@@ -41,7 +41,7 @@ These rules apply to every future coding session on this project. Development ha
 
 | Area | Rule |
 |---|---|
-| Java | Packages `lowercase`; classes `PascalCase`; methods/fields `camelCase`; constants `UPPER_SNAKE`; DTOs as `record`s named `*Response`/`*Request`; avoid Lombok |
+| Java | Java 21 with Spring Boot 4.x; packages `lowercase`; classes `PascalCase`; methods/fields `camelCase`; constants `UPPER_SNAKE`; DTOs as `record`s named `*Response`/`*Request`; avoid Lombok |
 | Python | `snake_case` modules/functions, `PascalCase` classes; full type hints; `ruff` for lint and format; pydantic for config validation |
 | TypeScript/React | Components `PascalCase.tsx`; hooks `useX.ts`; utilities `camelCase.ts`; `strict` mode; no `any` |
 | Database | `snake_case` plural table names; `*_id` foreign keys; timestamps as `timestamptz` (UTC); changes only via Flyway migrations |
@@ -54,6 +54,7 @@ These rules apply to every future coding session on this project. Development ha
 
 ## Architecture Rules
 
+- The backend must use Spring Boot 4.x. Use the Boot 4 starter modules (for example, `spring-boot-starter-webmvc` and `spring-boot-starter-flyway`); do not add Spring Boot 3.x dependencies.
 - Schema changes **only** via Flyway migrations in `backend/`. The pipeline never runs DDL.
 - Spring Boot reads precomputed results; it does not run ML or call Python in the MVP.
 - Features are stored as JSONB keyed by registered names in `feature_definitions`; every new feature must have a dictionary entry and a leakage test.

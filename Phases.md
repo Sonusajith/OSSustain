@@ -1,9 +1,9 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Not started
-**Current Status:** Planning complete / Development not started
+**Current Phase:** Phase 1: Foundation
+**Current Status:** Phase 1 complete; awaiting confirmation before Phase 2
 
-No phase is completed. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
+Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
 **Classification:** Foundation: Phase 1. MVP: Phases 2–12. **MVP completion milestone:** end of Phase 12. Production readiness: Phase 13. Post-MVP: Phases 14–17.
 
