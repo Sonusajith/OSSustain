@@ -1,0 +1,20 @@
+services:
+  postgres:
+    image: postgres:16.15
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-ossustain}
+      POSTGRES_USER: ${POSTGRES_USER:-ossustain}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-ossustain-local}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-ossustain} -d ${POSTGRES_DB:-ossustain}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  postgres-data:

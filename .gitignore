@@ -1,0 +1,31 @@
+# Local configuration
+.env
+.env.*
+!.env.example
+
+# Python
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.pytest-tmp/
+.ruff_cache/
+pipeline/artifacts/
+pipeline/data/
+pipeline/config.yaml
+*.egg-info/
+
+# Java / Maven
+backend/target/
+
+# Node / frontend
+frontend/node_modules/
+frontend/dist/
+frontend/coverage/
+frontend/.vite/
+
+# Editors and OS files
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db

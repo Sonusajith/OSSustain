@@ -1,0 +1,22 @@
+spring:
+  application:
+    name: ossustain-api
+  datasource:
+    url: ${SPRING_DATASOURCE_URL:jdbc:postgresql://localhost:5432/ossustain}
+    username: ${POSTGRES_USER:ossustain}
+    password: ${POSTGRES_PASSWORD:ossustain-local}
+  jpa:
+    open-in-view: false
+    hibernate:
+      ddl-auto: validate
+  flyway:
+    enabled: true
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health
+  endpoint:
+    health:
+      show-details: never

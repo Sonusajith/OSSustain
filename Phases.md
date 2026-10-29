@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Not started
-**Current Status:** Planning complete / Development not started
+**Current Phase:** Phase 1: Foundation
+**Current Status:** In progress / Local database and backend runtime verification pending
 
 No phase is completed. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
