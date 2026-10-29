@@ -12,7 +12,7 @@ Phase 1 Foundation and Phase 2 Research Protocol and Cohort Selection are comple
 Phase 2: Research Protocol and Cohort Selection (complete; awaiting confirmation before Phase 3)
 
 ## Current Task
-Wait for owner confirmation before starting Phase 3: Data Collection I. The Phase 2 branch and pull request handoff must be completed first.
+Phase 2 branch is pushed at `5fb0eec`; create the pull request using the GitHub branch URL below. After PR handoff, wait for owner confirmation before starting Phase 3: Data Collection I.
 
 ## Last Completed Task
 Completed Phase 2 acceptance and Definition of Done: versioned protocol and methodology documented; 50 repositories selected deterministically across 17/17/16 star strata; REST-only decision and 12,500-request PR/review/response stop cap approved; Flyway V2 schema applied; Python 12 tests and Ruff passed; backend Testcontainers tests passed 2/2 on PostgreSQL 16.15. Phase 1 was verified and merged as PR #1.
@@ -29,6 +29,7 @@ Phase 2: Research Protocol and Cohort Selection
 Phase 2 implementation is complete. Some candidate PR-count searches were rate limited; unverified candidates were excluded conservatively and the limitation is documented. No current blockers.
 
 ## Pending Tasks
+- Create Phase 2 PR: https://github.com/Sonusajith/OSSustain/pull/new/phase-2/cohort-selection (`gh` is unavailable in this environment).
 - Before Phase 4 collection, refine the API budget using actual pagination and issue counts. The approved 12,500-request cap covers PR/review/response collection only.
 - Await confirmation before starting Phase 3.
 
@@ -100,7 +101,7 @@ Not started.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Complete the final sync, checks, commit, push, and Phase 2 PR handoff for `phase-2/cohort-selection`. Then wait for owner confirmation before Phase 3. Refine the approved collection budget from actual pagination before Phase 4 collection.
+Open the prepared PR for `phase-2/cohort-selection` using the branch URL. Then wait for owner confirmation before Phase 3. Refine the approved collection budget from actual pagination before Phase 4 collection.
 
 ## Last Updated
-2026-10-29, `phase-2/cohort-selection` — Phase 2 acceptance verified; 12,500-request REST stop cap approved; no collection or Phase 3 work started.
+2026-10-29, `phase-2/cohort-selection` — Phase 2 acceptance verified; commit `5fb0eec` pushed; PR creation URL recorded because `gh` is unavailable; no collection or Phase 3 work started.
