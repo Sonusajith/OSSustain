@@ -6,38 +6,34 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phase 1 foundation is in progress. The backend uses Spring Boot 4.1.2. PostgreSQL 16.15 Compose startup, the Flyway baseline migration, the Testcontainers-backed health integration test, backend startup, and a live `/actuator/health` response have now been verified.
+Phase 1 Foundation is complete. PostgreSQL 16.15, Spring Boot 4.1.2, Flyway, the pipeline CLI, and the Vite frontend shell have been run and verified against the Phase 1 acceptance criteria. Await user confirmation before starting Phase 2.
 
 ## Current Phase
-Phase 1: Foundation
+Phase 1: Foundation (complete; Phase 2 not started)
 
 ## Current Task
-Complete the remaining Phase 1 verification, especially a live frontend HTTP check, then assess the Phase 1 Definition of Done.
+Await user confirmation before beginning Phase 2: Research Protocol and Cohort Selection.
 
 ## Last Completed Task
-Verified PostgreSQL 16.15 Compose health; Spring Boot 4.1.2 startup and Flyway V1 migration; `/actuator/health` returned `{"groups":["liveness","readiness"],"status":"UP"}`; backend Testcontainers integration test passed after pinning Testcontainers 1.21.4. Python tests/lint/CLI and frontend lint/tests/production build had passed in the initial foundation verification.
+Completed Phase 1 verification: PostgreSQL 16.15 Compose health; Spring Boot 4.1.2 startup and Flyway V1 migration; `/actuator/health` returned `{"groups":["liveness","readiness"],"status":"UP"}`; backend Testcontainers integration test passed with Testcontainers 1.21.4; Python CLI, 3 tests, and Ruff passed; Vite reported ready and the frontend's 2 tests, ESLint, TypeScript check, and production build passed.
 
 ## Completed Phases
-None
+Phase 1: Foundation
 
 ## Completed Features
-None; Phase 1 acceptance criteria have not all been verified.
+- Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
 
 ## Features In Progress
-- PostgreSQL 16 Compose service, Spring Boot/Flyway health API, Python pipeline scaffold, and Vite React/TypeScript routing shell.
-- Direct frontend dev-server HTTP response verification is pending (the loopback probe is denied by the environment).
+None. The frontend dev server reported ready. A direct loopback HTTP probe was denied by environment socket permissions, but the Phase 1 criterion that the frontend starts was verified.
 
 ## Pending Tasks
-- Verify the frontend dev server responds over HTTP in an environment that permits loopback access.
-- Re-run the documented checks from a clean setup before closing Phase 1.
+- Phase 2 remains gated on explicit user confirmation.
 
 ## Known Bugs
 None confirmed.
 
 ## Current Blockers
-- No backend/database blocker remains. The current environment denies loopback access to the Vite frontend port, so its HTTP response was not verified here.
-- The project targets Java 21. The current environment provides Java 27; the Spring Boot 4.1.2 build and tests pass on it.
-- Maven 3.10.0 was downloaded temporarily for checks; it is not installed on PATH.
+None. Direct HTTP probing of the Vite port is denied by this environment; Vite startup itself reported ready and frontend tests/build passed.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -87,18 +83,19 @@ Used a temporary Apache Maven 3.10.0 download, SHA-512 verified against Apache, 
 - Frontend: ESLint passed; 2 Vitest tests passed; TypeScript check and Vite production build passed. Vite reported ready; the sandbox blocked a loopback HTTP probe.
 - Backend: clean package passed with Spring Boot 4.1.2. `mvn test` passed: 1 test, 0 failures, 0 errors, 0 skipped using Testcontainers 1.21.4, Docker Engine 29.9.2, and PostgreSQL 16.15; Flyway validated/applied V1. The app also started against Compose PostgreSQL and the live `/actuator/health` endpoint returned status `UP`.
 - Compose PostgreSQL 16.15 was healthy (`pg_isready` accepted connections). The service was left running for the user.
-- Frontend: lint, 2 tests, TypeScript check, and production build passed; Vite reported ready in the initial verification. A live loopback HTTP probe is blocked by environment socket permissions, so that runtime response remains unverified.
+- Pipeline (Python 3.12.14): installed the pinned lockfile in the ignored local `.venv`; CLI `--help` passed; 3 pytest tests passed; Ruff passed.
+- Frontend (Vite 8.3.5): dev server reported ready on `127.0.0.1:5173`; ESLint exited 0; 2 Vitest tests passed; TypeScript check and production build passed. Direct HTTP probing is blocked by environment socket permissions.
 
 ## Deployment Status
 Not started.
 
 ## Important Context for the Next AI Session
-- Do not mark Phase 1 complete until all criteria are rechecked against `Phases.md`; the direct frontend HTTP response and clean-setup walkthrough remain unverified.
+- Phase 1 acceptance criteria and Definition of Done are met. Do not begin Phase 2 until the user confirms.
 - No data collection, ML behavior, real dashboard screens, or authentication has been implemented.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-On a machine that permits local loopback access, verify the Vite dev server responds, rerun the README setup from a clean environment, and assess every Phase 1 acceptance criterion and Definition of Done. Ask before beginning Phase 2.
+Wait for user confirmation before Phase 2. Its first task is to establish the versioned experiment configuration and finalize cohort-selection definitions and constraints.
 
 ## Last Updated
-2026-10-29, `phase-1/foundation` — verified Boot 4.1.2, PostgreSQL/Flyway, and health integration; Testcontainers pinned to 1.21.4 for Docker Engine 29 compatibility.
+2026-10-29, `phase-1/foundation` — Phase 1 acceptance checks and Definition of Done verified; no Phase 2 work started.
