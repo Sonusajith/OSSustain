@@ -1,9 +1,7 @@
 package org.ossustain;
 
 import org.junit.jupiter.api.Test;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.http.HttpStatus;
 import org.springframework.test.context.DynamicPropertyRegistry;
@@ -11,6 +9,11 @@ import org.springframework.test.context.DynamicPropertySource;
 import org.testcontainers.containers.PostgreSQLContainer;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+
+import java.net.URI;
+import java.net.http.HttpClient;
+import java.net.http.HttpRequest;
+import java.net.http.HttpResponse;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -33,15 +36,14 @@ class HealthEndpointIntegrationTest {
     @LocalServerPort
     private int port;
 
-    @Autowired
-    private TestRestTemplate restTemplate;
-
     @Test
     void healthEndpointIsUpAndFlywayAppliedTheBaseline() throws Exception {
-        var response = restTemplate.getForEntity("http://localhost:" + port + "/actuator/health", String.class);
+        var request = HttpRequest.newBuilder(URI.create("http://localhost:" + port
+                + "/actuator/health")).GET().build();
+        var response = HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
 
-        assertThat(response.getStatusCode()).isEqualTo(HttpStatus.OK);
-        assertThat(response.getBody()).contains("\"status\":\"UP\"");
+        assertThat(response.statusCode()).isEqualTo(HttpStatus.OK.value());
+        assertThat(response.body()).contains("\"status\":\"UP\"");
         assertThat(POSTGRES.execInContainer("psql", "-U", "ossustain", "-d", "ossustain", "-Atc",
                 "SELECT version FROM flyway_schema_history WHERE version = '1'").getStdout().trim())
                 .isEqualTo("1");

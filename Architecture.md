@@ -28,7 +28,7 @@ GitHub REST API
 | Charts | Recharts | Adequate for time series and bar charts; keeps dependencies small |
 | Styling | Tailwind CSS *(confirm against the Stitch export)* | Stitch exports are commonly HTML/Tailwind-style; the final choice follows the export |
 | API typing | OpenAPI spec from backend, `openapi-typescript` | Generates frontend types and prevents contract drift |
-| Backend | Java 21, Spring Boot 3.x (Web, Data JPA, Validation, Actuator), springdoc-openapi | Specified; mature, simple read-only REST |
+| Backend | Java 21, Spring Boot 4.1.2 (Web MVC, Data JPA, Validation, Actuator), springdoc-openapi | Specified; mature, simple read-only REST |
 | Database | **PostgreSQL 16** | Strong analytical SQL (window functions, percentiles), JSONB for flexible feature storage, good Python and Java support |
 | Migrations | Flyway (in backend) | Single owner of the schema |
 | Pipeline | Python 3.12, pandas, NumPy, scikit-learn, SQLAlchemy, psycopg, httpx, tenacity, pydantic, PyYAML, joblib, pytest, ruff | Standard ML stack; direct HTTP client gives full control over rate limits and ETags |
