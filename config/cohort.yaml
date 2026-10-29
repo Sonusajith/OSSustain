@@ -1,0 +1,674 @@
+cohort_name: ossustain-public-repositories-v1
+screen_id: github-rest-search-2026-10-29-v1
+criteria:
+  selection_date: '2026-10-29'
+  observation_start: '2022-01-01'
+  observation_end: '2025-12-31'
+  created_before: '2022-01-01'
+  pushed_within_days: 365
+  max_prs_in_observation_period: 250
+  random_seed: 42
+  size_groups:
+    small:
+      min_stars: 100
+      max_stars: 999
+      target_size: 17
+    medium:
+      min_stars: 1000
+      max_stars: 4999
+      target_size: 17
+    large:
+      min_stars: 5000
+      max_stars: 9999
+      target_size: 16
+repositories:
+- github_id: 57421142
+  full_name: WittmannF/sort-google-scholar
+  default_branch: dev
+  created_at: '2016-04-30'
+  pushed_at: '2026-10-09'
+  stars: 998
+  primary_language: Python
+  archived: false
+  fork: false
+  prs_in_observation_period: 20
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 20 PRs in the observation period.
+- github_id: 10761190
+  full_name: deajan/osync
+  default_branch: master
+  created_at: '2013-06-18'
+  pushed_at: '2026-10-28'
+  stars: 998
+  primary_language: Shell
+  archived: false
+  fork: false
+  prs_in_observation_period: 13
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 13 PRs in the observation period.
+- github_id: 199617262
+  full_name: gooking/apifm-wxapi
+  default_branch: master
+  created_at: '2019-07-30'
+  pushed_at: '2026-10-21'
+  stars: 998
+  primary_language: JavaScript
+  archived: false
+  fork: false
+  prs_in_observation_period: 0
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 0 PRs in the observation period.
+- github_id: 35169589
+  full_name: MonoMod/MonoMod
+  default_branch: reorganize
+  created_at: '2015-05-06'
+  pushed_at: '2026-10-29'
+  stars: 999
+  primary_language: C#
+  archived: false
+  fork: false
+  prs_in_observation_period: 120
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 120 PRs in the observation period.
+- github_id: 367741672
+  full_name: CTalvio/Ultrachromic
+  default_branch: main
+  created_at: '2021-05-15'
+  pushed_at: '2026-10-02'
+  stars: 999
+  primary_language: CSS
+  archived: false
+  fork: false
+  prs_in_observation_period: 13
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 13 PRs in the observation period.
+- github_id: 411823343
+  full_name: rappasoft/laravel-authentication-log
+  default_branch: main
+  created_at: '2021-09-29'
+  pushed_at: '2026-10-09'
+  stars: 998
+  primary_language: PHP
+  archived: false
+  fork: false
+  prs_in_observation_period: 52
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 52 PRs in the observation period.
+- github_id: 60705208
+  full_name: bailey27/cppcryptfs
+  default_branch: master
+  created_at: '2016-06-08'
+  pushed_at: '2026-10-25'
+  stars: 999
+  primary_language: C++
+  archived: false
+  fork: false
+  prs_in_observation_period: 4
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 4 PRs in the observation period.
+- github_id: 100764624
+  full_name: fabiospampinato/vscode-todo-plus
+  default_branch: master
+  created_at: '2017-08-19'
+  pushed_at: '2026-07-17'
+  stars: 998
+  primary_language: TypeScript
+  archived: false
+  fork: false
+  prs_in_observation_period: 8
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 8 PRs in the observation period.
+- github_id: 9735707
+  full_name: stripe-ruby-mock/stripe-ruby-mock
+  default_branch: master
+  created_at: '2013-04-28'
+  pushed_at: '2026-09-09'
+  stars: 998
+  primary_language: Ruby
+  archived: false
+  fork: false
+  prs_in_observation_period: 109
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 109 PRs in the observation period.
+- github_id: 131592037
+  full_name: xb2016/kratos-pjax
+  default_branch: master
+  created_at: '2018-04-30'
+  pushed_at: '2026-01-11'
+  stars: 999
+  primary_language: PHP
+  archived: false
+  fork: false
+  prs_in_observation_period: 3
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 3 PRs in the observation period.
+- github_id: 47508322
+  full_name: sheredom/utest.h
+  default_branch: main
+  created_at: '2015-12-06'
+  pushed_at: '2026-10-06'
+  stars: 998
+  primary_language: C++
+  archived: false
+  fork: false
+  prs_in_observation_period: 60
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 60 PRs in the observation period.
+- github_id: 420875841
+  full_name: nnjeim/world
+  default_branch: master
+  created_at: '2021-10-25'
+  pushed_at: '2026-10-10'
+  stars: 999
+  primary_language: PHP
+  archived: false
+  fork: false
+  prs_in_observation_period: 46
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 46 PRs in the observation period.
+- github_id: 310686619
+  full_name: tailwindlabs/tailwindcss-aspect-ratio
+  default_branch: master
+  created_at: '2020-11-06'
+  pushed_at: '2026-05-12'
+  stars: 999
+  primary_language: JavaScript
+  archived: false
+  fork: false
+  prs_in_observation_period: 5
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 5 PRs in the observation period.
+- github_id: 83657016
+  full_name: snaptoken/kilo-tutorial
+  default_branch: master
+  created_at: '2017-03-02'
+  pushed_at: '2026-05-15'
+  stars: 999
+  primary_language: null
+  archived: false
+  fork: false
+  prs_in_observation_period: 2
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 2 PRs in the observation period.
+- github_id: 134192392
+  full_name: nunomaduro/skeleton-php
+  default_branch: master
+  created_at: '2018-05-20'
+  pushed_at: '2026-10-13'
+  stars: 998
+  primary_language: PHP
+  archived: false
+  fork: false
+  prs_in_observation_period: 11
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 11 PRs in the observation period.
+- github_id: 267619299
+  full_name: activej/activej
+  default_branch: master
+  created_at: '2020-05-28'
+  pushed_at: '2026-01-09'
+  stars: 998
+  primary_language: Java
+  archived: false
+  fork: false
+  prs_in_observation_period: 18
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 18 PRs in the observation period.
+- github_id: 131619333
+  full_name: jae-jae/Camtd
+  default_branch: master
+  created_at: '2018-04-30'
+  pushed_at: '2026-08-18'
+  stars: 998
+  primary_language: JavaScript
+  archived: false
+  fork: false
+  prs_in_observation_period: 8
+  size_group: small
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 8 PRs in the observation period.
+- github_id: 20878802
+  full_name: protobuf-net/protobuf-net
+  default_branch: main
+  created_at: '2014-06-16'
+  pushed_at: '2026-10-23'
+  stars: 4976
+  primary_language: C#
+  archived: false
+  fork: false
+  prs_in_observation_period: 113
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 113 PRs in the observation period.
+- github_id: 84686614
+  full_name: RyanFitzgerald/devportfolio
+  default_branch: master
+  created_at: '2017-03-11'
+  pushed_at: '2026-05-14'
+  stars: 4990
+  primary_language: Astro
+  archived: false
+  fork: false
+  prs_in_observation_period: 118
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 118 PRs in the observation period.
+- github_id: 108945887
+  full_name: yanshengjia/ml-road
+  default_branch: master
+  created_at: '2017-10-31'
+  pushed_at: '2026-08-01'
+  stars: 4975
+  primary_language: Python
+  archived: false
+  fork: false
+  prs_in_observation_period: 3
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 3 PRs in the observation period.
+- github_id: 756967
+  full_name: nsf/gocode
+  default_branch: master
+  created_at: '2010-07-05'
+  pushed_at: '2026-02-07'
+  stars: 4984
+  primary_language: Go
+  archived: false
+  fork: false
+  prs_in_observation_period: 3
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 3 PRs in the observation period.
+- github_id: 47162528
+  full_name: longitachi/ZLPhotoBrowser
+  default_branch: master
+  created_at: '2015-12-01'
+  pushed_at: '2026-10-19'
+  stars: 4990
+  primary_language: Swift
+  archived: false
+  fork: false
+  prs_in_observation_period: 43
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 43 PRs in the observation period.
+- github_id: 115859973
+  full_name: ddnexus/pagy
+  default_branch: master
+  created_at: '2017-12-31'
+  pushed_at: '2026-10-26'
+  stars: 4997
+  primary_language: Ruby
+  archived: false
+  fork: false
+  prs_in_observation_period: 247
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 247 PRs in the observation period.
+- github_id: 50244673
+  full_name: inkle/ink
+  default_branch: master
+  created_at: '2016-01-23'
+  pushed_at: '2026-05-05'
+  stars: 4994
+  primary_language: C#
+  archived: false
+  fork: false
+  prs_in_observation_period: 41
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 41 PRs in the observation period.
+- github_id: 120967092
+  full_name: brentvollebregt/auto-py-to-exe
+  default_branch: master
+  created_at: '2018-02-09'
+  pushed_at: '2026-09-11'
+  stars: 4997
+  primary_language: JavaScript
+  archived: false
+  fork: false
+  prs_in_observation_period: 60
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 60 PRs in the observation period.
+- github_id: 20037651
+  full_name: jazzband/django-silk
+  default_branch: master
+  created_at: '2014-05-21'
+  pushed_at: '2026-10-28'
+  stars: 4994
+  primary_language: Python
+  archived: false
+  fork: false
+  prs_in_observation_period: 203
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 203 PRs in the observation period.
+- github_id: 292471955
+  full_name: IAmStoxe/wirehole
+  default_branch: master
+  created_at: '2020-09-03'
+  pushed_at: '2026-08-25'
+  stars: 4977
+  primary_language: Shell
+  archived: false
+  fork: false
+  prs_in_observation_period: 22
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 22 PRs in the observation period.
+- github_id: 221121871
+  full_name: shibing624/text2vec
+  default_branch: master
+  created_at: '2019-11-12'
+  pushed_at: '2026-02-14'
+  stars: 4974
+  primary_language: Python
+  archived: false
+  fork: false
+  prs_in_observation_period: 5
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 5 PRs in the observation period.
+- github_id: 43243303
+  full_name: react-native-webrtc/react-native-webrtc
+  default_branch: master
+  created_at: '2015-09-27'
+  pushed_at: '2026-10-20'
+  stars: 4997
+  primary_language: Java
+  archived: false
+  fork: false
+  prs_in_observation_period: 222
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 222 PRs in the observation period.
+- github_id: 61531463
+  full_name: gopl-zh/gopl-zh.github.com
+  default_branch: master
+  created_at: '2016-06-20'
+  pushed_at: '2026-07-03'
+  stars: 4992
+  primary_language: Go
+  archived: false
+  fork: false
+  prs_in_observation_period: 39
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 39 PRs in the observation period.
+- github_id: 65215684
+  full_name: shoutem/ui
+  default_branch: develop
+  created_at: '2016-08-08'
+  pushed_at: '2026-10-20'
+  stars: 4985
+  primary_language: JavaScript
+  archived: false
+  fork: false
+  prs_in_observation_period: 224
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 224 PRs in the observation period.
+- github_id: 30202970
+  full_name: karlhorky/learn-to-program
+  default_branch: main
+  created_at: '2015-02-02'
+  pushed_at: '2026-09-14'
+  stars: 4998
+  primary_language: null
+  archived: false
+  fork: false
+  prs_in_observation_period: 20
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 20 PRs in the observation period.
+- github_id: 951918
+  full_name: fpillet/NSLogger
+  default_branch: master
+  created_at: '2010-09-30'
+  pushed_at: '2026-06-03'
+  stars: 4975
+  primary_language: Objective-C
+  archived: false
+  fork: false
+  prs_in_observation_period: 6
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 6 PRs in the observation period.
+- github_id: 12085960
+  full_name: hynek/structlog
+  default_branch: main
+  created_at: '2013-08-13'
+  pushed_at: '2026-10-17'
+  stars: 4982
+  primary_language: Python
+  archived: false
+  fork: false
+  prs_in_observation_period: 207
+  size_group: medium
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 207 PRs in the observation period.
+- github_id: 156768326
+  full_name: ThreeDotsLabs/watermill
+  default_branch: master
+  created_at: '2018-11-08'
+  pushed_at: '2026-10-28'
+  stars: 9930
+  primary_language: Go
+  archived: false
+  fork: false
+  prs_in_observation_period: 220
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 220 PRs in the observation period.
+- github_id: 11898182
+  full_name: audreyfeldroy/favicon-cheat-sheet
+  default_branch: main
+  created_at: '2013-08-05'
+  pushed_at: '2026-01-22'
+  stars: 9904
+  primary_language: null
+  archived: false
+  fork: false
+  prs_in_observation_period: 0
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 0 PRs in the observation period.
+- github_id: 190254663
+  full_name: phiresky/ripgrep-all
+  default_branch: master
+  created_at: '2019-06-04'
+  pushed_at: '2026-09-17'
+  stars: 9904
+  primary_language: Rust
+  archived: false
+  fork: false
+  prs_in_observation_period: 64
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 64 PRs in the observation period.
+- github_id: 28653585
+  full_name: MiCode/Xiaomi_Kernel_OpenSource
+  default_branch: README
+  created_at: '2014-12-31'
+  pushed_at: '2026-10-12'
+  stars: 9936
+  primary_language: null
+  archived: false
+  fork: false
+  prs_in_observation_period: 43
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 43 PRs in the observation period.
+- github_id: 1219740
+  full_name: StylishThemes/GitHub-Dark
+  default_branch: master
+  created_at: '2011-01-04'
+  pushed_at: '2026-10-27'
+  stars: 9999
+  primary_language: CSS
+  archived: false
+  fork: false
+  prs_in_observation_period: 4
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 4 PRs in the observation period.
+- github_id: 66509131
+  full_name: kubernetes/client-go
+  default_branch: master
+  created_at: '2016-08-25'
+  pushed_at: '2026-10-29'
+  stars: 9911
+  primary_language: Go
+  archived: false
+  fork: false
+  prs_in_observation_period: 0
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 0 PRs in the observation period.
+- github_id: 76383569
+  full_name: lk-geimfari/awesomo
+  default_branch: main
+  created_at: '2016-12-13'
+  pushed_at: '2026-10-26'
+  stars: 9967
+  primary_language: Markdown
+  archived: false
+  fork: false
+  prs_in_observation_period: 0
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 0 PRs in the observation period.
+- github_id: 121637551
+  full_name: hoochanlon/hamuleite
+  default_branch: master
+  created_at: '2018-02-15'
+  pushed_at: '2026-10-28'
+  stars: 9956
+  primary_language: Jupyter Notebook
+  archived: false
+  fork: false
+  prs_in_observation_period: 0
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 0 PRs in the observation period.
+- github_id: 169745123
+  full_name: brightmart/nlp_chinese_corpus
+  default_branch: master
+  created_at: '2019-02-08'
+  pushed_at: '2026-02-06'
+  stars: 9935
+  primary_language: null
+  archived: false
+  fork: false
+  prs_in_observation_period: 0
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 0 PRs in the observation period.
+- github_id: 31365325
+  full_name: happydog-intj/JsBridge
+  default_branch: master
+  created_at: '2015-02-26'
+  pushed_at: '2026-09-12'
+  stars: 9908
+  primary_language: Java
+  archived: false
+  fork: false
+  prs_in_observation_period: 8
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 8 PRs in the observation period.
+- github_id: 385037052
+  full_name: ahrm/sioyek
+  default_branch: development
+  created_at: '2021-07-11'
+  pushed_at: '2026-10-29'
+  stars: 9970
+  primary_language: C
+  archived: false
+  fork: false
+  prs_in_observation_period: 159
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 159 PRs in the observation period.
+- github_id: 65755556
+  full_name: php-fig/container
+  default_branch: master
+  created_at: '2016-08-15'
+  pushed_at: '2026-02-02'
+  stars: 9992
+  primary_language: PHP
+  archived: false
+  fork: false
+  prs_in_observation_period: 5
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 5 PRs in the observation period.
+- github_id: 343659681
+  full_name: vbskycn/iptv
+  default_branch: master
+  created_at: '2021-03-02'
+  pushed_at: '2026-10-29'
+  stars: 9912
+  primary_language: HTML
+  archived: false
+  fork: false
+  prs_in_observation_period: 4
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 4 PRs in the observation period.
+- github_id: 57182064
+  full_name: vercel/serve
+  default_branch: main
+  created_at: '2016-04-27'
+  pushed_at: '2026-06-30'
+  stars: 9907
+  primary_language: TypeScript
+  archived: false
+  fork: false
+  prs_in_observation_period: 59
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 59 PRs in the observation period.
+- github_id: 334567245
+  full_name: alirezadir/AIMLInterviews
+  default_branch: main
+  created_at: '2021-01-31'
+  pushed_at: '2026-10-08'
+  stars: 9921
+  primary_language: Jupyter Notebook
+  archived: false
+  fork: false
+  prs_in_observation_period: 11
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 11 PRs in the observation period.
+- github_id: 99822164
+  full_name: aksakalli/gtop
+  default_branch: master
+  created_at: '2017-08-09'
+  pushed_at: '2025-11-06'
+  stars: 9935
+  primary_language: JavaScript
+  archived: false
+  fork: false
+  prs_in_observation_period: 15
+  size_group: large
+  inclusion_notes: Non-fork, non-archived; created before 2022-01-01; pushed within
+    365 days; 15 PRs in the observation period.

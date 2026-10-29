@@ -85,3 +85,14 @@ pnpm build
 - `docker-compose.yml`: PostgreSQL 16 only; no additional services.
 
 Runtime and development dependency versions are pinned in `backend/pom.xml`, `pipeline/pyproject.toml`, `frontend/package.json`, and `frontend/pnpm-lock.yaml`.
+
+## Phase 2 research protocol and cohort
+
+The versioned research definitions are in `config/experiment.yaml`; cohort screening and deterministic membership are in `config/cohort-candidates.yaml` and `config/cohort.yaml`. Definitions, eligibility rationale, and the REST budget estimate are documented in [docs/methodology.md](docs/methodology.md). The Phase 2 selector performs no network requests and does not collect repository history:
+
+```sh
+ossustain-pipeline select-cohort --candidate-config config/cohort-candidates.yaml --output config/cohort.yaml
+python -m pytest -c pipeline/pyproject.toml
+```
+
+The collection plan is REST-only. The approved 12,500-request stop cap covers PR/review/response collection only; commit history and non-PR issue collection are excluded and must be budgeted from measured pagination before Phase 4 collection. See `docs/methodology.md` for details.

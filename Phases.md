@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 1: Foundation
-**Current Status:** Phase 1 complete; awaiting confirmation before Phase 2
+**Current Phase:** Phase 2: Research Protocol and Cohort Selection
+**Current Status:** Phase 2 complete; awaiting confirmation before Phase 3
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

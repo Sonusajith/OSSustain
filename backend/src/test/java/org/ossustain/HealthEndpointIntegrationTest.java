@@ -48,4 +48,16 @@ class HealthEndpointIntegrationTest {
                 "SELECT version FROM flyway_schema_history WHERE version = '1'").getStdout().trim())
                 .isEqualTo("1");
     }
+
+    @Test
+    void flywayCreatesTheCohortSelectionSchema() throws Exception {
+        var result = POSTGRES.execInContainer("psql", "-U", "ossustain", "-d", "ossustain", "-Atc",
+                "SELECT version FROM flyway_schema_history WHERE version = '2'");
+
+        assertThat(result.getStdout().trim()).isEqualTo("2");
+        assertThat(POSTGRES.execInContainer("psql", "-U", "ossustain", "-d", "ossustain", "-Atc",
+                "SELECT count(*) FROM information_schema.tables WHERE table_schema = 'public' "
+                        + "AND table_name IN ('repositories', 'cohorts', 'cohort_memberships')")
+                .getStdout().trim()).isEqualTo("3");
+    }
 }
