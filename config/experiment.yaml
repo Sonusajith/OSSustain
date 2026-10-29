@@ -1,0 +1,39 @@
+# Protocol v1.0.0. The four-year study window follows the planned 3–4 year
+# collection range in Architecture.md; dates must be revalidated before Phase 3
+# starts data collection.
+protocol_version: "1.0.0"
+selection_date: "2026-10-29"
+observation_start: "2022-01-01"
+observation_end: "2025-12-31"
+snapshot_interval_days: 30
+purge_gap_days: 90
+random_seed: 42
+
+label:
+  # Significant decline: future 90-day activity is at most half of reference activity.
+  theta: 0.5
+  sensitivity_theta: [0.3, 0.7]
+  min_reference_commits: 20
+  reference_window_days: 90
+  future_window_days: 90
+  activity_definition: non_bot_default_branch_commits
+
+identity:
+  exclude_github_type_bot: true
+  exclude_login_suffix: "[bot]"
+  unlinked_author_policy: retain_as_null
+  identity_key: github_user_id
+
+# Prediction-date windows are separated by at least 90 days. The final test
+# label window completes by 2025-12-31; the first train reference window begins
+# at 2022-01-01.
+splits:
+  train:
+    start: "2022-04-01"
+    end: "2023-06-30"
+  validation:
+    start: "2023-10-01"
+    end: "2024-06-30"
+  test:
+    start: "2024-10-01"
+    end: "2025-09-30"
