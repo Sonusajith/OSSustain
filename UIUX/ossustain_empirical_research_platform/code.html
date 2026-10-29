@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>OSSustain - Empirical Software Sustainability Research</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary-fixed-dim":"#bec6e0","tertiary-fixed":"#d5e3fc","surface-bright":"#f8f9ff","primary-container":"#131b2e","secondary":"#515f74","on-secondary-fixed-variant":"#3a485c","on-error-container":"#93000a","secondary-container":"#d5e3fd","secondary-fixed":"#d5e3fd","on-secondary":"#ffffff","surface-container-low":"#eff4ff","surface-dim":"#cbdbf5","tertiary":"#000000","on-primary-fixed-variant":"#3f465c","on-tertiary":"#ffffff","on-secondary-fixed":"#0d1c2f","on-error":"#ffffff","surface-container":"#e5eeff","inverse-on-surface":"#eaf1ff","on-primary-fixed":"#131b2e","surface-container-lowest":"#ffffff","surface":"#f8f9ff","surface-variant":"#d3e4fe","on-surface":"#0b1c30","outline":"#76777d","error-container":"#ffdad6","tertiary-container":"#0d1c2e","secondary-fixed-dim":"#b9c7e0","primary-fixed":"#dae2fd","on-secondary-container":"#57657b","on-primary-container":"#7c839b","on-surface-variant":"#45464d","on-primary":"#ffffff","on-tertiary-fixed":"#0d1c2e","background":"#f8f9ff","on-tertiary-container":"#77859a","error":"#ba1a1a","surface-container-high":"#dce9ff","surface-container-highest":"#d3e4fe","inverse-primary":"#bec6e0","surface-tint":"#565e74","on-tertiary-fixed-variant":"#3a485b","tertiary-fixed-dim":"#b9c7df","primary":"#000000","inverse-surface":"#213145","on-background":"#0b1c30","outline-variant":"#c6c6cd"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"gutter-desktop":"1.5rem","margin-desktop":"2rem","gutter-tablet":"1.25rem","margin":"1rem","gutter":"1rem","space-sm":"0.5rem","space-xs":"0.25rem","space-xl":"2rem","space-md":"0.75rem","margin-tablet":"1.5rem","space-lg":"1.25rem"},fontFamily:{"headline-md":["Newsreader"],"body-lg":["Inter"],"body-md":["Inter"],"code-metric":["JetBrains Mono"],"label-caps":["Inter"],"headline-xl-mobile":["Newsreader"],"headline-lg-mobile":["Newsreader"],"headline-xl":["Newsreader"],"headline-sm":["Newsreader"],"body-sm":["Inter"],"headline-lg":["Newsreader"],"code-metric-sm":["JetBrains Mono"]},fontSize:{"headline-md":["20px",{"lineHeight":"26px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["15px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["13px",{"lineHeight":"20px","fontWeight":"400"}],"code-metric":["13px",{"lineHeight":"18px","letterSpacing":"-0.02em","fontWeight":"500"}],"label-caps":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"600"}],"headline-xl-mobile":["28px",{"lineHeight":"34px","letterSpacing":"-0.01em","fontWeight":"500"}],"headline-lg-mobile":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"500"}],"headline-xl":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"500"}],"headline-sm":["16px",{"lineHeight":"22px","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","letterSpacing":"-0.015em","fontWeight":"500"}],"code-metric-sm":["11px",{"lineHeight":"14px","letterSpacing":"0","fontWeight":"400"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-outline-variant"><div class="h-16 max-w-[1320px] mx-auto px-margin-desktop flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><span class="font-headline-md text-headline-md text-on-surface tracking-tight font-semibold">OSSustain</span><span class="font-code-metric-sm text-code-metric-sm bg-surface-container text-on-surface-variant border border-outline-variant px-1.5 py-0.5 rounded">v1.0-mvp</span></div><div class="h-5 w-px bg-outline-variant hidden sm:block"></div><nav class="flex items-center gap-space-lg" data-active-classes="text-on-surface font-semibold border-b-2 border-primary"><a aria-current="page" class="py-5 transition-colors text-on-surface font-semibold border-b-2 border-primary" data-path="landing-page" href="#">Overview</a><a class="text-on-surface-variant hover:text-on-surface font-body-md text-body-md py-5 transition-colors border-b-2 border-transparent" data-path="cohort-overview" href="#">Cohort Overview</a><a class="text-on-surface-variant hover:text-on-surface font-body-md text-body-md py-5 transition-colors border-b-2 border-transparent" data-path="research-results" href="#">Research Results</a><a class="text-on-surface-variant hover:text-on-surface font-body-md text-body-md py-5 transition-colors border-b-2 border-transparent" data-path="methodology-and-limitations" href="#">Methodology &amp; Limitations</a></nav></div><div class="flex items-center gap-space-md"><div class="hidden md:flex items-center gap-space-xs font-code-metric-sm text-code-metric-sm text-on-surface-variant bg-surface-container-low border border-outline-variant px-space-sm py-1 rounded"><span class="material-symbols-outlined text-[14px] text-on-surface-variant">dataset</span><span>Dataset: v2024.1 (50 Repos)</span></div><a aria-label="Source Repository" class="flex items-center justify-center p-space-xs text-on-surface-variant hover:text-on-surface border border-outline-variant rounded bg-surface-container-lowest transition-colors" href="#"><span class="material-symbols-outlined text-[18px]">code</span></a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-[calc(100vh-5rem)]"><div class="flex flex-col w-full">
+<!-- Top Epistemic Notice Scrim -->
+<aside class="w-full bg-surface-container-low border-b border-outline-variant py-space-xs px-margin-desktop text-on-surface-variant">
+<div class="max-w-[1320px] mx-auto flex flex-wrap items-center justify-between gap-space-sm font-code-metric-sm text-code-metric-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[15px] text-outline">verified</span>
+<span class="font-semibold text-on-surface">METHODOLOGICAL STANDARD:</span>
+<span>Prospective out-of-time temporal splits (purge-gap = 90d). Observational correlations only. Zero causal claims inferred.</span>
+</div>
+<div class="flex items-center gap-space-md">
+<span class="bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant border border-outline-variant">ROC-AUC: 0.791</span>
+<span class="bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant border border-outline-variant">PR-AUC: 0.742</span>
+<span class="bg-surface-container px-1.5 py-0.5 rounded text-on-surface-variant border border-outline-variant">Brier: 0.138</span>
+</div>
+</div>
+</aside>
+<!-- 1. Hero Section (Empirical Research Portal) -->
+<section class="w-full bg-surface-bright border-b border-outline-variant py-space-xl">
+<div class="max-w-[1320px] mx-auto px-margin-desktop">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-start">
+<!-- Left: Academic Abstract & Titles (8 Cols) -->
+<div class="lg:col-span-8 flex flex-col gap-space-md">
+<div class="flex flex-wrap items-center gap-space-xs">
+<span class="font-label-caps text-label-caps uppercase tracking-wider bg-surface-container text-on-surface px-2 py-0.5 rounded border border-outline-variant font-semibold">
+              Empirical Software Engineering Research
+            </span>
+<span class="text-outline">•</span>
+<span class="font-code-metric-sm text-code-metric-sm text-on-surface-variant">Preprint v2024.1</span>
+<span class="text-outline">•</span>
+<span class="font-code-metric-sm text-code-metric-sm text-secondary bg-surface-container-low px-1.5 py-0.2 rounded border border-outline-variant">Peer Review In-Process</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface font-medium tracking-tight mt-space-xs">
+            Empirical 90-Day Activity Decline Risk in Open Source Repositories
+          </h1>
+<p class="font-body-lg text-body-lg text-on-surface-variant max-w-3xl leading-relaxed">
+            A leakage-safe temporal evaluation platform testing whether contributor diversity, newcomer retention, and review responsiveness improve early-warning models over activity-only signals across 50 public repositories.
+          </p>
+<!-- Action Stack -->
+<div class="flex flex-wrap items-center gap-space-md pt-space-xs">
+<a class="inline-flex items-center gap-space-xs bg-primary text-on-primary font-body-md text-body-md px-space-lg py-2.5 rounded shadow-sm hover:bg-neutral-800 transition-colors" href="#">
+<span>Explore Cohort Analytics (N=50)</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</a>
+<a class="inline-flex items-center gap-space-xs bg-surface-container-lowest text-on-surface border border-outline-variant font-body-md text-body-md px-space-md py-2.5 rounded hover:bg-surface-container-low transition-colors" href="#">
+<span class="material-symbols-outlined text-[16px]">science</span>
+<span>Read Methodology &amp; Purge Gap Design</span>
+</a>
+<!-- Citation tag with copy -->
+<div class="inline-flex items-center bg-surface-container-lowest border border-outline-variant rounded px-2.5 py-1.5 text-on-surface-variant font-code-metric-sm text-code-metric-sm" id="doi-container">
+<span class="text-secondary select-all">doi:10.5281/zenodo.ossustain.2024</span>
+<button class="ml-space-sm hover:text-on-surface text-outline transition-colors p-0.5" onclick="navigator.clipboard.writeText('10.5281/zenodo.ossustain.2024'); this.innerText='copied'; setTimeout(()=&gt;this.innerText='content_copy', 1500);" title="Copy DOI">
+<span class="material-symbols-outlined text-[15px] align-middle">content_copy</span>
+</button>
+</div>
+</div>
+<!-- Live Research Status Ribbon -->
+<div class="flex flex-wrap items-center gap-space-sm pt-space-md">
+<div class="flex items-center gap-space-xs bg-surface-container-lowest border border-outline-variant rounded px-2.5 py-1 text-on-surface font-code-metric-sm text-code-metric-sm">
+<span class="w-2 h-2 rounded-full bg-emerald-600"></span>
+<span class="font-medium">50 Repositories Tracked</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-lowest border border-outline-variant rounded px-2.5 py-1 text-on-surface font-code-metric-sm text-code-metric-sm">
+<span class="material-symbols-outlined text-[14px] text-outline">history_toggle_off</span>
+<span>48 Monthly Snapshots (2020–2024)</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-lowest border border-outline-variant rounded px-2.5 py-1 text-on-surface font-code-metric-sm text-code-metric-sm">
+<span class="material-symbols-outlined text-[14px] text-outline">query_stats</span>
+<span class="text-secondary font-medium">PR-AUC 0.742 (Baseline: 0.280)</span>
+</div>
+<div class="flex items-center gap-space-xs bg-surface-container-low border border-outline-variant rounded px-2 py-1 text-on-surface-variant font-code-metric-sm text-code-metric-sm">
+<span class="font-label-caps text-label-caps uppercase text-secondary">CORRELATIONAL ONLY</span>
+</div>
+</div>
+</div>
+<!-- Right: Primary Empirical Diagnostic Card (4 Cols) -->
+<div class="lg:col-span-4 bg-surface-container-lowest border border-outline-variant rounded-lg p-space-md shadow-sm">
+<div class="flex items-center justify-between pb-space-sm border-b border-outline-variant">
+<span class="font-label-caps text-label-caps uppercase text-on-surface-variant tracking-wider">Evaluation Calibration</span>
+<span class="font-code-metric-sm text-code-metric-sm text-on-surface-variant bg-surface-container px-1 rounded">Fold 4/5</span>
+</div>
+<!-- Micro Sparkline / Curve Visual -->
+<div class="py-space-md">
+<div class="flex items-baseline justify-between mb-space-xs">
+<span class="font-code-metric text-code-metric text-on-surface font-semibold">Precision-Recall Curve</span>
+<span class="font-code-metric-sm text-code-metric-sm text-emerald-700 font-medium">+0.462 over Naive Baseline</span>
+</div>
+<svg class="w-full h-28 text-primary overflow-visible" fill="none" viewbox="0 0 300 100" xmlns="http://www.w3.org/2000/svg">
+<!-- Grid lines -->
+<line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="300" y1="20" y2="20"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="300" y1="50" y2="50"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3 3" stroke-width="1" x1="0" x2="300" y1="80" y2="80"></line>
+<!-- Naive Baseline -->
+<line stroke="#94A3B8" stroke-dasharray="4 4" stroke-width="1.5" x1="0" x2="300" y1="72" y2="72"></line>
+<!-- Empirical Model Curve -->
+<path d="M 0 15 C 60 16, 120 22, 160 38 C 210 58, 250 78, 300 92" stroke="#0F172A" stroke-width="2.5"></path>
+<!-- Fill under curve -->
+<path d="M 0 15 C 60 16, 120 22, 160 38 C 210 58, 250 78, 300 92 L 300 100 L 0 100 Z" fill="#0F172A" fill-opacity="0.04"></path>
+<!-- Marker point -->
+<circle cx="160" cy="38" fill="#0F172A" r="3.5"></circle>
+</svg>
+<div class="flex justify-between text-on-surface-variant font-code-metric-sm text-code-metric-sm mt-1">
+<span>Recall: 0.0</span>
+<span class="text-on-surface font-medium">Optimal Cutpoint (τ=0.48)</span>
+<span>Recall: 1.0</span>
+</div>
+</div>
+<!-- Parameter Summary Matrix -->
+<div class="grid grid-cols-2 gap-space-xs pt-space-xs border-t border-outline-variant">
+<div class="bg-surface-container-low p-space-xs rounded border border-outline-variant">
+<div class="font-code-metric-sm text-code-metric-sm text-secondary">Target Threshold (θ)</div>
+<div class="font-code-metric text-code-metric font-semibold text-on-surface">50% Activity Drop</div>
+</div>
+<div class="bg-surface-container-low p-space-xs rounded border border-outline-variant">
+<div class="font-code-metric-sm text-code-metric-sm text-secondary">Purge Gap Width</div>
+<div class="font-code-metric text-code-metric font-semibold text-on-surface">90 Days (Strict)</div>
+</div>
+</div>
+<div class="mt-space-sm text-center">
+<span class="font-code-metric-sm text-code-metric-sm text-on-surface-variant">Validated via Expanding-Window Time Series Split</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 2. Core Research Motivation & Null-Result Transparency (3-Column Academic Grid) -->
+<section class="w-full py-space-xl border-b border-outline-variant bg-surface">
+<div class="max-w-[1320px] mx-auto px-margin-desktop">
+<div class="flex flex-col md:flex-row md:items-end justify-between mb-space-lg gap-space-sm">
+<div>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-secondary">Methodological Foundations</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-medium mt-1">
+            Predictive Constraints &amp; Epistemic Transparency
+          </h2>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant max-w-md">
+          Standard open-source health scores suffer from lookahead leakage and survivorship bias. OSSustain isolates genuine prospective warning indicators through strict counterfactual accounting.
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-3 gap-gutter-desktop">
+<!-- Card 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-space-lg flex flex-col justify-between hover:border-outline transition-colors">
+<div>
+<div class="flex items-center justify-between pb-space-xs mb-space-sm border-b border-outline-variant">
+<span class="font-code-metric-sm text-code-metric-sm font-semibold text-secondary">01 // OBSERVATIONAL TRAP</span>
+<span class="material-symbols-outlined text-[18px] text-outline">troubleshoot</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-space-xs">The Predictive Gap</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-space-md">
+              Superficial metrics (GitHub stars, aggregate forks, un-curated commit tallies) camouflage maintainer exhaustion. Core contributors routinely abandon active triage 60–120 days before gross repository commits register a measurable drop.
+            </p>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded border border-outline-variant">
+<div class="font-code-metric-sm text-code-metric-sm text-secondary">Empirical Finding:</div>
+<div class="font-body-sm text-body-sm text-on-surface font-medium mt-0.5">
+              Stars correlate with historical popularity (r = 0.81), but yield near-zero predictive power for 90d decline (ΔPR-AUC = +0.003).
+            </div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-space-lg flex flex-col justify-between hover:border-outline transition-colors">
+<div>
+<div class="flex items-center justify-between pb-space-xs mb-space-sm border-b border-outline-variant">
+<span class="font-code-metric-sm text-code-metric-sm font-semibold text-secondary">02 // CAUSALITY SAFEGUARDS</span>
+<span class="material-symbols-outlined text-[18px] text-outline">timelapse</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-space-xs">Leakage-Safe Temporal Protocol</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-space-md">
+              Random k-fold validation creates catastrophic temporal leakage in time-series panel data. Our architecture enforces strict 90-day purge gaps between chronological observation cuts and evaluation periods to eliminate right-censoring leakage.
+            </p>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded border border-outline-variant">
+<div class="font-code-metric-sm text-code-metric-sm text-secondary">Validation Architecture:</div>
+<div class="font-body-sm text-body-sm text-on-surface font-medium mt-0.5">
+              5-fold chronological rolling-origin evaluation. No test-fold issue or PR resolution is visible to the feature extractor.
+            </div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-space-lg flex flex-col justify-between hover:border-outline transition-colors">
+<div>
+<div class="flex items-center justify-between pb-space-xs mb-space-sm border-b border-outline-variant">
+<span class="font-code-metric-sm text-code-metric-sm font-semibold text-secondary">03 // PEER-REVIEW ETHICS</span>
+<span class="material-symbols-outlined text-[18px] text-outline">balance</span>
+</div>
+<h3 class="font-headline-md text-headline-md text-on-surface mb-space-xs">Honest Null-Result Reporting</h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed mb-space-md">
+              Negative econometric outcomes are reported with equal rigor. We explicitly document domains where non-activity metrics fail to improve baselines, resisting publication bias and p-hacking in open scientific benchmarks.
+            </p>
+</div>
+<div class="bg-surface-container-low p-space-sm rounded border border-outline-variant">
+<div class="font-code-metric-sm text-code-metric-sm text-secondary">Null Hypothesis Confirmed:</div>
+<div class="font-body-sm text-body-sm text-on-surface font-medium mt-0.5">
+              In large repositories (&gt;50k LOC), organizational sponsor change yields no incremental signal over simple 30d PR review latency.
+            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 3. Live Cohort Risk Distribution & Sample Preview -->
+<section class="w-full py-space-xl border-b border-outline-variant bg-surface-bright">
+<div class="max-w-[1320px] mx-auto px-margin-desktop">
+<!-- Section Header -->
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-space-md border-b border-outline-variant mb-space-lg gap-space-sm">
+<div>
+<span class="font-label-caps text-label-caps uppercase text-secondary">Longitudinal Panel Study (N=50)</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-medium">Cohort Stratification &amp; Risk Distribution</h2>
+</div>
+<div class="flex items-center gap-space-sm">
+<span class="font-code-metric-sm text-code-metric-sm text-on-surface-variant">Last Pipeline Execution: 2024-03-31 23:59 UTC</span>
+<a class="font-body-sm text-body-sm text-primary font-semibold hover:underline flex items-center gap-0.5" href="#">
+            Full 50-Repo Ledger <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+</a>
+</div>
+</div>
+<!-- Cohort Summary Metric Tiles & Distribution Bar -->
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop mb-space-lg">
+<!-- Cohort Stratum Cards (4 cols) -->
+<div class="lg:col-span-4 flex flex-col gap-space-sm justify-between">
+<div class="bg-surface-container-lowest border border-outline-variant p-space-md rounded flex items-center justify-between">
+<div>
+<div class="font-label-caps text-label-caps uppercase text-secondary">Stratified Size Groups</div>
+<div class="font-headline-sm text-headline-sm text-on-surface mt-1">15 Small • 20 Med • 15 Large</div>
+</div>
+<span class="font-code-metric text-code-metric text-on-surface bg-surface-container-low px-2 py-1 rounded border border-outline-variant">N = 50</span>
+</div>
+<div class="bg-surface-container-lowest border border-outline-variant p-space-md rounded">
+<div class="flex justify-between items-center mb-space-xs font-label-caps text-label-caps uppercase text-secondary">
+<span>Risk Classification Breakdown</span>
+<span class="font-code-metric-sm text-code-metric-sm">90-Day Outlook</span>
+</div>
+<!-- Segmented horizontal bar -->
+<div class="w-full h-3 rounded flex overflow-hidden bg-surface-container mb-space-xs">
+<div class="h-full bg-red-600" style="width: 16%" title="High Risk (16%)"></div>
+<div class="h-full bg-amber-500" style="width: 28%" title="Medium Risk (28%)"></div>
+<div class="h-full bg-emerald-600" style="width: 56%" title="Stable / Low Risk (56%)"></div>
+</div>
+<div class="flex justify-between font-code-metric-sm text-code-metric-sm text-on-surface-variant">
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-red-600"></span> 8 High (16%)</span>
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> 14 Med (28%)</span>
+<span class="flex items-center gap-1"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> 28 Low (56%)</span>
+</div>
+</div>
+</div>
+<!-- Empirical Sample Table (8 cols) -->
+<div class="lg:col-span-8 bg-surface-container-lowest border border-outline-variant rounded overflow-hidden">
+<div class="bg-surface-container-low px-space-md py-space-xs border-b border-outline-variant flex items-center justify-between">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Representative Panel Extract (3 of 50)</span>
+<span class="font-code-metric-sm text-code-metric-sm text-on-surface-variant font-mono">Snapshot: 2024-Q1 // Cut: t-0</span>
+</div>
+<div class="overflow-x-auto">
+<table class="w-full text-left border-collapse">
+<thead>
+<tr class="border-b border-outline-variant text-on-surface-variant font-label-caps text-label-caps bg-surface-container-lowest">
+<th class="py-space-sm px-space-md">Repository Identifier</th>
+<th class="py-space-sm px-space-md text-right">Risk Score (Prob)</th>
+<th class="py-space-sm px-space-md text-center">Status Tier</th>
+<th class="py-space-sm px-space-md">Primary Contributing Signal</th>
+<th class="py-space-sm px-space-md text-right">Action</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-outline-variant font-body-md text-body-md">
+<!-- Row 1: High Risk -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-code-metric text-code-metric font-semibold text-on-surface">facebook/react</div>
+<div class="font-code-metric-sm text-code-metric-sm text-secondary">Meta Open Source • Large Group</div>
+</td>
+<td class="py-space-sm px-space-md text-right font-code-metric text-code-metric font-semibold text-red-700">
+                    74.2%
+                  </td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium font-code-metric bg-red-50 text-red-800 border border-red-200">
+                      HIGH RISK
+                    </span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="font-code-metric text-code-metric text-on-surface">
+<span class="text-red-700 font-semibold">[−0.42]</span> Newcomer Retention 8.3%
+                    </div>
+<div class="font-code-metric-sm text-code-metric-sm text-on-surface-variant">Baseline: 34.0% (−25.7% dev)</div>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<a class="font-code-metric-sm text-code-metric-sm text-primary hover:underline font-semibold" href="#">Inspect</a>
+</td>
+</tr>
+<!-- Row 2: Low Risk -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-code-metric text-code-metric font-semibold text-on-surface">django/django</div>
+<div class="font-code-metric-sm text-code-metric-sm text-secondary">Django Software Foundation • Large Group</div>
+</td>
+<td class="py-space-sm px-space-md text-right font-code-metric text-code-metric font-semibold text-emerald-700">
+                    16.5%
+                  </td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium font-code-metric bg-emerald-50 text-emerald-800 border border-emerald-200">
+                      STABLE / LOW
+                    </span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="font-code-metric text-code-metric text-on-surface">
+<span class="text-emerald-700 font-semibold">[+0.31]</span> Fellow Program Backing
+                    </div>
+<div class="font-code-metric-sm text-code-metric-sm text-on-surface-variant">Triage Latency: 4.2h (p50)</div>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<a class="font-code-metric-sm text-code-metric-sm text-primary hover:underline font-semibold" href="#">Inspect</a>
+</td>
+</tr>
+<!-- Row 3: High Risk -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-space-sm px-space-md">
+<div class="font-code-metric text-code-metric font-semibold text-on-surface">expressjs/express</div>
+<div class="font-code-metric-sm text-code-metric-sm text-secondary">OpenJS Foundation • Med Group</div>
+</td>
+<td class="py-space-sm px-space-md text-right font-code-metric text-code-metric font-semibold text-red-700">
+                    78.4%
+                  </td>
+<td class="py-space-sm px-space-md text-center">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-medium font-code-metric bg-red-50 text-red-800 border border-red-200">
+                      HIGH RISK
+                    </span>
+</td>
+<td class="py-space-sm px-space-md">
+<div class="font-code-metric text-code-metric text-on-surface">
+<span class="text-red-700 font-semibold">[+0.38]</span> Maintainer Review Latency 14.2d
+                    </div>
+<div class="font-code-metric-sm text-code-metric-sm text-on-surface-variant">Gini Author Concentration: 0.88</div>
+</td>
+<td class="py-space-sm px-space-md text-right">
+<a class="font-code-metric-sm text-code-metric-sm text-primary hover:underline font-semibold" href="#">Inspect</a>
+</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div class="bg-surface-container-low p-space-sm border-t border-outline-variant flex items-center justify-between text-on-surface-variant font-code-metric-sm text-code-metric-sm">
+<span>Non-causal odds ratio estimates shown in brackets [±OR].</span>
+<a class="text-primary hover:underline font-semibold flex items-center gap-1" href="#">
+              View Full 50-Repository Panel Study Table <span class="material-symbols-outlined text-[13px]">arrow_forward</span>
+</a>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 4. Multi-Domain Feature Groups Investigated (4 Pillars) -->
+<section class="w-full py-space-xl border-b border-outline-variant bg-surface">
+<div class="max-w-[1320px] mx-auto px-margin-desktop">
+<div class="mb-space-lg">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Taxonomy of Predictive Factors</span>
+<h2 class="font-headline-lg text-headline-lg text-on-surface font-medium mt-1">
+          Four Empirical Feature Domains Under Hypothesis Testing
+        </h2>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-2xl mt-space-xs">
+          Each domain is evaluated both as an isolated regressor and within an ensemble architecture to establish incremental information gain (SHAP values and Permutation Feature Importance).
+        </p>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-gutter-desktop">
+<!-- Pillar 1 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-space-md flex flex-col justify-between">
+<div>
+<div class="h-8 w-8 rounded bg-surface-container flex items-center justify-center text-on-surface mb-space-sm font-code-metric font-semibold">
+              01
+            </div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Activity Dynamics</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+              Evaluates raw velocity while separating automated bot commits from verified human authorship across multiple trailing windows.
+            </p>
+<ul class="space-y-1.5 font-code-metric-sm text-code-metric-sm text-secondary border-t border-outline-variant pt-space-sm">
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Non-bot commit velocity (30d/90d)</span>
+</li>
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Merged Pull Request cadence</span>
+</li>
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Issue triage closure rates</span>
+</li>
+</ul>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex justify-between items-center text-on-surface-variant font-code-metric-sm text-code-metric-sm">
+<span>Model Role:</span>
+<span class="font-medium text-on-surface">Baseline Signal</span>
+</div>
+</div>
+<!-- Pillar 2 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-space-md flex flex-col justify-between">
+<div>
+<div class="h-8 w-8 rounded bg-surface-container flex items-center justify-center text-on-surface mb-space-sm font-code-metric font-semibold">
+              02
+            </div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Contributor Diversity</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+              Quantifies concentration risk and single-point-of-failure exposure across organizational and maintainer networks.
+            </p>
+<ul class="space-y-1.5 font-code-metric-sm text-code-metric-sm text-secondary border-t border-outline-variant pt-space-sm">
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Gini coefficient of commit distribution</span>
+</li>
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Empirical Bus Factor calculation</span>
+</li>
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Multi-institutional affiliation ratio</span>
+</li>
+</ul>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex justify-between items-center text-on-surface-variant font-code-metric-sm text-code-metric-sm">
+<span>Incremental Gain:</span>
+<span class="font-semibold text-emerald-700 font-mono">+0.041 PR-AUC</span>
+</div>
+</div>
+<!-- Pillar 3 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-space-md flex flex-col justify-between">
+<div>
+<div class="h-8 w-8 rounded bg-surface-container flex items-center justify-center text-on-surface mb-space-sm font-code-metric font-semibold">
+              03
+            </div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Newcomer Retention</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+              Tracks the survival probability of first-time patch submitters progressing to second and third merged contributions.
+            </p>
+<ul class="space-y-1.5 font-code-metric-sm text-code-metric-sm text-secondary border-t border-outline-variant pt-space-sm">
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>90-day second-patch transition rate</span>
+</li>
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>First contribution rejection latency</span>
+</li>
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Right-censored cohort survival hazard</span>
+</li>
+</ul>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex justify-between items-center text-on-surface-variant font-code-metric-sm text-code-metric-sm">
+<span>Incremental Gain:</span>
+<span class="font-semibold text-emerald-700 font-mono">+0.038 PR-AUC</span>
+</div>
+</div>
+<!-- Pillar 4 -->
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-space-md flex flex-col justify-between">
+<div>
+<div class="h-8 w-8 rounded bg-surface-container flex items-center justify-center text-on-surface mb-space-sm font-code-metric font-semibold">
+              04
+            </div>
+<h3 class="font-headline-sm text-headline-sm text-on-surface mb-space-xs">Review Responsiveness</h3>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+              Measures community friction and institutional bandwidth via non-automated review speed and merge queue dynamics.
+            </p>
+<ul class="space-y-1.5 font-code-metric-sm text-code-metric-sm text-secondary border-t border-outline-variant pt-space-sm">
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Median time to initial human review</span>
+</li>
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>95th percentile PR stagnant wait time</span>
+</li>
+<li class="flex items-center gap-1.5">
+<span class="w-1 h-1 bg-outline rounded-full"></span>
+<span>Unanswered external issue quotient</span>
+</li>
+</ul>
+</div>
+<div class="mt-space-md pt-space-xs border-t border-outline-variant flex justify-between items-center text-on-surface-variant font-code-metric-sm text-code-metric-sm">
+<span>Incremental Gain:</span>
+<span class="font-semibold text-emerald-700 font-mono">+0.027 PR-AUC</span>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 5. Formal Operational Definition & Methodology Teaser -->
+<section class="w-full py-space-xl border-b border-outline-variant bg-surface-bright">
+<div class="max-w-[1320px] mx-auto px-margin-desktop">
+<div class="bg-surface-container-lowest border border-outline-variant rounded-lg p-space-lg">
+<div class="flex flex-col lg:flex-row gap-gutter-desktop items-start">
+<!-- Left: Mathematical formulation -->
+<div class="lg:w-1/2 flex flex-col gap-space-sm">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Formal Operationalization</span>
+<h3 class="font-headline-md text-headline-md text-on-surface font-semibold">
+              The 90-Day Activity Collapse Binary Target
+            </h3>
+<p class="font-body-md text-body-md text-on-surface-variant leading-relaxed">
+              We define a critical sustainability event not through subjective opinions, but through an econometric decline threshold applied strictly against the repository’s historical reference baseline:
+            </p>
+<!-- Formal Formula Box -->
+<div class="bg-surface-container-low border border-outline-variant rounded p-space-md my-space-xs font-code-metric text-code-metric text-on-surface overflow-x-auto">
+<div class="text-secondary mb-1 font-label-caps text-label-caps uppercase">Ground-Truth Target Function $Y_t$:</div>
+<div class="font-semibold text-[14px] py-1 text-on-surface font-mono">
+                Y_{t} = \mathbb{I}\left( \text{Activity}_{[t, \, t+90d)} \le \theta \times \text{Activity}_{[t-90d, \, t)} \right)
+              </div>
+<div class="text-on-surface-variant font-code-metric-sm text-code-metric-sm mt-2 border-t border-outline-variant pt-2 space-y-0.5">
+<div>where <span class="font-semibold text-on-surface font-mono">θ = 0.50</span> (50% contraction parameter)</div>
+<div><span class="font-semibold text-on-surface font-mono">Activity</span> = Composite human commit count + merged PR volume + triage resolutions</div>
+</div>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+              Repositories with baseline activity below $\lambda = 5$ actions/month are excluded to safeguard against small-sample boundary distortions.
+            </p>
+</div>
+<!-- Right: Visual Timeline Diagram -->
+<div class="lg:w-1/2 flex flex-col gap-space-sm bg-surface-container-low p-space-md rounded border border-outline-variant w-full">
+<span class="font-label-caps text-label-caps uppercase text-secondary">Temporal Observation Pipeline</span>
+<div class="font-headline-sm text-headline-sm text-on-surface">Leakage-Safe Rolling Horizon</div>
+<!-- SVG Timeline Diagram -->
+<div class="py-space-md">
+<svg class="w-full h-32" fill="none" viewbox="0 0 540 120" xmlns="http://www.w3.org/2000/svg">
+<!-- Base Axis -->
+<line stroke="#CBD5E1" stroke-width="2" x1="20" x2="520" y1="60" y2="60"></line>
+<!-- Zone 1: Reference Window [t-90d, t) -->
+<rect fill="#E2E8F0" height="40" rx="3" stroke="#94A3B8" stroke-width="1.5" width="140" x="30" y="32"></rect>
+<text fill="#0F172A" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="100" y="52">Reference Window</text>
+<text fill="#64748B" font-family="JetBrains Mono" font-size="9" text-anchor="middle" x="100" y="65">[t - 90d, t)</text>
+<!-- Anchor: Prediction Point t -->
+<circle cx="170" cy="60" fill="#0F172A" r="5"></circle>
+<line stroke="#0F172A" stroke-dasharray="2 2" stroke-width="1.5" x1="170" x2="170" y1="20" y2="90"></line>
+<text fill="#0F172A" font-family="JetBrains Mono" font-size="10" font-weight="600" text-anchor="middle" x="170" y="16">Prediction Cut (t)</text>
+<!-- Zone 2: Purge Gap [t, t+90d) -->
+<rect fill="#FEF3C7" height="40" rx="3" stroke="#F59E0B" stroke-dasharray="4 2" stroke-width="1.5" width="130" x="180" y="32"></rect>
+<text fill="#92400E" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="245" y="52">Purge / Buffer Gap</text>
+<text fill="#B45309" font-family="JetBrains Mono" font-size="9" text-anchor="middle" x="245" y="65">[t, t + 90d)</text>
+<!-- Zone 3: Outcome Evaluation [t+90d, t+180d) -->
+<rect fill="#F1F5F9" height="40" rx="3" stroke="#64748B" stroke-width="1.5" width="170" x="320" y="32"></rect>
+<text fill="#0F172A" font-family="Inter" font-size="11" font-weight="600" text-anchor="middle" x="405" y="52">Evaluation Target Horizon</text>
+<text fill="#64748B" font-family="JetBrains Mono" font-size="9" text-anchor="middle" x="405" y="65">[t + 90d, t + 180d)</text>
+<!-- Time arrow ends -->
+<polygon fill="#CBD5E1" points="525,60 515,55 515,65"></polygon>
+</svg>
+</div>
+<div class="grid grid-cols-3 gap-2 font-code-metric-sm text-code-metric-sm text-on-surface-variant">
+<div>
+<span class="font-semibold text-on-surface block">Features Extracted:</span>
+                Strictly prior to $t$. No future labels accessible.
+              </div>
+<div>
+<span class="font-semibold text-amber-800 block">Lookahead Shield:</span>
+                Prevents overlap bias between feature and label lags.
+              </div>
+<div>
+<span class="font-semibold text-on-surface block">Ground Truth:</span>
+                Evaluates sustained drop across full 90-day span.
+              </div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</section>
+<!-- 6. Reproducibility, Dataset & Open Science Banner -->
+<section class="w-full py-space-xl bg-surface border-b border-outline-variant">
+<div class="max-w-[1320px] mx-auto px-margin-desktop">
+<div class="bg-primary text-on-primary rounded-lg p-space-lg flex flex-col gap-space-md">
+<div class="flex flex-col md:flex-row md:items-center justify-between pb-space-sm border-b border-neutral-700 gap-space-sm">
+<div class="flex items-center gap-space-xs">
+<span class="material-symbols-outlined text-[20px] text-emerald-400">terminal</span>
+<span class="font-label-caps text-label-caps uppercase tracking-wider text-neutral-300">Open Science &amp; Replication Protocol</span>
+</div>
+<div class="font-code-metric-sm text-code-metric-sm text-neutral-400">
+            SHA-256 Benchmark Digest: <span class="text-white font-mono">9f8a3c4b8e12d91a</span>
+</div>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-gutter-desktop items-center">
+<div class="lg:col-span-7 flex flex-col gap-space-xs">
+<h3 class="font-headline-md text-headline-md text-white font-medium">
+              Deterministic Pipeline Reproduction via Docker
+            </h3>
+<p class="font-body-md text-body-md text-neutral-300 max-w-xl">
+              All raw GitHub Archive event ingestion scripts, feature transformers, PostgreSQL schema migrations, and scikit-learn training suites are fully packaged for one-command replication.
+            </p>
+<!-- Terminal Box with copy button -->
+<div class="bg-neutral-900 border border-neutral-700 rounded p-space-sm mt-space-xs flex items-center justify-between font-code-metric text-code-metric text-emerald-400">
+<code class="overflow-x-auto select-all">git clone https://github.com/ossustain/research.git &amp;&amp; cd research &amp;&amp; docker compose up</code>
+<button class="ml-space-md text-neutral-400 hover:text-white font-code-metric-sm text-code-metric-sm uppercase px-1.5 py-0.5 border border-neutral-700 rounded" onclick="navigator.clipboard.writeText('git clone https://github.com/ossustain/research.git &amp;&amp; cd research &amp;&amp; docker compose up'); this.innerText='copied'; setTimeout(()=&gt;this.innerText='copy', 1500);">
+                copy
+              </button>
+</div>
+</div>
+<div class="lg:col-span-5 flex flex-col gap-space-sm justify-center lg:items-end">
+<div class="flex flex-col gap-space-xs w-full sm:w-auto">
+<a class="inline-flex items-center justify-center gap-space-xs bg-white text-primary font-body-md text-body-md px-space-lg py-2.5 rounded font-semibold hover:bg-neutral-100 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">download</span>
+<span>Download Benchmark Dataset (.CSV)</span>
+</a>
+<a class="inline-flex items-center justify-center gap-space-xs bg-neutral-800 text-white border border-neutral-700 font-body-md text-body-md px-space-md py-2.5 rounded hover:bg-neutral-700 transition-colors" href="#">
+<span class="material-symbols-outlined text-[18px]">account_tree</span>
+<span>Inspect Model Weights &amp; Brier Scores</span>
+</a>
+</div>
+<div class="font-code-metric-sm text-code-metric-sm text-neutral-400 text-center lg:text-right">
+              Licensed under Creative Commons Attribution-NonCommercial 4.0 (CC BY-NC 4.0).
+            </div>
+</div>
+</div>
+</div>
+</div>
+</section>
+</div></main><footer class="w-full bg-surface-container-lowest border-t border-outline-variant py-space-lg"><div class="max-w-[1320px] mx-auto px-margin-desktop flex flex-col md:flex-row items-center justify-between gap-space-md text-on-surface-variant"><div class="flex items-center gap-space-sm font-label-caps text-label-caps"><span class="font-semibold text-on-surface">OSSustain Research Laboratory</span><span>•</span><span class="font-code-metric-sm text-code-metric-sm">Peer-Review Pre-release</span></div><div class="font-code-metric-sm text-code-metric-sm text-on-surface-variant text-center md:text-right">© 2024 OSSustain Consortium. All econometric findings licensed under CC BY-NC 4.0.</div></div></footer></body></html>

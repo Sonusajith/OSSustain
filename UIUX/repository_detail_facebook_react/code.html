@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_standard" name="shell-type"/><title>OSSustain - Empirical Software Sustainability Research</title><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=JetBrains+Mono:wght@400;500&amp;family=Newsreader:ital,opsz,wght@0,6..72,500;0,6..72,600;1,6..72,500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"primary-fixed-dim":"#bec6e0","tertiary-fixed":"#d5e3fc","surface-bright":"#f8f9ff","primary-container":"#131b2e","secondary":"#515f74","on-secondary-fixed-variant":"#3a485c","on-error-container":"#93000a","secondary-container":"#d5e3fd","secondary-fixed":"#d5e3fd","on-secondary":"#ffffff","surface-container-low":"#eff4ff","surface-dim":"#cbdbf5","tertiary":"#000000","on-primary-fixed-variant":"#3f465c","on-tertiary":"#ffffff","on-secondary-fixed":"#0d1c2f","on-error":"#ffffff","surface-container":"#e5eeff","inverse-on-surface":"#eaf1ff","on-primary-fixed":"#131b2e","surface-container-lowest":"#ffffff","surface":"#f8f9ff","surface-variant":"#d3e4fe","on-surface":"#0b1c30","outline":"#76777d","error-container":"#ffdad6","tertiary-container":"#0d1c2e","secondary-fixed-dim":"#b9c7e0","primary-fixed":"#dae2fd","on-secondary-container":"#57657b","on-primary-container":"#7c839b","on-surface-variant":"#45464d","on-primary":"#ffffff","on-tertiary-fixed":"#0d1c2e","background":"#f8f9ff","on-tertiary-container":"#77859a","error":"#ba1a1a","surface-container-high":"#dce9ff","surface-container-highest":"#d3e4fe","inverse-primary":"#bec6e0","surface-tint":"#565e74","on-tertiary-fixed-variant":"#3a485b","tertiary-fixed-dim":"#b9c7df","primary":"#000000","inverse-surface":"#213145","on-background":"#0b1c30","outline-variant":"#c6c6cd"},borderRadius:{"DEFAULT":"0.125rem","lg":"0.25rem","xl":"0.5rem","full":"0.75rem"},spacing:{"gutter-desktop":"1.5rem","margin-desktop":"2rem","gutter-tablet":"1.25rem","margin":"1rem","gutter":"1rem","space-sm":"0.5rem","space-xs":"0.25rem","space-xl":"2rem","space-md":"0.75rem","margin-tablet":"1.5rem","space-lg":"1.25rem"},fontFamily:{"headline-md":["Newsreader"],"body-lg":["Inter"],"body-md":["Inter"],"code-metric":["JetBrains Mono"],"label-caps":["Inter"],"headline-xl-mobile":["Newsreader"],"headline-lg-mobile":["Newsreader"],"headline-xl":["Newsreader"],"headline-sm":["Newsreader"],"body-sm":["Inter"],"headline-lg":["Newsreader"],"code-metric-sm":["JetBrains Mono"]},fontSize:{"headline-md":["20px",{"lineHeight":"26px","letterSpacing":"-0.01em","fontWeight":"600"}],"body-lg":["15px",{"lineHeight":"24px","fontWeight":"400"}],"body-md":["13px",{"lineHeight":"20px","fontWeight":"400"}],"code-metric":["13px",{"lineHeight":"18px","letterSpacing":"-0.02em","fontWeight":"500"}],"label-caps":["11px",{"lineHeight":"14px","letterSpacing":"0.06em","fontWeight":"600"}],"headline-xl-mobile":["28px",{"lineHeight":"34px","letterSpacing":"-0.01em","fontWeight":"500"}],"headline-lg-mobile":["22px",{"lineHeight":"28px","letterSpacing":"-0.01em","fontWeight":"500"}],"headline-xl":["36px",{"lineHeight":"44px","letterSpacing":"-0.02em","fontWeight":"500"}],"headline-sm":["16px",{"lineHeight":"22px","fontWeight":"600"}],"body-sm":["12px",{"lineHeight":"18px","fontWeight":"400"}],"headline-lg":["28px",{"lineHeight":"36px","letterSpacing":"-0.015em","fontWeight":"500"}],"code-metric-sm":["11px",{"lineHeight":"14px","letterSpacing":"0","fontWeight":"400"}]}}}};</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><header class="fixed top-0 left-0 right-0 z-50 bg-surface-container-lowest border-b border-outline-variant"><div class="h-16 max-w-[1320px] mx-auto px-margin-desktop flex items-center justify-between gap-space-lg"><div class="flex items-center gap-space-lg"><div class="flex items-center gap-space-sm"><span class="font-headline-md text-headline-md text-on-surface tracking-tight font-semibold">OSSustain</span><span class="font-code-metric-sm text-code-metric-sm bg-surface-container text-on-surface-variant border border-outline-variant px-1.5 py-0.5 rounded">v1.0-mvp</span></div><div class="h-5 w-px bg-outline-variant hidden sm:block"></div><nav class="flex items-center gap-space-lg" data-active-classes="text-on-surface font-semibold border-b-2 border-primary"><a aria-current="page" class="py-5 transition-colors text-on-surface font-semibold border-b-2 border-primary" data-path="cohort-overview" href="#">Cohort Overview</a><a class="text-on-surface-variant hover:text-on-surface font-body-md text-body-md py-5 transition-colors border-b-2 border-transparent" data-path="research-results" href="#">Research Results</a><a class="text-on-surface-variant hover:text-on-surface font-body-md text-body-md py-5 transition-colors border-b-2 border-transparent" data-path="methodology-and-limitations" href="#">Methodology &amp; Limitations</a></nav></div><div class="flex items-center gap-space-md"><div class="hidden md:flex items-center gap-space-xs font-code-metric-sm text-code-metric-sm text-on-surface-variant bg-surface-container-low border border-outline-variant px-space-sm py-1 rounded"><span class="material-symbols-outlined text-[14px] text-on-surface-variant">dataset</span><span>Dataset: v2024.1 (50 Repos)</span></div><a aria-label="Source Repository" class="flex items-center justify-center p-space-xs text-on-surface-variant hover:text-on-surface border border-outline-variant rounded bg-surface-container-lowest transition-colors" href="#"><span class="material-symbols-outlined text-[18px]">code</span></a><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></div></header><main class="w-full pt-16 bg-surface min-h-[calc(100vh-5rem)]"><div class="max-w-[1320px] mx-auto px-margin-desktop py-space-lg"><div class="flex flex-col w-full">
+<!-- Breadcrumb & Top Bar -->
+<div class="flex flex-wrap items-center justify-between gap-space-sm mb-space-md">
+<nav aria-label="Breadcrumbs" class="flex items-center gap-space-xs font-body-sm text-body-sm text-on-surface-variant">
+<a class="hover:text-on-surface transition-colors" data-path="cohort-overview" href="#">Cohort Overview</a>
+<span class="text-secondary select-none">/</span>
+<span class="text-on-surface-variant">facebook</span>
+<span class="text-secondary select-none">/</span>
+<span class="font-code-metric text-code-metric text-on-surface font-semibold">react</span>
+</nav>
+<div class="flex items-center gap-space-xs font-code-metric-sm text-code-metric-sm">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-surface-variant">Snapshot ID: 0x48F2A9</span>
+<span class="px-2 py-0.5 rounded bg-surface-container-high text-on-surface-variant font-medium">Dataset v2024.1</span>
+</div>
+</div>
+<!-- Repository Header Meta Panel -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg mb-space-lg shadow-sm">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-space-md">
+<div class="space-y-space-xs">
+<div class="flex flex-wrap items-center gap-space-sm">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">facebook/react</h1>
+<a class="inline-flex items-center gap-1 px-space-sm py-1 rounded bg-surface-container-low hover:bg-surface-container text-on-surface font-body-sm text-body-sm transition-colors" href="https://github.com/facebook/react" rel="noopener noreferrer" target="_blank">
+<span class="material-symbols-outlined text-[16px]">open_in_new</span>
+<span>github.com/facebook/react</span>
+</a>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl">
+          The library for web and native user interfaces. Core repository tracked longitudinally for multi-contributor turnover, peripheral maintainer onboarding, and patch velocity stability.
+        </p>
+</div>
+<div class="flex flex-wrap items-center gap-space-xs">
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 bg-surface-container rounded font-code-metric-sm text-code-metric-sm text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-secondary">star</span>
+<span class="font-semibold">224k</span>
+<span class="text-on-surface-variant">stars</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 bg-surface-container rounded font-code-metric-sm text-code-metric-sm text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-secondary">alt_route</span>
+<span class="text-on-surface-variant">branch:</span>
+<span class="font-semibold">main</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 bg-surface-container rounded font-code-metric-sm text-code-metric-sm text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-secondary">date_range</span>
+<span>2020-01 → 2024-06</span>
+<span class="text-on-surface-variant">(48 snapshots)</span>
+</div>
+<div class="inline-flex items-center gap-1.5 px-space-sm py-1 bg-surface-container-high rounded font-code-metric-sm text-code-metric-sm text-on-surface">
+<span class="material-symbols-outlined text-[15px] text-secondary">verified</span>
+<span class="font-medium">Data Complete (Bot-filtered)</span>
+</div>
+</div>
+</div>
+</section>
+<!-- 90-Day Risk Assessment Hero Card -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg mb-space-xl shadow-md">
+<div class="grid grid-cols-1 lg:grid-cols-12 gap-space-lg items-start">
+<!-- Primary Risk Gauge & Callout (5 cols) -->
+<div class="lg:col-span-5 flex flex-col justify-between bg-error-container/25 rounded-lg p-space-lg">
+<div>
+<div class="flex items-center justify-between gap-space-xs mb-space-sm">
+<span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-error text-on-error font-label-caps text-label-caps uppercase tracking-wider font-semibold">
+<span class="material-symbols-outlined text-[14px]">warning</span>
+              High Risk
+            </span>
+<span class="font-code-metric-sm text-code-metric-sm text-error font-medium">90d Horizon</span>
+</div>
+<div class="my-space-md">
+<span class="font-headline-xl text-headline-xl text-on-surface tracking-tight font-semibold">74.2%</span>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1 leading-snug">
+              Calibrated probability of <strong class="text-on-surface font-semibold">&gt;50% activity decline</strong> over the next 90 days.
+            </p>
+</div>
+<!-- Risk Threshold Progress bar -->
+<div class="space-y-1 mb-space-md">
+<div class="flex justify-between font-code-metric-sm text-code-metric-sm text-on-surface-variant">
+<span>Risk Tier Scale</span>
+<span class="font-semibold text-error">74.2% (Upper Decile)</span>
+</div>
+<div class="h-2 w-full bg-surface-container rounded-full overflow-hidden flex">
+<div class="h-full bg-surface-variant" style="width: 30%"></div>
+<div class="h-full bg-secondary-fixed" style="width: 35%"></div>
+<div class="h-full bg-error" style="width: 35%"></div>
+</div>
+<div class="flex justify-between font-code-metric-sm text-[10px] text-secondary">
+<span>0% Low</span>
+<span>45% Moderate</span>
+<span>100% Extreme</span>
+</div>
+</div>
+</div>
+<div class="pt-space-sm border-t border-error-container/40 space-y-1">
+<div class="font-code-metric-sm text-code-metric-sm text-on-surface-variant flex justify-between">
+<span>Forecast Window:</span>
+<span class="font-medium text-on-surface">2024-06-01 → 2024-08-30</span>
+</div>
+<div class="font-code-metric-sm text-code-metric-sm text-on-surface-variant flex justify-between">
+<span>Model Lineage:</span>
+<span class="text-on-surface">GBoost v1.2 (Ext. Seed: 42)</span>
+</div>
+</div>
+</div>
+<!-- Associated Predictive Indicators & Methodology Caveat (7 cols) -->
+<div class="lg:col-span-7 flex flex-col justify-between h-full space-y-space-md">
+<div>
+<div class="flex items-center justify-between mb-space-sm">
+<h2 class="font-headline-sm text-headline-sm text-on-surface">Top Associated Indicators</h2>
+<span class="px-2 py-0.5 rounded bg-surface-container font-code-metric-sm text-code-metric-sm text-on-surface-variant">
+              CORRELATIONAL • NON-CAUSAL
+            </span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant mb-space-md">
+            Empirical feature importance ranking derived from longitudinal cohort regression (N=50 repositories, 2,400 observation-months).
+          </p>
+<div class="space-y-space-sm">
+<!-- Indicator 1 -->
+<div class="p-space-sm rounded bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="space-y-0.5">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="font-body-md text-body-md font-medium text-on-surface">Newcomer 90d Retention: 8.3%</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant pl-space-sm">
+                  Cohort 15th percentile • Precipitous decline from historical 24.1% baseline
+                </div>
+</div>
+<div class="sm:text-right shrink-0">
+<span class="font-code-metric text-code-metric font-semibold text-error bg-surface-container px-2 py-0.5 rounded">
+                  Weight: -0.42
+                </span>
+</div>
+</div>
+<!-- Indicator 2 -->
+<div class="p-space-sm rounded bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="space-y-0.5">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-error"></span>
+<span class="font-body-md text-body-md font-medium text-on-surface">Review Response Latency: 14.2 days</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant pl-space-sm">
+                  Cohort 85th percentile • Escalated triage delay on external PR submissions
+                </div>
+</div>
+<div class="sm:text-right shrink-0">
+<span class="font-code-metric text-code-metric font-semibold text-error bg-surface-container px-2 py-0.5 rounded">
+                  Weight: +0.38
+                </span>
+</div>
+</div>
+<!-- Indicator 3 -->
+<div class="p-space-sm rounded bg-surface-container-low flex flex-col sm:flex-row sm:items-center justify-between gap-space-xs">
+<div class="space-y-0.5">
+<div class="flex items-center gap-space-xs">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span class="font-body-md text-body-md font-medium text-on-surface">Contributor Gini Concentration: 0.88</span>
+</div>
+<div class="font-body-sm text-body-sm text-on-surface-variant pl-space-sm">
+                  High structural dependency on top 2 primary authors (&gt;71% of merged lines)
+                </div>
+</div>
+<div class="sm:text-right shrink-0">
+<span class="font-code-metric text-code-metric font-semibold text-secondary bg-surface-container px-2 py-0.5 rounded">
+                  Weight: -0.21
+                </span>
+</div>
+</div>
+</div>
+</div>
+<!-- Mandatory Causal Disclaimer -->
+<div class="p-space-sm rounded bg-surface-container flex items-start gap-space-xs">
+<span class="material-symbols-outlined text-[18px] text-secondary mt-0.5 shrink-0">info</span>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+<strong class="font-semibold text-on-surface">Mandatory Causal Disclaimer:</strong> Statistical predictive association only; does not claim causation or repository abandonment. Macroeconomic shifts, internal corporate reorganization, or roadmap maturation can artificially trigger metric volatility.
+          </p>
+</div>
+</div>
+</div>
+</section>
+<!-- Interactive Time Series Section Header -->
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Longitudinal Metric Series (48 Months)</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Synchronized monthly telemetry between 2020-01 and 2024-06 with interactive tabular alternate views.</p>
+</div>
+<div class="flex items-center gap-space-xs font-code-metric-sm text-code-metric-sm">
+<span class="text-on-surface-variant">Display mode:</span>
+<button class="px-2.5 py-1 rounded bg-primary text-on-primary font-medium hover:bg-surface-container-high hover:text-on-surface transition-colors" id="toggle-all-viz">
+        Charts View
+      </button>
+<button class="px-2.5 py-1 rounded bg-surface-container-low text-on-surface font-medium hover:bg-surface-container transition-colors" id="toggle-all-tables">
+        Tabular Ledger
+      </button>
+</div>
+</div>
+<!-- Synchronized 2x2 Analytical Metric Panels Grid -->
+<div class="grid grid-cols-1 lg:grid-cols-2 gap-space-lg mb-space-xl">
+<!-- Panel 1: Activity Trends -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between gap-space-xs mb-space-sm">
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Activity Trends</h3>
+<span class="font-code-metric-sm text-code-metric-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">N=48 mo</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Non-bot default branch commits, merged PRs, and closed issues</p>
+</div>
+<button aria-label="Toggle tabular data for Activity Trends" class="panel-view-toggle p-1 rounded hover:bg-surface-container text-on-surface-variant" data-target="panel-1" title="Toggle table view">
+<span class="material-symbols-outlined text-[18px]">table_chart</span>
+</button>
+</div>
+<!-- Metric badges -->
+<div class="flex flex-wrap items-center gap-space-sm font-code-metric-sm text-code-metric-sm mb-space-md">
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="w-2.5 h-0.5 bg-primary rounded-full"></span>
+            Commits (Peak: 482 / Recent: 114)
+          </span>
+<span class="flex items-center gap-1.5 text-secondary">
+<span class="w-2.5 h-0.5 bg-secondary rounded-full"></span>
+            Merged PRs (Avg: 88)
+          </span>
+<span class="flex items-center gap-1.5 text-on-surface-variant">
+<span class="w-2.5 h-0.5 bg-outline rounded-full"></span>
+            Closed Issues
+          </span>
+</div>
+<!-- Chart View -->
+<div class="w-full" id="panel-1-chart">
+<div class="h-44 w-full flex items-end">
+<!-- SVG Longitudinal Activity Waveform -->
+<svg aria-label="Activity Trends line chart over 48 months" class="w-full h-full text-primary" preserveaspectratio="none" viewbox="0 0 500 160">
+<defs>
+<lineargradient id="activityGrad" x1="0" x2="0" y1="0" y2="1">
+<stop offset="0%" stop-color="currentColor" stop-opacity="0.18"></stop>
+<stop offset="100%" stop-color="currentColor" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+<!-- Grid background hairlines (no CSS borders) -->
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="40" y2="40"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="80" y2="80"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="120" y2="120"></line>
+<!-- Merged PR baseline (Secondary curve) -->
+<path d="M0,110 Q50,105 100,100 T200,95 T300,120 T400,130 T500,138" fill="none" stroke="#515F74" stroke-linecap="round" stroke-width="2"></path>
+<!-- Primary Commit curve with area fill -->
+<path d="M0,75 Q60,40 120,60 T240,45 T360,95 T440,125 T500,140 L500,160 L0,160 Z" fill="url(#activityGrad)"></path>
+<path d="M0,75 Q60,40 120,60 T240,45 T360,95 T440,125 T500,140" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Inflection marker -->
+<circle cx="440" cy="125" fill="#BA1A1A" r="4"></circle>
+</svg>
+</div>
+<div class="flex justify-between font-code-metric-sm text-[11px] text-secondary mt-1">
+<span>2020-01</span>
+<span>2021-06</span>
+<span>2022-12</span>
+<span>2024-06</span>
+</div>
+</div>
+<!-- Tabular Alternate View (Hidden by default) -->
+<div class="hidden overflow-x-auto mt-2" id="panel-1-table">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps">
+<th class="py-1.5 px-2">Month</th>
+<th class="py-1.5 px-2 text-right">Commits</th>
+<th class="py-1.5 px-2 text-right">Merged PRs</th>
+<th class="py-1.5 px-2 text-right">Closed Issues</th>
+</tr>
+</thead>
+<tbody class="font-code-metric text-code-metric">
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-06</td>
+<td class="py-1 px-2 text-right text-error font-medium">114</td>
+<td class="py-1 px-2 text-right">41</td>
+<td class="py-1 px-2 text-right">86</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-05</td>
+<td class="py-1 px-2 text-right text-error font-medium">128</td>
+<td class="py-1 px-2 text-right">48</td>
+<td class="py-1 px-2 text-right">95</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-04</td>
+<td class="py-1 px-2 text-right">182</td>
+<td class="py-1 px-2 text-right">62</td>
+<td class="py-1 px-2 text-right">112</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2023-12</td>
+<td class="py-1 px-2 text-right">245</td>
+<td class="py-1 px-2 text-right">88</td>
+<td class="py-1 px-2 text-right">140</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2022-06</td>
+<td class="py-1 px-2 text-right">482</td>
+<td class="py-1 px-2 text-right">132</td>
+<td class="py-1 px-2 text-right">204</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs font-code-metric-sm text-code-metric-sm text-on-surface-variant flex justify-between items-center bg-surface-container-low px-space-sm py-1 rounded">
+<span>Recent 6-mo velocity delta:</span>
+<span class="text-error font-medium">-41.8% vs. 12-mo baseline</span>
+</div>
+</article>
+<!-- Panel 2: Contributor Diversity & Gini -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between gap-space-xs mb-space-sm">
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Contributor Diversity &amp; Gini Concentration</h3>
+<span class="font-code-metric-sm text-code-metric-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Gini: 0.88</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Monthly active committers vs. new committers with author concentration</p>
+</div>
+<button aria-label="Toggle tabular data for Contributor Diversity" class="panel-view-toggle p-1 rounded hover:bg-surface-container text-on-surface-variant" data-target="panel-2" title="Toggle table view">
+<span class="material-symbols-outlined text-[18px]">table_chart</span>
+</button>
+</div>
+<!-- Metric badges -->
+<div class="flex flex-wrap items-center gap-space-sm font-code-metric-sm text-code-metric-sm mb-space-md">
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="w-2.5 h-2.5 bg-primary rounded-sm"></span>
+            Total Active (28/mo)
+          </span>
+<span class="flex items-center gap-1.5 text-secondary">
+<span class="w-2.5 h-2.5 bg-secondary-fixed-dim rounded-sm"></span>
+            First-time Authors (4/mo)
+          </span>
+<span class="flex items-center gap-1.5 text-error">
+<span class="w-2.5 h-0.5 bg-error rounded-full"></span>
+            Gini Coefficient (0.88)
+          </span>
+</div>
+<!-- Chart View: Stacked Bar Sparkline + Gini Curve -->
+<div class="w-full" id="panel-2-chart">
+<div class="h-44 w-full flex items-end">
+<svg aria-label="Contributor Diversity and Gini distribution chart" class="w-full h-full" preserveaspectratio="none" viewbox="0 0 500 160">
+<!-- Grid hairlines -->
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="40" y2="40"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="80" y2="80"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="120" y2="120"></line>
+<!-- Monthly contributor bars (sampled across timeline) -->
+<!-- Group 1 -->
+<rect fill="#bec6e0" height="110" width="10" x="20" y="50"></rect>
+<rect fill="#0b1c30" height="20" width="10" x="20" y="30"></rect>
+<rect fill="#bec6e0" height="105" width="10" x="70" y="55"></rect>
+<rect fill="#0b1c30" height="20" width="10" x="70" y="35"></rect>
+<rect fill="#bec6e0" height="115" width="10" x="120" y="45"></rect>
+<rect fill="#0b1c30" height="20" width="10" x="120" y="25"></rect>
+<rect fill="#bec6e0" height="100" width="10" x="170" y="60"></rect>
+<rect fill="#0b1c30" height="15" width="10" x="170" y="45"></rect>
+<rect fill="#bec6e0" height="95" width="10" x="220" y="65"></rect>
+<rect fill="#0b1c30" height="13" width="10" x="220" y="52"></rect>
+<rect fill="#bec6e0" height="85" width="10" x="270" y="75"></rect>
+<rect fill="#0b1c30" height="10" width="10" x="270" y="65"></rect>
+<rect fill="#bec6e0" height="80" width="10" x="320" y="80"></rect>
+<rect fill="#0b1c30" height="8" width="10" x="320" y="72"></rect>
+<rect fill="#bec6e0" height="68" width="10" x="370" y="92"></rect>
+<rect fill="#0b1c30" height="6" width="10" x="370" y="86"></rect>
+<rect fill="#bec6e0" height="55" width="10" x="420" y="105"></rect>
+<rect fill="#0b1c30" height="4" width="10" x="420" y="101"></rect>
+<rect fill="#bec6e0" height="45" width="10" x="470" y="115"></rect>
+<rect fill="#0b1c30" height="3" width="10" x="470" y="112"></rect>
+<!-- Gini Trend Line overlay -->
+<path d="M20,95 Q140,85 260,65 T420,40 T480,32" fill="none" stroke="#BA1A1A" stroke-linecap="round" stroke-width="2.5"></path>
+</svg>
+</div>
+<div class="flex justify-between font-code-metric-sm text-[11px] text-secondary mt-1">
+<span>2020-01 (Gini: 0.62)</span>
+<span>2022-01 (Gini: 0.73)</span>
+<span>2024-06 (Gini: 0.88)</span>
+</div>
+</div>
+<!-- Tabular Alternate View -->
+<div class="hidden overflow-x-auto mt-2" id="panel-2-table">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps">
+<th class="py-1.5 px-2">Snapshot</th>
+<th class="py-1.5 px-2 text-right">Active Authors</th>
+<th class="py-1.5 px-2 text-right">Newcomers</th>
+<th class="py-1.5 px-2 text-right">Gini Index</th>
+</tr>
+</thead>
+<tbody class="font-code-metric text-code-metric">
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-06</td>
+<td class="py-1 px-2 text-right">24</td>
+<td class="py-1 px-2 text-right text-error font-medium">3</td>
+<td class="py-1 px-2 text-right text-error font-semibold">0.880</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-05</td>
+<td class="py-1 px-2 text-right">28</td>
+<td class="py-1 px-2 text-right">5</td>
+<td class="py-1 px-2 text-right text-error">0.871</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2023-12</td>
+<td class="py-1 px-2 text-right">39</td>
+<td class="py-1 px-2 text-right">11</td>
+<td class="py-1 px-2 text-right">0.814</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2022-06</td>
+<td class="py-1 px-2 text-right">54</td>
+<td class="py-1 px-2 text-right">18</td>
+<td class="py-1 px-2 text-right">0.710</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs font-code-metric-sm text-code-metric-sm text-on-surface-variant flex justify-between items-center bg-surface-container-low px-space-sm py-1 rounded">
+<span>Gini Trajectory:</span>
+<span class="text-error font-medium">+26 bps over 24-mo window (High author vulnerability)</span>
+</div>
+</article>
+<!-- Panel 3: Newcomer Retention (with grayed-out right edge) -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between gap-space-xs mb-space-sm">
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">90-Day Newcomer Cohort Retention</h3>
+<span class="font-code-metric-sm text-code-metric-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Percent (%)</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Percentage of first-time authors who merge a subsequent PR within 90 days</p>
+</div>
+<button aria-label="Toggle tabular data for Newcomer Retention" class="panel-view-toggle p-1 rounded hover:bg-surface-container text-on-surface-variant" data-target="panel-3" title="Toggle table view">
+<span class="material-symbols-outlined text-[18px]">table_chart</span>
+</button>
+</div>
+<!-- Metric badges -->
+<div class="flex flex-wrap items-center gap-space-sm font-code-metric-sm text-code-metric-sm mb-space-md">
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="w-2.5 h-0.5 bg-primary rounded-full"></span>
+            Observed Retention Rate (Current: 8.3%)
+          </span>
+<span class="flex items-center gap-1.5 text-secondary">
+<span class="w-2.5 h-2 bg-surface-container-high rounded-sm"></span>
+            Incomplete Observation Horizon (Right 90d)
+          </span>
+</div>
+<!-- Chart View: Line + Right Incomplete Shading -->
+<div class="w-full relative" id="panel-3-chart">
+<div class="h-44 w-full flex items-end">
+<svg aria-label="Newcomer cohort retention curve" class="w-full h-full text-primary" preserveaspectratio="none" viewbox="0 0 500 160">
+<!-- Hairlines -->
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="40" y2="40"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="80" y2="80"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="120" y2="120"></line>
+<!-- Incomplete Window Shading (Grayed-out 90-day tail) -->
+<rect fill="#E5EEFF" height="160" opacity="0.65" width="80" x="420" y="0"></rect>
+<line stroke="#515F74" stroke-dasharray="4,4" stroke-width="1.5" x1="420" x2="420" y1="0" y2="160"></line>
+<!-- Retention Curve -->
+<path d="M0,60 Q70,55 140,70 T280,85 T380,120 T420,138" fill="none" stroke="currentColor" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Dashed projected / censored segment in grayed zone -->
+<path d="M420,138 Q460,145 500,150" fill="none" stroke="#76777D" stroke-dasharray="3,3" stroke-width="2"></path>
+<!-- Inflection point marker -->
+<circle cx="420" cy="138" fill="#BA1A1A" r="4"></circle>
+</svg>
+</div>
+<div class="flex justify-between font-code-metric-sm text-[11px] text-secondary mt-1">
+<span>2020-01 (26.4%)</span>
+<span>2022-01 (21.0%)</span>
+<span>2024-03 (8.3%)</span>
+<span class="text-error font-semibold">Censored Zone →</span>
+</div>
+</div>
+<!-- Tabular Alternate View -->
+<div class="hidden overflow-x-auto mt-2" id="panel-3-table">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps">
+<th class="py-1.5 px-2">Cohort Month</th>
+<th class="py-1.5 px-2 text-right">Cohort Size</th>
+<th class="py-1.5 px-2 text-right">Retained (90d)</th>
+<th class="py-1.5 px-2 text-right">Retention Rate</th>
+<th class="py-1.5 px-2 text-right">Status</th>
+</tr>
+</thead>
+<tbody class="font-code-metric text-code-metric">
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-03</td>
+<td class="py-1 px-2 text-right">12</td>
+<td class="py-1 px-2 text-right">1</td>
+<td class="py-1 px-2 text-right text-error font-semibold">8.3%</td>
+<td class="py-1 px-2 text-right text-secondary">Complete</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-01</td>
+<td class="py-1 px-2 text-right">15</td>
+<td class="py-1 px-2 text-right">2</td>
+<td class="py-1 px-2 text-right text-error">13.3%</td>
+<td class="py-1 px-2 text-right text-secondary">Complete</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2023-06</td>
+<td class="py-1 px-2 text-right">22</td>
+<td class="py-1 px-2 text-right">4</td>
+<td class="py-1 px-2 text-right">18.2%</td>
+<td class="py-1 px-2 text-right text-secondary">Complete</td>
+</tr>
+<tr class="hover:bg-surface-container-low opacity-75">
+<td class="py-1 px-2 font-sans text-on-surface">2024-05</td>
+<td class="py-1 px-2 text-right">8</td>
+<td class="py-1 px-2 text-right">-</td>
+<td class="py-1 px-2 text-right text-on-surface-variant">-</td>
+<td class="py-1 px-2 text-right text-error font-medium">Incomplete (Censored)</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs font-code-metric-sm text-code-metric-sm text-on-surface-variant flex justify-between items-center bg-surface-container-low px-space-sm py-1 rounded">
+<span>Methodological Caveat:</span>
+<span class="text-on-surface">Last 90 days right-censored; excluded from GBoost inference</span>
+</div>
+</article>
+<!-- Panel 4: Review Responsiveness & Latency -->
+<article class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm flex flex-col justify-between">
+<div>
+<div class="flex items-start justify-between gap-space-xs mb-space-sm">
+<div>
+<div class="flex items-center gap-space-xs">
+<h3 class="font-headline-sm text-headline-sm text-on-surface">Review Responsiveness &amp; PR Merge Latency</h3>
+<span class="font-code-metric-sm text-code-metric-sm px-1.5 py-0.5 rounded bg-surface-container text-on-surface-variant">Hours / Days</span>
+</div>
+<p class="font-body-sm text-body-sm text-on-surface-variant">Median time to first human review response vs. total PR time-to-decision</p>
+</div>
+<button aria-label="Toggle tabular data for Review Responsiveness" class="panel-view-toggle p-1 rounded hover:bg-surface-container text-on-surface-variant" data-target="panel-4" title="Toggle table view">
+<span class="material-symbols-outlined text-[18px]">table_chart</span>
+</button>
+</div>
+<!-- Metric badges -->
+<div class="flex flex-wrap items-center gap-space-sm font-code-metric-sm text-code-metric-sm mb-space-md">
+<span class="flex items-center gap-1.5 text-error">
+<span class="w-2.5 h-0.5 bg-error rounded-full"></span>
+            Median Response: 14.2 days (340.8 hrs)
+          </span>
+<span class="flex items-center gap-1.5 text-on-surface">
+<span class="w-2.5 h-0.5 bg-primary rounded-full"></span>
+            Merge Latency: 21.6 days
+          </span>
+</div>
+<!-- Chart View -->
+<div class="w-full" id="panel-4-chart">
+<div class="h-44 w-full flex items-end">
+<svg aria-label="Review latency over time chart" class="w-full h-full" preserveaspectratio="none" viewbox="0 0 500 160">
+<!-- Hairlines -->
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="40" y2="40"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="80" y2="80"></line>
+<line stroke="#E2E8F0" stroke-dasharray="3,3" stroke-width="1" x1="0" x2="500" y1="120" y2="120"></line>
+<!-- Merge Latency Curve -->
+<path d="M0,120 Q80,115 160,110 T320,80 T440,45 T500,35" fill="none" stroke="#0B1C30" stroke-linecap="round" stroke-width="2"></path>
+<!-- First Review Latency Curve (Climbing steeply) -->
+<path d="M0,135 Q90,130 180,125 T300,105 T420,55 T500,42" fill="none" stroke="#BA1A1A" stroke-linecap="round" stroke-width="2.5"></path>
+<!-- Markers -->
+<circle cx="500" cy="42" fill="#BA1A1A" r="4"></circle>
+<circle cx="500" cy="35" fill="#0B1C30" r="4"></circle>
+</svg>
+</div>
+<div class="flex justify-between font-code-metric-sm text-[11px] text-secondary mt-1">
+<span>2020-01 (18.2 hrs)</span>
+<span>2022-01 (42.0 hrs)</span>
+<span>2023-06 (110.4 hrs)</span>
+<span class="text-error font-medium">2024-06 (340.8 hrs)</span>
+</div>
+</div>
+<!-- Tabular Alternate View -->
+<div class="hidden overflow-x-auto mt-2" id="panel-4-table">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps">
+<th class="py-1.5 px-2">Quarter / Mo</th>
+<th class="py-1.5 px-2 text-right">Median First Response</th>
+<th class="py-1.5 px-2 text-right">Median Merge Time</th>
+<th class="py-1.5 px-2 text-right">Cohort Percentile</th>
+</tr>
+</thead>
+<tbody class="font-code-metric text-code-metric">
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-06</td>
+<td class="py-1 px-2 text-right text-error font-medium">340.8 hrs (14.2 d)</td>
+<td class="py-1 px-2 text-right">21.6 d</td>
+<td class="py-1 px-2 text-right text-error font-semibold">85th</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2024-01</td>
+<td class="py-1 px-2 text-right text-error">214.2 hrs (8.9 d)</td>
+<td class="py-1 px-2 text-right">16.4 d</td>
+<td class="py-1 px-2 text-right">72nd</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2023-01</td>
+<td class="py-1 px-2 text-right">74.5 hrs (3.1 d)</td>
+<td class="py-1 px-2 text-right">8.2 d</td>
+<td class="py-1 px-2 text-right">48th</td>
+</tr>
+<tr class="hover:bg-surface-container-low">
+<td class="py-1 px-2 font-sans text-on-surface">2021-06</td>
+<td class="py-1 px-2 text-right">24.0 hrs (1.0 d)</td>
+<td class="py-1 px-2 text-right">4.5 d</td>
+<td class="py-1 px-2 text-right">25th</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+<div class="mt-space-md pt-space-xs font-code-metric-sm text-code-metric-sm text-on-surface-variant flex justify-between items-center bg-surface-container-low px-space-sm py-1 rounded">
+<span>Triage Health:</span>
+<span class="text-error font-medium">Elevated response friction • 85th percentile across 50 repos</span>
+</div>
+</article>
+</div>
+<!-- Recent Prediction History Log -->
+<section class="bg-surface-container-lowest rounded-xl p-space-lg shadow-sm mb-space-lg">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-space-sm mb-space-md">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Recent Prediction History Log</h2>
+<p class="font-body-sm text-body-sm text-on-surface-variant">
+          Historical back-tested snapshots for <code class="font-code-metric text-code-metric text-on-surface">facebook/react</code> evaluating rolling 90-day activity volatility outcomes.
+        </p>
+</div>
+<div class="font-code-metric-sm text-code-metric-sm text-on-surface-variant">
+<span>Brier Score (Rolling 6): </span>
+<span class="font-semibold text-on-surface">0.142</span>
+</div>
+</div>
+<!-- Data Table -->
+<div class="overflow-x-auto">
+<table class="w-full text-left font-body-sm text-body-sm">
+<thead>
+<tr class="bg-surface-container-low text-on-surface-variant font-label-caps text-label-caps">
+<th class="py-2 px-space-md">Prediction Date</th>
+<th class="py-2 px-space-md">Model Horizon</th>
+<th class="py-2 px-space-md">Risk Category</th>
+<th class="py-2 px-space-md text-right">Probability (%)</th>
+<th class="py-2 px-space-md">Labeled Outcome (T+90d)</th>
+<th class="py-2 px-space-md text-right">Status</th>
+</tr>
+</thead>
+<tbody class="divide-y divide-surface-container font-code-metric text-code-metric">
+<!-- Snapshot 1 (Current Active Window) -->
+<tr class="hover:bg-surface-container-low transition-colors bg-surface-container/20">
+<td class="py-2.5 px-space-md font-sans font-medium text-on-surface">2024-06-01</td>
+<td class="py-2.5 px-space-md text-on-surface-variant font-sans">2024-06-01 → 2024-08-30</td>
+<td class="py-2.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error text-on-error font-label-caps text-[10px] uppercase font-semibold">
+                High Risk
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right font-semibold text-error">74.2%</td>
+<td class="py-2.5 px-space-md text-on-surface-variant font-sans italic">Pending window completion</td>
+<td class="py-2.5 px-space-md text-right">
+<span class="inline-flex items-center gap-1 text-on-surface font-sans text-body-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                In Flight
+              </span>
+</td>
+</tr>
+<!-- Snapshot 2 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md font-sans text-on-surface">2024-05-01</td>
+<td class="py-2.5 px-space-md text-on-surface-variant font-sans">2024-05-01 → 2024-07-30</td>
+<td class="py-2.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-error text-on-error font-label-caps text-[10px] uppercase font-semibold">
+                High Risk
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right font-semibold text-error">71.8%</td>
+<td class="py-2.5 px-space-md text-on-surface-variant font-sans italic">Pending window completion</td>
+<td class="py-2.5 px-space-md text-right">
+<span class="inline-flex items-center gap-1 text-on-surface font-sans text-body-sm">
+<span class="w-2 h-2 rounded-full bg-primary animate-pulse"></span>
+                In Flight
+              </span>
+</td>
+</tr>
+<!-- Snapshot 3 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md font-sans text-on-surface">2024-04-01</td>
+<td class="py-2.5 px-space-md text-on-surface-variant font-sans">2024-04-01 → 2024-06-30</td>
+<td class="py-2.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-caps text-[10px] uppercase font-semibold">
+                Medium Risk
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right font-medium text-secondary">58.4%</td>
+<td class="py-2.5 px-space-md text-on-surface font-sans">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container font-medium text-error">
+<span class="material-symbols-outlined text-[14px]">trending_down</span>
+                Decline Occurred (-52.1%)
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right text-secondary font-sans text-body-sm">Validated</td>
+</tr>
+<!-- Snapshot 4 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md font-sans text-on-surface">2024-03-01</td>
+<td class="py-2.5 px-space-md text-on-surface-variant font-sans">2024-03-01 → 2024-05-30</td>
+<td class="py-2.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-caps text-[10px] uppercase font-semibold">
+                Medium Risk
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right font-medium text-secondary">54.0%</td>
+<td class="py-2.5 px-space-md text-on-surface font-sans">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container font-medium text-error">
+<span class="material-symbols-outlined text-[14px]">trending_down</span>
+                Decline Occurred (-50.6%)
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right text-secondary font-sans text-body-sm">Validated</td>
+</tr>
+<!-- Snapshot 5 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md font-sans text-on-surface">2024-02-01</td>
+<td class="py-2.5 px-space-md text-on-surface-variant font-sans">2024-02-01 → 2024-04-30</td>
+<td class="py-2.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-secondary-fixed text-on-secondary-fixed font-label-caps text-[10px] uppercase font-semibold">
+                Medium Risk
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right font-medium text-secondary">49.2%</td>
+<td class="py-2.5 px-space-md text-on-surface font-sans">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container font-medium text-secondary">
+<span class="material-symbols-outlined text-[14px]">horizontal_rule</span>
+                No Decline (-38.4%)
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right text-secondary font-sans text-body-sm">Validated</td>
+</tr>
+<!-- Snapshot 6 -->
+<tr class="hover:bg-surface-container-low transition-colors">
+<td class="py-2.5 px-space-md font-sans text-on-surface">2024-01-01</td>
+<td class="py-2.5 px-space-md text-on-surface-variant font-sans">2024-01-01 → 2024-03-31</td>
+<td class="py-2.5 px-space-md">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container-high text-on-surface font-label-caps text-[10px] uppercase font-semibold">
+                Low Risk
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right font-medium text-on-surface">32.7%</td>
+<td class="py-2.5 px-space-md text-on-surface font-sans">
+<span class="inline-flex items-center gap-1 px-2 py-0.5 rounded bg-surface-container font-medium text-secondary">
+<span class="material-symbols-outlined text-[14px]">horizontal_rule</span>
+                No Decline (-12.8%)
+              </span>
+</td>
+<td class="py-2.5 px-space-md text-right text-secondary font-sans text-body-sm">Validated</td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
+<!-- Script for Tabular/Chart Interactivity -->
+<script>
+    (function() {
+      // Toggle individual panel
+      const individualToggles = document.querySelectorAll('.panel-view-toggle');
+      individualToggles.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const panelId = btn.getAttribute('data-target');
+          const chartEl = document.getElementById(panelId + '-chart');
+          const tableEl = document.getElementById(panelId + '-table');
+          if (chartEl && tableEl) {
+            const isChartHidden = chartEl.classList.contains('hidden');
+            if (isChartHidden) {
+              chartEl.classList.remove('hidden');
+              tableEl.classList.add('hidden');
+            } else {
+              chartEl.classList.add('hidden');
+              tableEl.classList.remove('hidden');
+            }
+          }
+        });
+      });
+
+      // Master toggles
+      const btnAllCharts = document.getElementById('toggle-all-viz');
+      const btnAllTables = document.getElementById('toggle-all-tables');
+
+      if (btnAllCharts && btnAllTables) {
+        btnAllCharts.addEventListener('click', () => {
+          btnAllCharts.className = 'px-2.5 py-1 rounded bg-primary text-on-primary font-medium hover:bg-surface-container-high hover:text-on-surface transition-colors';
+          btnAllTables.className = 'px-2.5 py-1 rounded bg-surface-container-low text-on-surface font-medium hover:bg-surface-container transition-colors';
+          for (let i = 1; i <= 4; i++) {
+            const chart = document.getElementById('panel-' + i + '-chart');
+            const table = document.getElementById('panel-' + i + '-table');
+            if (chart && table) {
+              chart.classList.remove('hidden');
+              table.classList.add('hidden');
+            }
+          }
+        });
+
+        btnAllTables.addEventListener('click', () => {
+          btnAllTables.className = 'px-2.5 py-1 rounded bg-primary text-on-primary font-medium hover:bg-surface-container-high hover:text-on-surface transition-colors';
+          btnAllCharts.className = 'px-2.5 py-1 rounded bg-surface-container-low text-on-surface font-medium hover:bg-surface-container transition-colors';
+          for (let i = 1; i <= 4; i++) {
+            const chart = document.getElementById('panel-' + i + '-chart');
+            const table = document.getElementById('panel-' + i + '-table');
+            if (chart && table) {
+              chart.classList.add('hidden');
+              table.classList.remove('hidden');
+            }
+          }
+        });
+      }
+    })();
+  </script>
+</div></div></main><footer class="w-full bg-surface-container-lowest border-t border-outline-variant py-space-lg"><div class="max-w-[1320px] mx-auto px-margin-desktop flex flex-col md:flex-row items-center justify-between gap-space-md text-on-surface-variant"><div class="flex items-center gap-space-sm font-label-caps text-label-caps"><span class="font-semibold text-on-surface">OSSustain Research Laboratory</span><span>•</span><span class="font-code-metric-sm text-code-metric-sm">Peer-Review Pre-release</span></div><div class="font-code-metric-sm text-code-metric-sm text-on-surface-variant text-center md:text-right">© 2024 OSSustain Consortium. All econometric findings licensed under CC BY-NC 4.0.</div></div></footer></body></html>
