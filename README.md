@@ -96,3 +96,16 @@ python -m pytest -c pipeline/pyproject.toml
 ```
 
 The collection plan is REST-only. The approved 12,500-request stop cap covers PR/review/response collection only; commit history and non-PR issue collection are excluded and must be budgeted from measured pagination before Phase 4 collection. See `docs/methodology.md` for details.
+
+## Phase 3 repository and commit collection
+
+Set `GITHUB_TOKEN` to a GitHub personal access token and `OSSUSTAIN_HASH_SECRET` to a random secret of at least 32 characters in the ignored local `.env`. The token is used only for GitHub REST requests. Contributor IDs are stored as keyed HMAC-SHA256 values. The on-disk JSON cache removes logins, names, email addresses, and commit messages before writing.
+
+With PostgreSQL running and the pipeline environment installed, first collect one repository as a smoke run, then collect the full selected cohort:
+
+```sh
+ossustain-pipeline --config pipeline/config.yaml collect --limit 1
+ossustain-pipeline --config pipeline/config.yaml collect --report pipeline/data/reports/phase3.json
+```
+
+The collector follows GitHub pagination, ETags, and rate limits; stores progress after each page so an interrupted run can resume; and writes a per-repository JSON completeness report. Rerunning a completed cohort skips its commit history; pass `--refresh` to start a new history snapshot. Collection cache, reports, and raw local data stay under the ignored `pipeline/data/` directory. See [docs/database.md](docs/database.md) for the run log and progress tables.

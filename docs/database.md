@@ -1,8 +1,8 @@
 # Database guide
 
-PostgreSQL stores the collected GitHub records and the results computed by the offline research pipeline. Flyway is the only schema owner; Spring Boot reads the stored data and does not create or update database objects. Migration V3 extends the V2 repository table and adds the core collection, window, label, model, and prediction tables. No Java entities are needed for this schema.
+PostgreSQL stores the collected GitHub records and the results computed by the offline research pipeline. Flyway is the only schema owner; Spring Boot reads the stored data and does not create or update database objects. Migration V3 extends the V2 repository table and adds the core collection, window, label, model, and prediction tables. Migration V4 adds per-stage collection run history. No Java entities are needed for this schema.
 
-All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `BIGINT GENERATED ALWAYS AS IDENTITY`. Contributor identity is stored only as a SHA-256 `contributor_key`; names and email addresses are not stored. Unknown GitHub authors and reviewers remain `NULL` so their records are preserved without invented identities.
+All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `BIGINT GENERATED ALWAYS AS IDENTITY`. Contributor identity is stored only as a keyed HMAC-SHA256 `contributor_key`; names, logins, email addresses, and raw GitHub user IDs are not stored. Unknown GitHub authors and reviewers remain `NULL` so their records are preserved without invented identities.
 
 ## Tables
 
@@ -13,6 +13,7 @@ All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `B
 - `pull_requests` stores GitHub pull-request numbers, optional anonymized authors, state, creation/merge/closure/first-response times, and the repository relationship.
 - `reviews` stores submitted or pending review state and time for a pull request, with an optional anonymized reviewer.
 - `collection_progress` stores one resumable collection checkpoint per repository and resource. It can retain a cursor, a page number, status, request count, and last update time.
+- `collection_runs` records each repository metadata or commit collection attempt, its start and finish times, status, API request count, record count, and a bounded error summary. A still-running row identifies a process interrupted before it could record completion.
 - `repo_windows` stores a repository's time-bounded feature summary: contributor counts and diversity, newcomer retention, response and merge times, pull-request and review counts, activity score, and trend slopes. Unavailable measurements stay `NULL`. A window must end after it starts, and each repository has at most one row per end time.
 - `labels` stores the outcome for a window: forecast horizon, future activity score, decline ratio, decline flag, and label version. Labels describe future outcomes and must never be included as predictors for that same window.
 - `model_runs` stores the model family and version, chronological train/test boundaries, evaluation metrics, parameters, primary-model flag, and creation time. Train end must be on or before test start; metrics are bounded from zero to one. At most one model run can be primary at a time.
@@ -34,6 +35,7 @@ erDiagram
     pull_requests ||--o{ reviews : receives
     contributors o|--o{ reviews : reviews
     repositories ||--o{ collection_progress : resumes
+    repositories ||--o{ collection_runs : records
     repositories ||--o{ repo_windows : summarizes
     repo_windows ||--o| labels : labels
     repo_windows ||--o{ predictions : receives
@@ -54,6 +56,7 @@ erDiagram
 | `pull_requests` | Python pull-request collector | Python feature pipeline and Spring Boot API |
 | `reviews` | Python review collector | Python feature pipeline and Spring Boot API |
 | `collection_progress` | Python collectors | Python resume/status reporting and Spring Boot API |
+| `collection_runs` | Python collectors | Python collection reports and read-only SQL inspection |
 | `repo_windows` | Python snapshot and feature stages | Python model/prediction stages and Spring Boot API |
 | `labels` | Python label stage | Python evaluation stage and Spring Boot API |
 | `model_runs` | Python training/evaluation stage | Python prediction stage and Spring Boot API |
@@ -62,6 +65,10 @@ erDiagram
 | `v_repo_latest_risk` | None; Flyway defines the view | Spring Boot API and read-only SQL inspection |
 
 Flyway migrations are the only database-structure writer. The dashboard reads through the Spring Boot API and never connects directly to PostgreSQL.
+
+## Phase 3 collection
+
+The Python collector writes repository metadata and commit history to `repositories`, `contributors`, and `commits`. Each API page is committed together with its next cursor in `collection_progress`; conflict-safe keys make retries idempotent. The local cache stores JSON after privacy filtering, together with ETags and pagination links. Run output is written to ignored `pipeline/data/` paths, and `collection_runs` retains per-stage outcomes in PostgreSQL.
 
 ## Development seed
 

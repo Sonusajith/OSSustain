@@ -62,7 +62,7 @@ class CoreSchemaIntegrationTest {
     void migrationsApplyToAnEmptyPostgres16Database() throws SQLException {
         assertThat(queryStrings("SELECT version FROM flyway_schema_history "
                 + "WHERE success ORDER BY installed_rank"))
-                .containsExactlyInAnyOrder("1", "2", "3");
+                .containsExactlyInAnyOrder("1", "2", "3", "4");
     }
 
     @Test
@@ -72,7 +72,7 @@ class CoreSchemaIntegrationTest {
                         + "WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"));
         assertThat(tables).contains("repositories", "contributors", "commits", "issues",
                 "pull_requests", "reviews", "collection_progress", "repo_windows", "labels",
-                "model_runs", "predictions", "risk_indicators");
+                "model_runs", "predictions", "risk_indicators", "collection_runs");
 
         assertThat(queryStrings("SELECT table_name FROM information_schema.views "
                 + "WHERE table_schema = 'public'"))
@@ -81,7 +81,8 @@ class CoreSchemaIntegrationTest {
         assertThat(queryStrings("SELECT indexname FROM pg_indexes WHERE schemaname = 'public'"))
                 .contains("uq_repo_windows_repo_end", "idx_issues_repo_created_at",
                         "idx_pull_requests_repo_created_at", "idx_commits_repo_committed_at",
-                        "idx_predictions_window_id", "uq_risk_indicators_prediction_rank");
+                        "idx_predictions_window_id", "uq_risk_indicators_prediction_rank",
+                        "idx_collection_runs_repo_started_at", "idx_collection_runs_stage_status");
     }
 
     @Test
