@@ -127,6 +127,7 @@ def run_collection(
                 error_summary=summary,
             )
             outcome["commit_status"] = "skipped"
+            outcome["commits_stored"] = store.count_commits(repository_id)
             outcomes.append(outcome)
             continue
 
@@ -138,6 +139,7 @@ def run_collection(
         )
         if progress is None:
             outcome["commit_status"] = "already_done"
+            outcome["commits_stored"] = store.count_commits(repository_id)
             outcomes.append(outcome)
             continue
 
@@ -205,6 +207,7 @@ def run_collection(
                 records_processed=records_processed,
                 error_summary=summary,
             )
+        outcome["commits_stored"] = store.count_commits(repository_id)
         outcomes.append(outcome)
 
     finished_at = datetime.now(UTC)

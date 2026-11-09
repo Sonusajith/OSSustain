@@ -1,5 +1,6 @@
 import json
 from email.message import Message
+from http.client import IncompleteRead
 from io import BytesIO
 from urllib.error import HTTPError
 
@@ -91,6 +92,36 @@ def test_rate_limit_retries_using_retry_after(tmp_path) -> None:
 
     assert result.body == {"id": 8}
     assert delays == [3.0]
+    assert client.requests_made == 2
+
+
+def test_incomplete_response_retries(tmp_path) -> None:
+    url = "https://api.github.com/repos/example/project"
+    responses = [IncompleteRead(b'{"partial":', 10), FakeResponse({"complete": True})]
+    attempts = 0
+    delays = []
+
+    def open_request(request, timeout):
+        nonlocal attempts
+        attempts += 1
+        response = responses.pop(0)
+        if isinstance(response, IncompleteRead):
+            raise response
+        return response
+
+    client = GitHubClient(
+        "test-token",
+        JsonResponseCache(tmp_path),
+        max_retries=1,
+        opener=open_request,
+        sleep=delays.append,
+    )
+
+    result = client.get_json(url)
+
+    assert result.body == {"complete": True}
+    assert attempts == 2
+    assert delays == [1]
     assert client.requests_made == 2
 
 

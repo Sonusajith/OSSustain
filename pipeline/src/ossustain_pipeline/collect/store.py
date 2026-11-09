@@ -156,6 +156,13 @@ class PostgresCollectionStore:
                 (status, requests_used, records_processed, error_summary, run_id),
             )
 
+    def count_commits(self, repository_id: int) -> int:
+        row = self._connection.execute(
+            "SELECT count(*) FROM commits WHERE repo_id = %s",
+            (repository_id,),
+        ).fetchone()
+        return int(row[0])
+
     def get_progress(self, repository_id: int) -> dict[str, Any] | None:
         row = self._connection.execute(
             """

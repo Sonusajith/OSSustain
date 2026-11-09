@@ -6,6 +6,7 @@ import time
 from collections.abc import Callable
 from dataclasses import dataclass
 from email.message import Message
+from http.client import IncompleteRead
 from typing import Any
 from urllib.error import HTTPError, URLError
 from urllib.parse import urlparse
@@ -126,7 +127,7 @@ class GitHubClient:
                     self._sleep(self._retry_delay(attempt, error.headers, rate_limited=False))
                     continue
                 raise GitHubAPIError(error.code, url) from error
-            except (URLError, TimeoutError, OSError) as error:
+            except (URLError, TimeoutError, OSError, IncompleteRead) as error:
                 if attempt >= self._max_retries:
                     raise RuntimeError(f"GitHub request failed for {parsed_url.path}") from error
                 self._sleep(self._retry_delay(attempt, None, rate_limited=False))

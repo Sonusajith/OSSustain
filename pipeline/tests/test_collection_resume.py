@@ -109,6 +109,9 @@ class FakeStore:
         self.progress.update(cursor=None, last_page=0, status="done")
         self.progress["requests_used"] += requests_used
 
+    def count_commits(self, repository_id):
+        return len(self.saved_commits)
+
 
 def _cohort() -> CohortSelection:
     return CohortSelection(
@@ -149,6 +152,7 @@ def test_interrupted_collection_resumes_from_last_saved_page_and_is_idempotent(
     )
 
     assert first_report["repositories_failed"] == 1
+    assert first_report["repositories"][0]["commits_stored"] == 1
     assert store.progress["status"] == "failed"
     assert "page=2" in store.progress["cursor"]
     assert set(store.saved_commits) == {"sha-1"}
@@ -163,6 +167,7 @@ def test_interrupted_collection_resumes_from_last_saved_page_and_is_idempotent(
     )
 
     assert second_report["repositories_succeeded"] == 1
+    assert second_report["repositories"][0]["commits_stored"] == 2
     assert store.progress["status"] == "done"
     assert client.commit_page_calls == [1, 2, 2]
     assert set(store.saved_commits) == {"sha-1", "sha-2"}
@@ -178,5 +183,6 @@ def test_interrupted_collection_resumes_from_last_saved_page_and_is_idempotent(
 
     assert third_report["repositories_succeeded"] == 1
     assert third_report["repositories"][0]["commit_status"] == "already_done"
+    assert third_report["repositories"][0]["commits_stored"] == 2
     assert client.commit_page_calls == [1, 2, 2]
     assert len(store.saved_commits) == 2
