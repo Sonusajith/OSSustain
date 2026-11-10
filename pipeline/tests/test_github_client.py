@@ -7,7 +7,12 @@ from urllib.error import HTTPError
 import pytest
 
 from ossustain_pipeline.github.cache import JsonResponseCache
-from ossustain_pipeline.github.client import GitHubAPIError, GitHubClient
+from ossustain_pipeline.github.client import (
+    GitHubAPIError,
+    GitHubClient,
+    RequestBudget,
+    RequestBudgetExceeded,
+)
 
 
 class FakeResponse:
@@ -146,4 +151,29 @@ def test_auth_failure_is_not_retried(tmp_path) -> None:
         client.get_json(url)
 
     assert error.value.status_code == 401
+    assert attempts == 1
+
+
+def test_request_budget_stops_before_sending_an_over_budget_request(tmp_path) -> None:
+    url = "https://api.github.com/repos/example/project"
+    attempts = 0
+
+    def open_request(request, timeout):
+        nonlocal attempts
+        attempts += 1
+        return FakeResponse({"id": 8})
+
+    budget = RequestBudget(limit=1)
+    client = GitHubClient(
+        "test-token",
+        JsonResponseCache(tmp_path),
+        opener=open_request,
+    )
+
+    assert client.get_json(url, budget=budget).body == {"id": 8}
+    with pytest.raises(RequestBudgetExceeded, match="budget of 1"):
+        client.get_json(url + "?page=2", budget=budget)
+
+    assert budget.used == 1
+    assert client.requests_made == 1
     assert attempts == 1

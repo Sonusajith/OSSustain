@@ -9,10 +9,10 @@ OSSustain studies whether public GitHub repositories face significant contributi
 Phase 1 Foundation, Phase 2 Research Protocol and Cohort Selection, and Phase 3 Data Collection I are complete. The 50-repository cohort has metadata and full commit histories in PostgreSQL: 55,206 unique commits and 2,638 anonymized contributors. The local completeness report records 50/50 repositories successful and zero failures. The approved 12,500-request stop cap applies to future PR/review/response collection only; commit history and non-PR issue collection were budgeted outside that cap.
 
 ## Current Phase
-Phase 3: Data Collection I (Repository metadata and commits) — complete; awaiting owner confirmation before Phase 4
+Phase 4: Data Collection II (PRs, reviews, issues) and Validation — preflight underway
 
 ## Current Task
-Phase 3 collection, verification, and completion commit are on `phase-3/core-schema`; the branch is pushed. The PR creation link is recorded below. Wait for owner confirmation before Phase 4.
+Phase 3 is complete and pushed. Phase 4 preflight measured the selected cohort's API workload; next implement bounded PR/review collection and resolve the separate non-PR issue-response request budget before collecting those records.
 
 ## Last Completed Task
 Completed Phase 3 acceptance and Definition of Done: all 50 cohort repositories have metadata and completed commit progress; 55,206 unique commits and 2,638 anonymized contributors are stored; report shows 50/50 complete, zero failed, and cumulative per-repository commit totals; reruns resumed an interrupted page and produced no duplicate commit rows. Phase 2 protocol and methodology, 50-repository cohort, and approved API budget remain documented. Phase 1 was verified and merged as PR #1.
@@ -28,12 +28,12 @@ Phase 3: Data Collection I (Repository metadata and commits)
 - Phase 3: privacy-filtered GitHub REST cache and client; repository metadata and commit collection; HMAC contributor identities; idempotent page-level resume; collection run history; full-cohort report.
 
 ## Features In Progress
-No features remain in progress. A transient truncated response while collecting `kubernetes/client-go` was preserved as a failed attempt in `collection_runs`; the collector retry/resume fix recovered it, and the final run completed all 50 repositories with no failed progress or duplicate commit rows. Some candidate PR-count searches in Phase 2 were rate limited; unverified candidates were excluded conservatively and the limitation is documented.
+Phase 4: selected cohort has 2,660 screened PRs across 50 repositories, requiring 61 per-repository PR-list pages. Estimate is 8,041 requests for three PR-level calls plus listing, or 10,052 with 25% allowance, within the approved 12,500 cap. A count-only GitHub Search preflight found 17,646 non-PR issues (50 requests, no incomplete results); owner approved a separate hard cap of 25,000 requests for issue collection. Count report is in ignored `pipeline/data/reports/phase4-issue-budget.json`.
 
 ## Pending Tasks
 - Create the Phase 3 PR from `phase-3/core-schema`: https://github.com/Sonusajith/OSSustain/compare/main...phase-3/core-schema?expand=1 (`gh` is unavailable in this environment).
-- Await owner confirmation before beginning Phase 4.
-- Before Phase 4 collection, refine the API budget using actual PR/review pagination and issue counts. The approved 12,500-request cap covers PR/review/response collection only; commit history and non-PR issues are outside it.
+- Implement PR/review collectors with a hard 12,500-request cap and fixture tests.
+- Implement the 25,000-request non-PR issue cap; measured issue count is 17,646 before comment pagination and retries.
 - Local full-cohort report: `pipeline/data/reports/phase3-full.json` (ignored by Git with other collected data).
 
 ## Known Bugs
@@ -109,4 +109,4 @@ Not started.
 Open the Phase 3 PR using the branch link, then wait for owner confirmation before Phase 4. Refine the Phase 4 REST API budget using observed pagination.
 
 ## Last Updated
-2026-11-09, `phase-3/core-schema` — Phase 3 full-cohort report verified: 50/50 repositories, 55,206 commits, 2,638 contributors; zero incomplete progress; retry and cumulative report tests pass.
+2026-11-10, `phase-4/collaboration-data` — Phase 4 preflight measured 2,660 PRs and 17,646 non-PR issues; owner-approved caps recorded; request-budget enforcement added and tested.

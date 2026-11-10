@@ -25,6 +25,25 @@ class GitHubRateLimitError(GitHubAPIError):
     pass
 
 
+class RequestBudgetExceeded(RuntimeError):
+    pass
+
+
+@dataclass
+class RequestBudget:
+    limit: int
+    used: int = 0
+
+    def __post_init__(self) -> None:
+        if self.limit < 1:
+            raise ValueError("Request budget must be at least 1")
+
+    def consume(self) -> None:
+        if self.used >= self.limit:
+            raise RequestBudgetExceeded(f"Request budget of {self.limit} has been reached")
+        self.used += 1
+
+
 @dataclass(frozen=True)
 class ApiPage:
     body: Any
@@ -77,6 +96,7 @@ class GitHubClient:
         url: str,
         *,
         transform: Callable[[Any], Any] | None = None,
+        budget: RequestBudget | None = None,
     ) -> ApiPage:
         parsed_url = urlparse(url)
         if parsed_url.scheme != "https" or parsed_url.hostname != "api.github.com":
@@ -94,6 +114,8 @@ class GitHubClient:
             if cached and cached.etag and not force_refresh:
                 headers["If-None-Match"] = cached.etag
             request = Request(url, headers=headers)
+            if budget is not None:
+                budget.consume()
             self.requests_made += 1
             try:
                 with self._opener(request, timeout=self._timeout_seconds) as response:
