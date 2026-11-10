@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 2: Research Protocol and Cohort Selection
-**Current Status:** Phase 2 complete; awaiting confirmation before Phase 3
+**Current Phase:** Phase 4: Data Collection II (PRs, reviews, issues) and Validation
+**Current Status:** Phase 4 is underway; approved hard caps are 12,500 requests for PR/review/response collection and 25,000 requests for non-PR issue collection.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
