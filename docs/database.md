@@ -1,6 +1,6 @@
 # Database guide
 
-PostgreSQL stores the collected GitHub records and the results computed by the offline research pipeline. Flyway is the only schema owner; Spring Boot reads the stored data and does not create or update database objects. Migration V3 extends the V2 repository table and adds the core collection, window, label, model, and prediction tables. Migration V4 adds per-stage collection run history. No Java entities are needed for this schema.
+PostgreSQL stores the collected GitHub records and the results computed by the offline research pipeline. Flyway is the only schema owner; Spring Boot reads the stored data and does not create or update database objects. Migration V3 extends the V2 repository table and adds the core collection, window, label, model, and prediction tables. Migration V4 adds per-stage collection run history. Migration V5 adds Phase 4 run stages and GitHub review IDs for idempotent upserts. No Java entities are needed for this schema.
 
 All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `BIGINT GENERATED ALWAYS AS IDENTITY`. Contributor identity is stored only as a keyed HMAC-SHA256 `contributor_key`; names, logins, email addresses, and raw GitHub user IDs are not stored. Unknown GitHub authors and reviewers remain `NULL` so their records are preserved without invented identities.
 
@@ -11,7 +11,7 @@ All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `B
 - `commits` stores repository commit SHAs, commit timestamps, and an optional link to an anonymized contributor. A repository cannot contain the same SHA twice.
 - `issues` stores non-pull-request issues, GitHub issue numbers, optional anonymized authors, creation and closure times, and the first response time.
 - `pull_requests` stores GitHub pull-request numbers, optional anonymized authors, state, creation/merge/closure/first-response times, and the repository relationship.
-- `reviews` stores submitted or pending review state and time for a pull request, with an optional anonymized reviewer.
+- `reviews` stores the GitHub review ID, submitted or pending state and time for a pull request, with an optional anonymized reviewer. A partial unique index on `(pull_request_id, github_id)` supports idempotent upserts.
 - `collection_progress` stores one resumable collection checkpoint per repository and resource. It can retain a cursor, a page number, status, request count, and last update time.
 - `collection_runs` records each repository metadata or commit collection attempt, its start and finish times, status, API request count, record count, and a bounded error summary. A still-running row identifies a process interrupted before it could record completion.
 - `repo_windows` stores a repository's time-bounded feature summary: contributor counts and diversity, newcomer retention, response and merge times, pull-request and review counts, activity score, and trend slopes. Unavailable measurements stay `NULL`. A window must end after it starts, and each repository has at most one row per end time.

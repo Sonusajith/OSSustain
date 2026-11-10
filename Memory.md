@@ -12,7 +12,7 @@ Phase 1 Foundation, Phase 2 Research Protocol and Cohort Selection, and Phase 3 
 Phase 4: Data Collection II (PRs, reviews, issues) and Validation — preflight underway
 
 ## Current Task
-Phase 3 is complete and pushed. Phase 4 preflight measured the selected cohort's API workload; next implement bounded PR/review collection and resolve the separate non-PR issue-response request budget before collecting those records.
+Phase 3 is merged. Phase 4 preflight measured the selected cohort's API workload and the owner approved separate hard caps; the request-budget primitive and V5 schema groundwork are implemented. Continue with the collectors, resumption/upsert logic, and quality report.
 
 ## Last Completed Task
 Completed Phase 3 acceptance and Definition of Done: all 50 cohort repositories have metadata and completed commit progress; 55,206 unique commits and 2,638 anonymized contributors are stored; report shows 50/50 complete, zero failed, and cumulative per-repository commit totals; reruns resumed an interrupted page and produced no duplicate commit rows. Phase 2 protocol and methodology, 50-repository cohort, and approved API budget remain documented. Phase 1 was verified and merged as PR #1.
@@ -28,12 +28,12 @@ Phase 3: Data Collection I (Repository metadata and commits)
 - Phase 3: privacy-filtered GitHub REST cache and client; repository metadata and commit collection; HMAC contributor identities; idempotent page-level resume; collection run history; full-cohort report.
 
 ## Features In Progress
-Phase 4: selected cohort has 2,660 screened PRs across 50 repositories, requiring 61 per-repository PR-list pages. Estimate is 8,041 requests for three PR-level calls plus listing, or 10,052 with 25% allowance, within the approved 12,500 cap. A count-only GitHub Search preflight found 17,646 non-PR issues (50 requests, no incomplete results); owner approved a separate hard cap of 25,000 requests for issue collection. Count report is in ignored `pipeline/data/reports/phase4-issue-budget.json`.
+Phase 4: selected cohort has 2,660 screened PRs across 50 repositories, requiring 61 per-repository PR-list pages. Estimate is 8,041 requests for three PR-level calls plus listing, or 10,052 with 25% allowance, within the approved 12,500 cap. A count-only GitHub Search preflight found 17,646 non-PR issues (50 requests, no incomplete results); owner approved a separate hard cap of 25,000 requests for issue collection. Shared request-budget enforcement is implemented; V5 expands run stages and adds stable review IDs. Count report is in ignored `pipeline/data/reports/phase4-issue-budget.json`.
 
 ## Pending Tasks
-- Create the Phase 3 PR from `phase-3/core-schema`: https://github.com/Sonusajith/OSSustain/compare/main...phase-3/core-schema?expand=1 (`gh` is unavailable in this environment).
-- Implement PR/review collectors with a hard 12,500-request cap and fixture tests.
+- Implement PR/review collectors with the 12,500-request cap and fixture tests.
 - Implement the 25,000-request non-PR issue cap; measured issue count is 17,646 before comment pagination and retries.
+- Generate and verify the Phase 4 quality/completeness report.
 - Local full-cohort report: `pipeline/data/reports/phase3-full.json` (ignored by Git with other collected data).
 
 ## Known Bugs
@@ -50,6 +50,7 @@ None. Live collection completed using the local token; the token and hash secret
 - Python direct and resolved pins are in `pipeline/pyproject.toml` and `pipeline/requirements.lock`.
 - Phase 2 introduced no dependencies; config validation and cohort selection use already pinned Pydantic and PyYAML.
 - Approved Phase 2 collection decision: REST-only; 12,500 authenticated requests as the stop cap for PR/review/response collection (about 2.5 quota-hours), excluding commits and non-PR issues.
+- Approved Phase 4 budgets: hard stop at 12,500 requests for PR/review/response collection and 25,000 requests for non-PR issue collection.
 - Phase 3 collection uses the standard-library `urllib` client and existing pinned dependencies. JSON cache bodies are privacy-filtered before disk writes; contributor keys use HMAC-SHA256 with `OSSUSTAIN_HASH_SECRET`.
 - The final collection totals are 50 repositories, 55,206 unique commits, 2,638 contributors, and 50 completed commit checkpoints. A rerun verified idempotence; `collection_runs` retains one historical transient failure followed by successful recovery.
 
@@ -57,7 +58,7 @@ None. Live collection completed using the local token; the token and hash secret
 Approved by the project owner: upgraded the backend from Spring Boot 3.5.16 to Spring Boot 4.1.2. The Java target remains 21; Boot 4 starter modules are used.
 
 ## Database Changes
-Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data tables, and V4 `collection_runs` stage history.
+Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data tables, V4 `collection_runs`, and V5 Phase 4 run stages/review IDs.
 
 ## API Changes
 Enabled Spring Boot Actuator health at `/actuator/health`. No product API endpoints yet.
@@ -109,4 +110,4 @@ Not started.
 Open the Phase 3 PR using the branch link, then wait for owner confirmation before Phase 4. Refine the Phase 4 REST API budget using observed pagination.
 
 ## Last Updated
-2026-11-10, `phase-4/collaboration-data` — Phase 4 preflight measured 2,660 PRs and 17,646 non-PR issues; owner-approved caps recorded; request-budget enforcement added and tested.
+2026-11-10, `phase-4/collaboration-data` — PR #3 merged; issue count measured; separate caps approved; V5 migration and request-budget primitive verified; collectors remain in progress.

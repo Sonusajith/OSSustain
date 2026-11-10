@@ -62,7 +62,7 @@ class CoreSchemaIntegrationTest {
     void migrationsApplyToAnEmptyPostgres16Database() throws SQLException {
         assertThat(queryStrings("SELECT version FROM flyway_schema_history "
                 + "WHERE success ORDER BY installed_rank"))
-                .containsExactlyInAnyOrder("1", "2", "3", "4");
+                .containsExactlyInAnyOrder("1", "2", "3", "4", "5");
     }
 
     @Test
@@ -82,7 +82,8 @@ class CoreSchemaIntegrationTest {
                 .contains("uq_repo_windows_repo_end", "idx_issues_repo_created_at",
                         "idx_pull_requests_repo_created_at", "idx_commits_repo_committed_at",
                         "idx_predictions_window_id", "uq_risk_indicators_prediction_rank",
-                        "idx_collection_runs_repo_started_at", "idx_collection_runs_stage_status");
+                        "idx_collection_runs_repo_started_at", "idx_collection_runs_stage_status",
+                        "uq_reviews_pull_request_github_id");
     }
 
     @Test
