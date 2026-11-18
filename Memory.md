@@ -6,41 +6,41 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phase 1 Foundation, Phase 2 Research Protocol and Cohort Selection, and Phase 3 Data Collection I are complete. The 50-repository cohort has metadata and full commit histories in PostgreSQL: 55,206 unique commits and 2,638 anonymized contributors. The local completeness report records 50/50 repositories successful and zero failures. The approved 12,500-request stop cap applies to future PR/review/response collection only; commit history and non-PR issue collection were budgeted outside that cap.
+Phases 1–4 are complete. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 4: Data Collection II (PRs, reviews, issues) and Validation — preflight underway
+Phase 4: Data Collection II (PRs, reviews, issues) and Validation — complete; Phase 5 not started
 
 ## Current Task
-Phase 3 is merged. Phase 4 preflight measured the selected cohort's API workload and the owner approved separate hard caps; the request-budget primitive and V5 schema groundwork are implemented. Continue with the collectors, resumption/upsert logic, and quality report.
+Phase 4 collection and validation are complete. The full-cohort collector, resumable upserts, request ledger, search-limit fallback, and quality report are implemented and verified. Review the four documented quality flags with the owner before starting Phase 5.
 
 ## Last Completed Task
-Completed Phase 3 acceptance and Definition of Done: all 50 cohort repositories have metadata and completed commit progress; 55,206 unique commits and 2,638 anonymized contributors are stored; report shows 50/50 complete, zero failed, and cumulative per-repository commit totals; reruns resumed an interrupted page and produced no duplicate commit rows. Phase 2 protocol and methodology, 50-repository cohort, and approved API budget remain documented. Phase 1 was verified and merged as PR #1.
+Completed Phase 4 acceptance and Definition of Done: PR/review/issue collection completed for all 50 repositories; the local report records 50/50 processed and zero failed. Validation confirms all stages complete and flags four repositories for two one-record screening mismatches and two zero-event cohorts. Phase 4 lifetime usage was 7,919 PR/review/response requests and 5,090 issue/response requests, within the 12,500 and 25,000 caps. The Phase 4 quality summary is in `docs/phase4-data-quality.md`; detailed JSON reports remain in ignored `pipeline/data/reports/`.
 
 ## Completed Phases
 Phase 1: Foundation
 Phase 2: Research Protocol and Cohort Selection
 Phase 3: Data Collection I (Repository metadata and commits)
+Phase 4: Data Collection II (PRs, reviews, issues) and Validation
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
 - Phase 2: versioned label/split/identity protocol; deterministic stratified 50-repository cohort selected from a recorded GitHub REST candidate screen; repositories/cohorts/cohort_memberships Flyway schema; methodology and approved API budget.
 - Phase 3: privacy-filtered GitHub REST cache and client; repository metadata and commit collection; HMAC contributor identities; idempotent page-level resume; collection run history; full-cohort report.
+- Phase 4: privacy-filtered PR/review/issue collection; first-response timestamps; request caps with durable append-only local journal; resumable, idempotent stages; pagination fallback for single-day GitHub Search overflow; per-repository quality validation.
 
 ## Features In Progress
-Phase 4: selected cohort has 2,660 screened PRs across 50 repositories, requiring 61 per-repository PR-list pages. Estimate is 8,041 requests for three PR-level calls plus listing, or 10,052 with 25% allowance, within the approved 12,500 cap. A count-only GitHub Search preflight found 17,646 non-PR issues (50 requests, no incomplete results); owner approved a separate hard cap of 25,000 requests for issue collection. Shared request-budget enforcement is implemented; V5 expands run stages and adds stable review IDs. Count report is in ignored `pipeline/data/reports/phase4-issue-budget.json`.
+None. Phase 4 is complete; do not start Phase 5 until the owner confirms.
 
 ## Pending Tasks
-- Implement PR/review collectors with the 12,500-request cap and fixture tests.
-- Implement the 25,000-request non-PR issue cap; measured issue count is 17,646 before comment pagination and retries.
-- Generate and verify the Phase 4 quality/completeness report.
-- Local full-cohort report: `pipeline/data/reports/phase3-full.json` (ignored by Git with other collected data).
+- Review the quality flags and confirm whether to begin Phase 5.
+- Local Phase 4 reports: `pipeline/data/reports/phase4-full.json` and `pipeline/data/reports/phase4-validation.json` (ignored by Git); committed aggregate summary: `docs/phase4-data-quality.md`.
 
 ## Known Bugs
-None confirmed.
+The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-None. Live collection completed using the local token; the token and hash secret remain in ignored `.env` and were not committed.
+No collection blockers. Four quality flags remain documented. The local token and hash secret remain in ignored `.env` and were not committed.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -51,6 +51,8 @@ None. Live collection completed using the local token; the token and hash secret
 - Phase 2 introduced no dependencies; config validation and cohort selection use already pinned Pydantic and PyYAML.
 - Approved Phase 2 collection decision: REST-only; 12,500 authenticated requests as the stop cap for PR/review/response collection (about 2.5 quota-hours), excluding commits and non-PR issues.
 - Approved Phase 4 budgets: hard stop at 12,500 requests for PR/review/response collection and 25,000 requests for non-PR issue collection.
+- Phase 4 request accounting uses the maximum of database run totals and the durable local ledger total to avoid double counting after completed runs. The ledger uses an append-only journal under `%LOCALAPPDATA%/ossustain/` to avoid synced-folder file replacement locks.
+- GitHub Search's single-day 1,000-result overflow is collected through paginated repository issue listing, then filtered to the frozen observation window.
 - Phase 3 collection uses the standard-library `urllib` client and existing pinned dependencies. JSON cache bodies are privacy-filtered before disk writes; contributor keys use HMAC-SHA256 with `OSSUSTAIN_HASH_SECRET`.
 - The final collection totals are 50 repositories, 55,206 unique commits, 2,638 contributors, and 50 completed commit checkpoints. A rerun verified idempotence; `collection_runs` retains one historical transient failure followed by successful recovery.
 
@@ -64,7 +66,7 @@ Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data ta
 Enabled Spring Boot Actuator health at `/actuator/health`. No product API endpoints yet.
 
 ## Important Files
-- `docker-compose.yml`, `.env.example`, `.gitignore`, `README.md`, `config/experiment.yaml`, `config/cohort-candidates.yaml`, `config/cohort.yaml`, `docs/methodology.md`
+- `docker-compose.yml`, `.env.example`, `.gitignore`, `README.md`, `config/experiment.yaml`, `config/cohort-candidates.yaml`, `config/cohort.yaml`, `docs/methodology.md`, `docs/phase4-data-quality.md`
 - `backend/pom.xml`, `backend/src/main/`, `backend/src/test/`
 - `pipeline/pyproject.toml`, `pipeline/requirements.lock`, `pipeline/src/`, `pipeline/tests/`
 - `frontend/package.json`, `frontend/pnpm-lock.yaml`, `frontend/src/`
@@ -91,23 +93,23 @@ Cohort Overview (Phase 10), Repository Detail (Phase 11), Research Results and M
 Used a temporary Apache Maven 3.10.0 download, SHA-512 verified against Apache, for backend checks because Maven was absent from PATH. Docker Desktop/Compose was available through an elevated shell for PostgreSQL and Testcontainers checks.
 
 ## Testing Status
-- Python: 21 tests passed; Ruff passed, including GitHub client retry, privacy/redaction, configuration, and resumable collection tests.
+- Python pipeline: 32 tests passed; Ruff passed, including privacy filtering, search overflow fallback, request accounting, and resume behavior.
 - Frontend: ESLint passed; 2 Vitest tests passed; TypeScript check and Vite production build passed. Vite reported ready; the sandbox blocked a loopback HTTP probe.
-- Backend: `mvn -B -ntp -f backend/pom.xml test` passed: 7 tests, 0 failures, 0 errors, 0 skipped; Testcontainers used Docker Desktop and PostgreSQL 16.15, and Flyway applied V1–V4.
+- Backend: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` passed: 7 tests, 0 failures, 0 errors, 0 skipped; Flyway applied migrations V1–V5. The timezone property is needed for Testcontainers on this Windows environment.
 - Compose PostgreSQL 16.15 was healthy (`pg_isready` accepted connections). The service was left running for the user.
-- Pipeline uses Python 3.12.12 with the pinned lockfile in the ignored local `.venv`; 21 pytest tests passed and Ruff passed.
+- Pipeline uses Python 3.12.12 with the pinned lockfile in the ignored local `.venv`; the live full-cohort rerun completed 50/50 stages. Validation reports 46 repositories without quality flags and four flagged as documented above.
 - Frontend (Vite 8.3.5): dev server reported ready on `127.0.0.1:5173`; ESLint exited 0; 2 Vitest tests passed; TypeScript check and production build passed. Direct HTTP probing is blocked by environment socket permissions.
 
 ## Deployment Status
 Not started.
 
 ## Important Context for the Next AI Session
-- Phase 3 is complete. Do not begin Phase 4 until the owner confirms.
+- Phase 4 is complete. Do not begin Phase 5 until the owner confirms.
 - The local `.env` is ignored by Git. Never print, paste, or commit its token or hash secret.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Open the Phase 3 PR using the branch link, then wait for owner confirmation before Phase 4. Refine the Phase 4 REST API budget using observed pagination.
+Push the Phase 4 implementation and documentation, open or update its pull request, and wait for owner review before starting Phase 5.
 
 ## Last Updated
-2026-11-10, `phase-4/collaboration-data` — PR #3 merged; issue count measured; separate caps approved; V5 migration and request-budget primitive verified; collectors remain in progress.
+2026-11-18, `phase-4/collaboration-data` — Phase 4 collection and validation completed for all 50 repositories; request ledger, overflow fallback, quality flags, and dataset summary recorded.

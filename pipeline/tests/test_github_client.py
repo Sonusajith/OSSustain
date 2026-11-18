@@ -177,3 +177,13 @@ def test_request_budget_stops_before_sending_an_over_budget_request(tmp_path) ->
     assert budget.used == 1
     assert client.requests_made == 1
     assert attempts == 1
+
+
+def test_request_budget_honors_requests_recorded_by_previous_runs() -> None:
+    budget = RequestBudget(limit=3, used=2)
+
+    budget.consume()
+
+    assert budget.used == 3
+    with pytest.raises(RequestBudgetExceeded, match="budget of 3"):
+        budget.consume()

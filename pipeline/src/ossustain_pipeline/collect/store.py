@@ -19,6 +19,10 @@ def _timestamp(value: str) -> datetime:
     return parsed.replace(tzinfo=UTC) if parsed.tzinfo is None else parsed.astimezone(UTC)
 
 
+def _optional_timestamp(value: str | None) -> datetime | None:
+    return _timestamp(value) if value else None
+
+
 class PostgresCollectionStore:
     def __init__(self, connection: psycopg.Connection[Any]) -> None:
         self._connection = connection
@@ -156,12 +160,235 @@ class PostgresCollectionStore:
                 (status, requests_used, records_processed, error_summary, run_id),
             )
 
+    def request_totals(self, stages: tuple[str, ...]) -> int:
+        row = self._connection.execute(
+            "SELECT COALESCE(sum(requests_used), 0) FROM collection_runs WHERE stage = ANY(%s)",
+            (list(stages),),
+        ).fetchone()
+        return int(row[0])
+
+    def stage_completed(self, repository_id: int, stage: str) -> bool:
+        row = self._connection.execute(
+            """
+            SELECT EXISTS (
+                SELECT 1 FROM collection_runs
+                WHERE repo_id = %s AND stage = %s AND status = 'done'
+            )
+            """,
+            (repository_id, stage),
+        ).fetchone()
+        return bool(row[0])
+
+    def review_stage_completed(self, repository_id: int) -> bool:
+        row = self._connection.execute(
+            """
+            SELECT
+                (SELECT finished_at FROM collection_runs
+                 WHERE repo_id = %s AND stage = 'pull_requests' AND status = 'done'
+                 ORDER BY finished_at DESC LIMIT 1) IS NOT NULL
+                AND
+                (SELECT finished_at FROM collection_runs
+                 WHERE repo_id = %s AND stage = 'pull_requests' AND status = 'done'
+                 ORDER BY finished_at DESC LIMIT 1)
+                <
+                (SELECT finished_at FROM collection_runs
+                 WHERE repo_id = %s AND stage = 'reviews' AND status = 'done'
+                 ORDER BY finished_at DESC LIMIT 1)
+            """,
+            (repository_id, repository_id, repository_id),
+        ).fetchone()
+        return bool(row[0])
+
+    def pull_request_targets(
+        self, repository_id: int, start: date, end: date
+    ) -> list[tuple[int, int]]:
+        rows = self._connection.execute(
+            """
+            SELECT github_number, id FROM pull_requests
+            WHERE repo_id = %s
+              AND created_at >= %s
+              AND created_at < %s + interval '1 day'
+            ORDER BY github_number
+            """,
+            (repository_id, _midnight_utc(start), _midnight_utc(end)),
+        ).fetchall()
+        return [(int(number), int(row_id)) for number, row_id in rows]
+
+    def repository_id_for_github_id(self, github_id: int) -> int | None:
+        row = self._connection.execute(
+            "SELECT id FROM repositories WHERE github_id = %s",
+            (github_id,),
+        ).fetchone()
+        return int(row[0]) if row else None
+
+    def count_repository_commits(self, repository_id: int) -> int:
+        return self.count_commits(repository_id)
+
+    def collaboration_counts(self, repository_id: int, start: date, end: date) -> dict[str, int]:
+        pull_requests = self._connection.execute(
+            """
+            SELECT count(*), count(first_response_at)
+            FROM pull_requests
+            WHERE repo_id = %s AND created_at >= %s AND created_at < %s + interval '1 day'
+            """,
+            (repository_id, _midnight_utc(start), _midnight_utc(end)),
+        ).fetchone()
+        reviews = self._connection.execute(
+            """
+            SELECT count(*) FROM reviews review
+            JOIN pull_requests pull_request ON pull_request.id = review.pull_request_id
+            WHERE pull_request.repo_id = %s
+              AND pull_request.created_at >= %s
+              AND pull_request.created_at < %s + interval '1 day'
+            """,
+            (repository_id, _midnight_utc(start), _midnight_utc(end)),
+        ).fetchone()
+        issues = self._connection.execute(
+            """
+            SELECT count(*), count(first_response_at)
+            FROM issues
+            WHERE repo_id = %s AND created_at >= %s AND created_at < %s + interval '1 day'
+            """,
+            (repository_id, _midnight_utc(start), _midnight_utc(end)),
+        ).fetchone()
+        return {
+            "pull_requests": int(pull_requests[0]),
+            "pr_responses": int(pull_requests[1]),
+            "reviews": int(reviews[0]),
+            "issues": int(issues[0]),
+            "issue_responses": int(issues[1]),
+        }
+
+    def fail_stale_runs(self, older_than_minutes: int = 10) -> int:
+        with self._connection.transaction():
+            result = self._connection.execute(
+                """
+                UPDATE collection_runs
+                SET status = 'failed', finished_at = now(),
+                    error_summary = COALESCE(
+                        error_summary, 'Marked failed after interrupted process'
+                    )
+                WHERE status = 'running'
+                  AND started_at < now() - (%s * interval '1 minute')
+                """,
+                (older_than_minutes,),
+            )
+        return result.rowcount
+
     def count_commits(self, repository_id: int) -> int:
         row = self._connection.execute(
             "SELECT count(*) FROM commits WHERE repo_id = %s",
             (repository_id,),
         ).fetchone()
         return int(row[0])
+
+    def _ensure_contributor(
+        self, author: dict[str, Any] | None, first_seen_at: str
+    ) -> int | None:
+        if not author:
+            return None
+        row = self._connection.execute(
+            """
+            INSERT INTO contributors (contributor_key, is_bot, first_seen_at)
+            VALUES (%s, %s, %s)
+            ON CONFLICT (contributor_key) DO UPDATE SET
+                is_bot = contributors.is_bot OR EXCLUDED.is_bot,
+                first_seen_at = LEAST(contributors.first_seen_at, EXCLUDED.first_seen_at)
+            RETURNING id
+            """,
+            (author["contributor_key"], author["is_bot"], _timestamp(first_seen_at)),
+        ).fetchone()
+        return int(row[0])
+
+    def upsert_issue(self, repository_id: int, issue: dict[str, Any]) -> None:
+        with self._connection.transaction():
+            author_id = self._ensure_contributor(issue.get("author"), issue["created_at"])
+            self._connection.execute(
+                """
+                INSERT INTO issues (repo_id, github_number, author_id, created_at, closed_at,
+                                    first_response_at)
+                VALUES (%s, %s, %s, %s, %s, %s)
+                ON CONFLICT (repo_id, github_number) DO UPDATE SET
+                    author_id = EXCLUDED.author_id,
+                    created_at = EXCLUDED.created_at,
+                    closed_at = EXCLUDED.closed_at,
+                    first_response_at = CASE
+                        WHEN issues.first_response_at IS NULL THEN EXCLUDED.first_response_at
+                        WHEN EXCLUDED.first_response_at IS NULL THEN issues.first_response_at
+                        ELSE LEAST(issues.first_response_at, EXCLUDED.first_response_at)
+                    END
+                """,
+                (
+                    repository_id,
+                    issue["number"],
+                    author_id,
+                    _timestamp(issue["created_at"]),
+                    _optional_timestamp(issue.get("closed_at")),
+                    _optional_timestamp(issue.get("first_response_at")),
+                ),
+            )
+
+    def upsert_pull_request(
+        self, repository_id: int, pull_request: dict[str, Any]
+    ) -> int:
+        with self._connection.transaction():
+            author_id = self._ensure_contributor(
+                pull_request.get("author"), pull_request["created_at"]
+            )
+            merged_at = _optional_timestamp(pull_request.get("merged_at"))
+            state = "merged" if merged_at else pull_request["state"]
+            row = self._connection.execute(
+                """
+                INSERT INTO pull_requests (repo_id, github_number, author_id, state, created_at,
+                                           merged_at, closed_at, first_response_at)
+                VALUES (%s, %s, %s, %s, %s, %s, %s, %s)
+                ON CONFLICT (repo_id, github_number) DO UPDATE SET
+                    author_id = EXCLUDED.author_id,
+                    state = EXCLUDED.state,
+                    created_at = EXCLUDED.created_at,
+                    merged_at = EXCLUDED.merged_at,
+                    closed_at = EXCLUDED.closed_at,
+                    first_response_at = CASE
+                        WHEN pull_requests.first_response_at IS NULL THEN EXCLUDED.first_response_at
+                        WHEN EXCLUDED.first_response_at IS NULL THEN pull_requests.first_response_at
+                        ELSE LEAST(pull_requests.first_response_at, EXCLUDED.first_response_at)
+                    END
+                RETURNING id
+                """,
+                (
+                    repository_id,
+                    pull_request["number"],
+                    author_id,
+                    state,
+                    _timestamp(pull_request["created_at"]),
+                    merged_at,
+                    _optional_timestamp(pull_request.get("closed_at")),
+                    _optional_timestamp(pull_request.get("first_response_at")),
+                ),
+            ).fetchone()
+        return int(row[0])
+
+    def upsert_review(self, pull_request_id: int, review: dict[str, Any]) -> None:
+        if not isinstance(review.get("github_id"), int):
+            return
+        submitted_at = _optional_timestamp(review.get("submitted_at"))
+        author_id = (
+            self._ensure_contributor(review.get("reviewer"), review["submitted_at"])
+            if review.get("submitted_at")
+            else None
+        )
+        with self._connection.transaction():
+            self._connection.execute(
+                """
+                INSERT INTO reviews (pull_request_id, github_id, reviewer_id, state, submitted_at)
+                VALUES (%s, %s, %s, %s, %s)
+                ON CONFLICT (pull_request_id, github_id) WHERE github_id IS NOT NULL
+                DO UPDATE SET reviewer_id = EXCLUDED.reviewer_id,
+                              state = EXCLUDED.state,
+                              submitted_at = EXCLUDED.submitted_at
+                """,
+                (pull_request_id, review["github_id"], author_id, review["state"], submitted_at),
+            )
 
     def get_progress(self, repository_id: int) -> dict[str, Any] | None:
         row = self._connection.execute(
