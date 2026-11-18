@@ -59,10 +59,30 @@ class CoreSchemaIntegrationTest {
     }
 
     @Test
+    void snapshotConstraintsRejectIncompleteLabelsAndDuplicateDates() throws SQLException {
+        long repositoryId = insertRepository(105, "sample/snapshot-checks");
+        execute("INSERT INTO dataset_versions (version_hash, cohort_name, config, source_hash, "
+                + "code_revision, summary) VALUES ('" + "b".repeat(64)
+                + "', 'test', '{}', '" + "c".repeat(64) + "', 'test-revision', '{}') "
+                + "ON CONFLICT (version_hash) DO NOTHING");
+        String insert = "INSERT INTO snapshots (dataset_version_id, repo_id, prediction_date, "
+                + "reference_start, future_end, observed_until, reference_activity, future_activity, "
+                + "label, label_status, split) SELECT id, " + repositoryId
+                + ", DATE '2025-10-01', DATE '2025-07-03', DATE '2025-12-30', ";
+        String source = " FROM dataset_versions WHERE version_hash = '" + "b".repeat(64) + "'";
+        assertSqlState(insert + "DATE '2025-12-01', 20, 10, TRUE, 'labeled', 'test'" + source, "23514");
+        assertSqlState(insert + "DATE '2026-01-01', 20, 10, NULL, 'labeled', 'test'" + source, "23514");
+        assertSqlState(insert + "DATE '2025-12-01', 20, 10, NULL, 'incomplete_future', 'unassigned'"
+                + source, "23514");
+        execute(insert + "DATE '2026-01-01', 20, 10, TRUE, 'labeled', 'test'" + source);
+        assertSqlState(insert + "DATE '2026-01-01', 20, 10, TRUE, 'labeled', 'test'" + source, "23505");
+    }
+
+    @Test
     void migrationsApplyToAnEmptyPostgres16Database() throws SQLException {
         assertThat(queryStrings("SELECT version FROM flyway_schema_history "
                 + "WHERE success ORDER BY installed_rank"))
-                .containsExactlyInAnyOrder("1", "2", "3", "4", "5");
+                .containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6");
     }
 
     @Test
@@ -72,7 +92,8 @@ class CoreSchemaIntegrationTest {
                         + "WHERE table_schema = 'public' AND table_type = 'BASE TABLE'"));
         assertThat(tables).contains("repositories", "contributors", "commits", "issues",
                 "pull_requests", "reviews", "collection_progress", "repo_windows", "labels",
-                "model_runs", "predictions", "risk_indicators", "collection_runs");
+                "model_runs", "predictions", "risk_indicators", "collection_runs",
+                "dataset_versions", "snapshots");
 
         assertThat(queryStrings("SELECT table_name FROM information_schema.views "
                 + "WHERE table_schema = 'public'"))

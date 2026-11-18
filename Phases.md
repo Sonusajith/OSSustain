@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 4: Data Collection II (PRs, reviews, issues) and Validation
-**Current Status:** Phase 4 meets its Definition of Done. Collection completed for all 50 cohort repositories within the approved caps; the quality report records four repositories with count mismatches or no collaboration events. Phase 5 has not started.
+**Current Phase:** Phase 5: Snapshots and Labels
+**Current Status:** Owner authorized Phase 5. Snapshot construction, versioned persistence, and boundary tests are implemented; full-cohort database acceptance and prevalence reporting are in progress. Phase 4 meets its Definition of Done; its four quality flags remain recorded.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

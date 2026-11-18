@@ -9,10 +9,10 @@ OSSustain studies whether public GitHub repositories face significant contributi
 Phases 1–4 are complete. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 4: Data Collection II (PRs, reviews, issues) and Validation — complete; Phase 5 not started
+Phase 5: Snapshots and Labels — in progress, authorized by the owner
 
 ## Current Task
-Phase 4 collection and validation are complete. The full-cohort collector, resumable upserts, request ledger, search-limit fallback, and quality report are implemented and verified. Review the four documented quality flags with the owner before starting Phase 5.
+Verify the Phase 5 snapshot builder against the collected cohort, check rerun idempotence, and publish the prevalence summary. Phase 4 PR #4 remains open; this branch includes its prerequisites and does not duplicate another teammate's work.
 
 ## Last Completed Task
 Completed Phase 4 acceptance and Definition of Done: PR/review/issue collection completed for all 50 repositories; the local report records 50/50 processed and zero failed. Validation confirms all stages complete and flags four repositories for two one-record screening mismatches and two zero-event cohorts. Phase 4 lifetime usage was 7,919 PR/review/response requests and 5,090 issue/response requests, within the 12,500 and 25,000 caps. The Phase 4 quality summary is in `docs/phase4-data-quality.md`; detailed JSON reports remain in ignored `pipeline/data/reports/`.
@@ -30,10 +30,10 @@ Phase 4: Data Collection II (PRs, reviews, issues) and Validation
 - Phase 4: privacy-filtered PR/review/issue collection; first-response timestamps; request caps with durable append-only local journal; resumable, idempotent stages; pagination fallback for single-day GitHub Search overflow; per-repository quality validation.
 
 ## Features In Progress
-None. Phase 4 is complete; do not start Phase 5 until the owner confirms.
+Phase 5: `build-snapshots`, Flyway V6 research dataset/snapshot tables, UTC boundary and purge-gap tests, and label prevalence at the frozen 0.5 threshold with 0.3/0.7 sensitivity summaries.
 
 ## Pending Tasks
-- Review the quality flags and confirm whether to begin Phase 5.
+- Finish Phase 5 database acceptance, record actual prevalence, and open its PR (depends on Phase 4 PR #4).
 - Local Phase 4 reports: `pipeline/data/reports/phase4-full.json` and `pipeline/data/reports/phase4-validation.json` (ignored by Git); committed aggregate summary: `docs/phase4-data-quality.md`.
 
 ## Known Bugs
@@ -61,6 +61,8 @@ Approved by the project owner: upgraded the backend from Spring Boot 3.5.16 to S
 
 ## Database Changes
 Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data tables, V4 `collection_runs`, and V5 Phase 4 run stages/review IDs.
+
+Phase 5 adds V6 `dataset_versions` and `snapshots` for immutable research inputs, label completeness, and chronological splits. Existing V3 `repo_windows`/`labels` remain the development-seed/dashboard scaffold; Phase 6 should consume the versioned research snapshots. No new dependencies.
 
 ## API Changes
 Enabled Spring Boot Actuator health at `/actuator/health`. No product API endpoints yet.
@@ -93,6 +95,7 @@ Cohort Overview (Phase 10), Repository Detail (Phase 11), Research Results and M
 Used a temporary Apache Maven 3.10.0 download, SHA-512 verified against Apache, for backend checks because Maven was absent from PATH. Docker Desktop/Compose was available through an elevated shell for PostgreSQL and Testcontainers checks.
 
 ## Testing Status
+- Phase 5 implementation: 58 Python tests passed; the opt-in live snapshot test is pending. Ruff passed. Backend: 8 tests passed, including snapshot constraints and V1–V6 migrations. Local PostgreSQL has been migrated to V6 through Spring Boot/Flyway.
 - Python pipeline: 32 tests passed; Ruff passed, including privacy filtering, search overflow fallback, request accounting, and resume behavior.
 - Frontend: ESLint passed; 2 Vitest tests passed; TypeScript check and Vite production build passed. Vite reported ready; the sandbox blocked a loopback HTTP probe.
 - Backend: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` passed: 7 tests, 0 failures, 0 errors, 0 skipped; Flyway applied migrations V1–V5. The timezone property is needed for Testcontainers on this Windows environment.
@@ -104,12 +107,12 @@ Used a temporary Apache Maven 3.10.0 download, SHA-512 verified against Apache, 
 Not started.
 
 ## Important Context for the Next AI Session
-- Phase 4 is complete. Do not begin Phase 5 until the owner confirms.
+- The owner confirmed Phase 5 on 2026-11-18. All four Phase 4 quality flags are retained; no repositories are silently excluded.
 - The local `.env` is ignored by Git. Never print, paste, or commit its token or hash secret.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Push the Phase 4 implementation and documentation, open or update its pull request, and wait for owner review before starting Phase 5.
+Finish Phase 5 live database acceptance and prevalence reporting; do not begin Phase 6 without owner confirmation.
 
 ## Last Updated
-2026-11-18, `phase-4/collaboration-data` — Phase 4 collection and validation completed for all 50 repositories; request ledger, overflow fallback, quality flags, and dataset summary recorded.
+2026-11-18, `phase-5/snapshots-labels` — owner authorized Phase 5; implementation and boundary tests ready, live database acceptance pending.

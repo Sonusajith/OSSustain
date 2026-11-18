@@ -1,6 +1,6 @@
 """Validated, versioned definitions for the Phase 2 research protocol."""
 
-from datetime import date
+from datetime import date, timedelta
 from pathlib import Path
 from typing import Literal
 
@@ -77,11 +77,12 @@ class ExperimentConfig(StrictModel):
         last_labeled_future_date = date.fromordinal(
             test.end.toordinal() + self.label.future_window_days
         )
-        if last_labeled_future_date > self.observation_end:
+        if last_labeled_future_date > self.observation_end + timedelta(days=1):
             raise ValueError("test ends before its future-label windows are complete")
-        if validation.start.toordinal() - train.end.toordinal() < self.purge_gap_days:
+        required_gap = max(self.purge_gap_days, self.label.future_window_days)
+        if validation.start.toordinal() - train.end.toordinal() < required_gap:
             raise ValueError("train/validation split gap is shorter than purge_gap_days")
-        if test.start.toordinal() - validation.end.toordinal() < self.purge_gap_days:
+        if test.start.toordinal() - validation.end.toordinal() < required_gap:
             raise ValueError("validation/test split gap is shorter than purge_gap_days")
         if train.start < self.observation_start or test.end > self.observation_end:
             raise ValueError("prediction split dates must lie within the observation period")

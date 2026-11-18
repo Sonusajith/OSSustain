@@ -12,8 +12,10 @@ from ossustain_pipeline.collect.store import PostgresCollectionStore
 from ossustain_pipeline.collect.validation import build_quality_report
 from ossustain_pipeline.config import load_config
 from ossustain_pipeline.db import connect
+from ossustain_pipeline.experiment import load_experiment_config
 from ossustain_pipeline.github.cache import JsonResponseCache
 from ossustain_pipeline.github.client import GitHubClient
+from ossustain_pipeline.snapshots.runner import build_snapshots
 
 
 def build_parser() -> argparse.ArgumentParser:
@@ -114,6 +116,18 @@ def build_parser() -> argparse.ArgumentParser:
         "--report", type=Path,
         default=Path("pipeline/data/reports/phase4-validation.json"),
         help="Quality report output path.",
+    )
+    snapshots_parser = commands.add_parser(
+        "build-snapshots",
+        help="Build versioned snapshots, labels, splits, and prevalence summaries.",
+    )
+    snapshots_parser.add_argument("--cohort", type=Path, default=Path("config/cohort.yaml"))
+    snapshots_parser.add_argument("--experiment", type=Path, default=Path("config/experiment.yaml"))
+    snapshots_parser.add_argument(
+        "--quality-report", type=Path, default=Path("pipeline/data/reports/phase4-validation.json")
+    )
+    snapshots_parser.add_argument(
+        "--report", type=Path, default=Path("pipeline/data/reports/phase5-snapshots.json")
     )
     return parser
 
@@ -228,6 +242,22 @@ def main() -> None:
         )
         if report["repositories_flagged"]:
             raise SystemExit(1)
+    elif args.command == "build-snapshots":
+        try:
+            config = load_config(args.config)
+            cohort = load_cohort(args.cohort)
+            experiment = load_experiment_config(args.experiment)
+            with connect(config) as connection:
+                report = build_snapshots(
+                    connection, cohort, experiment,
+                    quality_report=args.quality_report, report_path=args.report,
+                )
+        except ValueError as error:
+            parser.error(str(error))
+        print(
+            f"Snapshot report: {args.report}; dataset {report['dataset_version_id']}; "
+            f"{report['overall']['snapshots']} snapshots, {report['overall']['labeled']} labeled."
+        )
     else:
         parser.print_help()
 

@@ -59,10 +59,16 @@ def test_experiment_rejects_split_gap_shorter_than_purge_gap() -> None:
 
 def test_experiment_rejects_test_future_window_outside_observation() -> None:
     values = _experiment_values()
-    values["splits"]["test"]["end"] = "2025-10-03"  # type: ignore[index]
+    values["splits"]["test"]["end"] = "2025-10-04"  # type: ignore[index]
 
     with pytest.raises(ValueError, match="future-label windows"):
         ExperimentConfig.model_validate(values)
+
+
+def test_experiment_accepts_exclusive_end_after_last_observed_day() -> None:
+    values = _experiment_values()
+    values["splits"]["test"]["end"] = "2025-10-03"  # type: ignore[index]
+    assert ExperimentConfig.model_validate(values).splits["test"].end == date(2025, 10, 3)
 
 
 def test_checked_in_experiment_config_is_valid() -> None:

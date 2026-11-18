@@ -109,3 +109,36 @@ ossustain-pipeline --config pipeline/config.yaml collect --report pipeline/data/
 ```
 
 The collector follows GitHub pagination, ETags, and rate limits; stores progress after each page so an interrupted run can resume; and writes a per-repository JSON completeness report with cumulative stored-commit counts. Rerunning a completed cohort skips its commit history; pass `--refresh` to start a new history snapshot. Collection cache, reports, and raw local data stay under the ignored `pipeline/data/` directory. See [docs/database.md](docs/database.md) for the run log and progress tables.
+
+## Phase 5 snapshots and labels
+
+After Phase 4 collection and validation, start the backend once so Flyway applies V6.
+Then run the snapshot builder from the repository root with the pipeline environment activated:
+
+```powershell
+ossustain-pipeline --config pipeline/config.example.yaml build-snapshots
+python -m pytest -c pipeline/pyproject.toml
+python -m ruff check pipeline/src pipeline/tests
+```
+
+The command reads `config/cohort.yaml`, `config/experiment.yaml`, and
+`pipeline/data/reports/phase4-validation.json`. Override these with `--cohort`,
+`--experiment`, and `--quality-report`; use `--report` to change the default
+`pipeline/data/reports/phase5-snapshots.json` output. It makes no GitHub requests.
+The report includes label prevalence by prediction date, split, and size group,
+plus sensitivity at 0.3/0.5/0.7. Incomplete futures are null; low-reference activity
+is unlabeled. Purged dates never belong to a training, validation, or test split.
+
+To verify database reruns against the already collected local cohort:
+
+```powershell
+$env:OSSUSTAIN_TEST_SNAPSHOTS='1'
+python -m pytest -c pipeline/pyproject.toml
+Remove-Item Env:OSSUSTAIN_TEST_SNAPSHOTS
+```
+
+This optional test writes/reuses the research snapshot dataset and checks that IDs,
+counts, and labels remain unchanged on rerun. It requires migrated PostgreSQL and
+the local Phase 4 validation report. The ordinary suite skips this test when the
+flag is unset. See [docs/phase5-snapshots.md](docs/phase5-snapshots.md) for window
+semantics, exclusions, versioning, and measured results.
