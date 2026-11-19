@@ -6,22 +6,23 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–4 are complete. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–5 are complete. Phase 5 adds 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 5: Snapshots and Labels — in progress, authorized by the owner
+Phase 5: Snapshots and Labels — complete; Phase 6 not started
 
 ## Current Task
-Verify the Phase 5 snapshot builder against the collected cohort, check rerun idempotence, and publish the prevalence summary. Phase 4 PR #4 remains open; this branch includes its prerequisites and does not duplicate another teammate's work.
+Phase 5 acceptance is complete and [PR #5](https://github.com/Sonusajith/OSSustain/pull/5) is open into main. Phase 4 PR #4 remains a prerequisite; merge it first. This branch includes those commits and the measured results/handoff.
 
 ## Last Completed Task
-Completed Phase 4 acceptance and Definition of Done: PR/review/issue collection completed for all 50 repositories; the local report records 50/50 processed and zero failed. Validation confirms all stages complete and flags four repositories for two one-record screening mismatches and two zero-event cohorts. Phase 4 lifetime usage was 7,919 PR/review/response requests and 5,090 issue/response requests, within the 12,500 and 25,000 caps. The Phase 4 quality summary is in `docs/phase4-data-quality.md`; detailed JSON reports remain in ignored `pipeline/data/reports/`.
+Built 46 snapshots per repository for all 50 repositories using the frozen protocol (theta 0.5, 20 minimum reference commits, 90-day windows, 30-day interval). Dataset ID 1 / hash `20186258c8680c150ec8834af87bff9b4e9c950efef22ee8f022c2f8b8dcccab` was produced by committed revision `61ecefb`. Independent SQL found zero count/label mismatches. Reruns preserve version, snapshot IDs, and labels. See `docs/phase5-snapshots.md` for actual prevalence by date, split, size group, and thresholds 0.3/0.5/0.7.
 
 ## Completed Phases
 Phase 1: Foundation
 Phase 2: Research Protocol and Cohort Selection
 Phase 3: Data Collection I (Repository metadata and commits)
 Phase 4: Data Collection II (PRs, reviews, issues) and Validation
+Phase 5: Snapshots and Labels
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -29,18 +30,21 @@ Phase 4: Data Collection II (PRs, reviews, issues) and Validation
 - Phase 3: privacy-filtered GitHub REST cache and client; repository metadata and commit collection; HMAC contributor identities; idempotent page-level resume; collection run history; full-cohort report.
 - Phase 4: privacy-filtered PR/review/issue collection; first-response timestamps; request caps with durable append-only local journal; resumable, idempotent stages; pagination fallback for single-day GitHub Search overflow; per-repository quality validation.
 
+- Phase 5: versioned snapshot builder, UTC half-open windows, explicit unlabeled reasons, chronological split/purge assignment, input fingerprints, atomic reruns, and prevalence summaries.
+
 ## Features In Progress
-Phase 5: `build-snapshots`, Flyway V6 research dataset/snapshot tables, UTC boundary and purge-gap tests, and label prevalence at the frozen 0.5 threshold with 0.3/0.7 sensitivity summaries.
+None. Phase 5 meets its Definition of Done; Phase 6 awaits owner confirmation.
 
 ## Pending Tasks
-- Finish Phase 5 database acceptance, record actual prevalence, and open its PR (depends on Phase 4 PR #4).
-- Local Phase 4 reports: `pipeline/data/reports/phase4-full.json` and `pipeline/data/reports/phase4-validation.json` (ignored by Git); committed aggregate summary: `docs/phase4-data-quality.md`.
+- Review and merge Phase 4 PR #4 before the dependent Phase 5 PR.
+- Phase 6: leakage-safe feature engineering, only after owner confirmation.
+- Local detailed reports remain ignored in `pipeline/data/reports/`; aggregate results are committed in `docs/phase4-data-quality.md` and `docs/phase5-snapshots.md`.
 
 ## Known Bugs
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-No collection blockers. Four quality flags remain documented. The local token and hash secret remain in ignored `.env` and were not committed.
+No Phase 5 implementation blockers. Most snapshots fall below the frozen minimum activity; only 342 labeled snapshots belong to train/validation/test (164/90/88). Treat this as a sample-size limitation, not a reason to retune thresholds using test results. Four Phase 4 quality flags remain retained.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -92,16 +96,14 @@ None.
 Cohort Overview (Phase 10), Repository Detail (Phase 11), Research Results and Methodology & Limitations (Phase 12). Repository Comparison (Phase 14, post-MVP).
 
 ## Temporary Workarounds
-Used a temporary Apache Maven 3.10.0 download, SHA-512 verified against Apache, for backend checks because Maven was absent from PATH. Docker Desktop/Compose was available through an elevated shell for PostgreSQL and Testcontainers checks.
+Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Windows backend tests. GitHub CLI is absent and the collection token cannot create PRs (HTTP 403); PR #5 was created through the signed-in browser without expanding token permissions.
 
 ## Testing Status
-- Phase 5 implementation: 58 Python tests passed; the opt-in live snapshot test is pending. Ruff passed. Backend: 8 tests passed, including snapshot constraints and V1–V6 migrations. Local PostgreSQL has been migrated to V6 through Spring Boot/Flyway.
-- Python pipeline: 32 tests passed; Ruff passed, including privacy filtering, search overflow fallback, request accounting, and resume behavior.
-- Frontend: ESLint passed; 2 Vitest tests passed; TypeScript check and Vite production build passed. Vite reported ready; the sandbox blocked a loopback HTTP probe.
-- Backend: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` passed: 7 tests, 0 failures, 0 errors, 0 skipped; Flyway applied migrations V1–V5. The timezone property is needed for Testcontainers on this Windows environment.
-- Compose PostgreSQL 16.15 was healthy (`pg_isready` accepted connections). The service was left running for the user.
-- Pipeline uses Python 3.12.12 with the pinned lockfile in the ignored local `.venv`; the live full-cohort rerun completed 50/50 stages. Validation reports 46 repositories without quality flags and four flagged as documented above.
-- Frontend (Vite 8.3.5): dev server reported ready on `127.0.0.1:5173`; ESLint exited 0; 2 Vitest tests passed; TypeScript check and production build passed. Direct HTTP probing is blocked by environment socket permissions.
+- Phase 5 Python: 59 tests passed with `OSSUSTAIN_TEST_SNAPSHOTS=1`, including real-database rerun idempotency; Ruff passed. Without that flag, 58 pass and the local-database test is skipped.
+- Backend: 8 tests passed with `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test`; includes V1–V6 migrations and constraints against incomplete labels and duplicate snapshot keys.
+- Local PostgreSQL migrated to V6 through Spring Boot/Flyway; temporary backend process stopped afterward, PostgreSQL left running.
+- Full cohort: 2,300 snapshots, 395 labeled (149 positive at theta 0.5), 1,755 low-reference, 150 incomplete-future. Of the labeled rows, 53 are purged and never eligible for modeling. Independent SQL recomputation: zero mismatches.
+- Earlier frontend foundation checks passed (ESLint, 2 Vitest tests, TypeScript/build); frontend untouched in Phase 5.
 
 ## Deployment Status
 Not started.
@@ -112,7 +114,7 @@ Not started.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Finish Phase 5 live database acceptance and prevalence reporting; do not begin Phase 6 without owner confirmation.
+Review the Phase 5 PR and measured summary, merging Phase 4 prerequisites first. After owner confirmation, begin Phase 6 feature engineering from the versioned `snapshots` table; filter both split and label_status for modeling. Do not use future activity as a feature.
 
 ## Last Updated
-2026-11-18, `phase-5/snapshots-labels` — owner authorized Phase 5; implementation and boundary tests ready, live database acceptance pending.
+2026-11-19, `phase-5/snapshots-labels` — Phase 5 completed and verified; snapshot provenance, prevalence, sample-size limitation, and next-phase handoff recorded.

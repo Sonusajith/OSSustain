@@ -10,7 +10,7 @@ from test-period results. Features and models are outside this phase.
 The schedule starts at observation_start + reference_window_days (2022-04-01),
 then advances exactly 30 days through observation_end. It does not restart at
 split boundaries or round to calendar months. All boundaries are midnight UTC.
-Reference activity uses [t−90 days, t); future activity uses [t, t+90 days).
+Reference activity uses [tâˆ’90 days, t); future activity uses [t, t+90 days).
 The last observation date is inclusive: 2025-12-31 means data are available up
 to, but not including, 2026-01-01 00:00 UTC. A future window ending exactly there
 is complete. Future counts are null if the entire future window is unavailable,
@@ -24,7 +24,7 @@ existing collector's `committed_at` field (author date, falling back to committe
 date); mutable Git history and historical bot classification remain limitations.
 
 Low reference activity is unlabeled, including zero reference commits. Label 1
-means future activity <= theta × reference activity; equality is inclusive.
+means future activity <= theta Ã— reference activity; equality is inclusive.
 Unlabeled records never enter prevalence denominators. A denominator of zero
 produces null prevalence, not zero.
 
@@ -68,9 +68,109 @@ file fails after the database commit. Detailed reports are ignored by Git.
 
 ## Acceptance results
 
-Full-cohort database acceptance and the measured prevalence summary are pending.
+Completed on 2026-11-18 against all 50 selected repositories. Dataset ID 1,
+version `20186258c8680c150ec8834af87bff9b4e9c950efef22ee8f022c2f8b8dcccab`,
+code revision `61ecefb111751b9d2cc9fe90313b2d2334a984c1`. The ignored detailed
+report is `pipeline/data/reports/phase5-snapshots.json`; the same summary is
+stored in `dataset_versions.summary`.
+
+There are **2,300 snapshots**: 46 per repository, from 2022-04-01 to 2025-12-11.
+Of these, 395 are labeled, 1,755 have insufficient reference activity, and 150
+have incomplete futures. The 53 labeled snapshots in purge gaps are excluded
+from modeling, leaving **342 eligible labeled snapshots** (164 train, 90
+validation, 88 test). All 50 repositories remain in the dataset.
+
+The observation period contains 18,630 stored commits: 4,028 known-bot commits
+excluded and 521 unlinked-author commits retained in activity. These are
+observation-period counts, not the 55,206 commits across full collected history.
+
+All **59 Python tests passed**, including the live database idempotency test;
+Ruff passed. All **8 backend tests passed**. Repeated builds preserved the same
+version, IDs, counts, and labels. Independent SQL recomputed every snapshot's
+counts and primary label: **zero mismatches**, and no incomplete labeled windows.
+Flyway V6 applied to the local database; no collection or raw-data records changed.
+
+The large low-activity fraction limits the size of the future modeling sample.
+Overlapping windows and repeated repositories mean snapshots are not independent
+observations. Keep the frozen parameters; do not tune thresholds using these test
+period prevalences. Four Phase 4 quality flags remain attached to the summary.
 Unit tests cover half-open UTC boundaries, incomplete futures, the minimum
 reference count, inclusive thresholds, purge gaps, and exclusion of unlabeled
 records from prevalence. Backend tests verify V6 and reject incomplete labels
 and duplicate version/repository/date keys. The optional local-database test
 checks repeatability, stable IDs, and absence of incomplete labeled windows.
+
+## Measured prevalence
+
+All size-group totals below include labeled purge-gap snapshots for descriptive
+reporting. Modeling must use only labeled train/validation/test rows. Values are
+positive labels / eligible labels, followed by prevalence.
+
+### By split
+
+| Group | Snapshots | Labeled | Theta 0.3 | Theta 0.5 | Theta 0.7 |
+|---|---:|---:|---:|---:|---:|
+| train | 800 | 164 | 43/164 (26.2%) | 61/164 (37.2%) | 85/164 (51.8%) |
+| validation | 450 | 90 | 29/90 (32.2%) | 41/90 (45.6%) | 52/90 (57.8%) |
+| test | 600 | 88 | 10/88 (11.4%) | 24/88 (27.3%) | 32/88 (36.4%) |
+| purged | 300 | 53 | 14/53 (26.4%) | 23/53 (43.4%) | 26/53 (49.1%) |
+| unassigned | 150 | 0 | Unavailable (0 labeled) | Unavailable (0 labeled) | Unavailable (0 labeled) |
+
+### By size group
+
+| Group | Snapshots | Labeled | Theta 0.3 | Theta 0.5 | Theta 0.7 |
+|---|---:|---:|---:|---:|---:|
+| large | 736 | 135 | 23/135 (17.0%) | 38/135 (28.1%) | 55/135 (40.7%) |
+| medium | 782 | 168 | 42/168 (25.0%) | 70/168 (41.7%) | 88/168 (52.4%) |
+| small | 782 | 92 | 31/92 (33.7%) | 41/92 (44.6%) | 52/92 (56.5%) |
+
+### By prediction date (primary theta 0.5)
+
+| UTC prediction date | Split | Labeled | Positive | Prevalence |
+|---|---|---:|---:|---:|
+| 2022-04-01 | train | 10 | 2 | 20.0% |
+| 2022-05-01 | train | 10 | 4 | 40.0% |
+| 2022-05-31 | train | 10 | 4 | 40.0% |
+| 2022-06-30 | train | 8 | 4 | 50.0% |
+| 2022-07-30 | train | 8 | 1 | 12.5% |
+| 2022-08-29 | train | 9 | 1 | 11.1% |
+| 2022-09-28 | train | 10 | 2 | 20.0% |
+| 2022-10-28 | train | 10 | 4 | 40.0% |
+| 2022-11-27 | train | 10 | 4 | 40.0% |
+| 2022-12-27 | train | 10 | 4 | 40.0% |
+| 2023-01-26 | train | 10 | 3 | 30.0% |
+| 2023-02-25 | train | 12 | 5 | 41.7% |
+| 2023-03-27 | train | 12 | 8 | 66.7% |
+| 2023-04-26 | train | 12 | 7 | 58.3% |
+| 2023-05-26 | train | 11 | 4 | 36.4% |
+| 2023-06-25 | train | 12 | 4 | 33.3% |
+| 2023-07-25 | purged | 11 | 3 | 27.3% |
+| 2023-08-24 | purged | 12 | 6 | 50.0% |
+| 2023-09-23 | purged | 10 | 5 | 50.0% |
+| 2023-10-23 | validation | 10 | 6 | 60.0% |
+| 2023-11-22 | validation | 8 | 5 | 62.5% |
+| 2023-12-22 | validation | 8 | 3 | 37.5% |
+| 2024-01-21 | validation | 8 | 2 | 25.0% |
+| 2024-02-20 | validation | 10 | 5 | 50.0% |
+| 2024-03-21 | validation | 8 | 3 | 37.5% |
+| 2024-04-20 | validation | 13 | 4 | 30.8% |
+| 2024-05-20 | validation | 13 | 6 | 46.2% |
+| 2024-06-19 | validation | 12 | 7 | 58.3% |
+| 2024-07-19 | purged | 7 | 4 | 57.1% |
+| 2024-08-18 | purged | 7 | 4 | 57.1% |
+| 2024-09-17 | purged | 6 | 1 | 16.7% |
+| 2024-10-17 | test | 7 | 0 | 0.0% |
+| 2024-11-16 | test | 9 | 4 | 44.4% |
+| 2024-12-16 | test | 9 | 2 | 22.2% |
+| 2025-01-15 | test | 11 | 4 | 36.4% |
+| 2025-02-14 | test | 9 | 4 | 44.4% |
+| 2025-03-16 | test | 7 | 2 | 28.6% |
+| 2025-04-15 | test | 6 | 1 | 16.7% |
+| 2025-05-15 | test | 7 | 2 | 28.6% |
+| 2025-06-14 | test | 6 | 1 | 16.7% |
+| 2025-07-14 | test | 6 | 1 | 16.7% |
+| 2025-08-13 | test | 5 | 1 | 20.0% |
+| 2025-09-12 | test | 6 | 2 | 33.3% |
+| 2025-10-12 | unassigned | 0 | 0 | Unavailable |
+| 2025-11-11 | unassigned | 0 | 0 | Unavailable |
+| 2025-12-11 | unassigned | 0 | 0 | Unavailable |

@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
 **Current Phase:** Phase 5: Snapshots and Labels
-**Current Status:** Owner authorized Phase 5. Snapshot construction, versioned persistence, and boundary tests are implemented; full-cohort database acceptance and prevalence reporting are in progress. Phase 4 meets its Definition of Done; its four quality flags remain recorded.
+**Current Status:** Phase 5 meets its Definition of Done. All 50 repositories have 46 versioned snapshots each; 395 labels are available, including 53 in purge gaps. Boundary, database, and idempotency checks passed; prevalence and frozen parameters are recorded in `docs/phase5-snapshots.md`. Phase 6 awaits owner confirmation.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

@@ -74,6 +74,20 @@ The Python collector writes repository metadata and commit history to `repositor
 
 The Phase 4 command collects date-bounded pull requests, reviews, non-pull-request issues, and first-response timestamps. Search ranges are partitioned at GitHub's 1,000-result limit; when one calendar day exceeds that limit, the collector pages the repository issue endpoint and filters to the frozen observation window. Request caps use the larger of the database run-history total and the durable local ledger total, preventing double counting across restarts. The ledger defaults to `%LOCALAPPDATA%/ossustain/phase4-budget-ledger.json` with an append-only `.journal`; set `OSSUSTAIN_BUDGET_LEDGER` to override its location. Every request reservation is flushed before the HTTP attempt. A rerun skips completed stages, safely upserts partially saved records, and recollects reviews if a later pull-request pass added records. If a process stops, a later run marks run rows older than ten minutes as failed before resuming. Run `ossustain-pipeline validate` after collection to write a per-repository quality report comparing actual PR and issue counts with the frozen screening counts, showing response missingness, stage completeness, and insufficient-data flags. The approved caps are 12,500 requests for pull requests/reviews/responses and 25,000 for non-pull-request issues and responses.
 
+## Phase 5 research snapshots
+
+Flyway V6 adds `dataset_versions` and `snapshots`. The Python `build-snapshots`
+command writes these tables in a single transaction and makes no schema changes.
+Each dataset stores its configuration, source and implementation fingerprints,
+code revision, and prevalence summary. Snapshot uniqueness is scoped to dataset,
+repository, and prediction date; reruns preserve IDs and recorded values.
+
+The V3 `repo_windows` and `labels` tables above remain the development-seed and
+dashboard scaffold. Research feature engineering should consume `snapshots`,
+whose explicit `label_status` and `split` distinguish low activity, incomplete
+futures, and purge gaps. Model inputs must filter `label_status = 'labeled'` and
+the desired train/validation/test split. See [phase5-snapshots.md](phase5-snapshots.md).
+
 ## Development seed
 
 The SQL seed contains three clearly synthetic repositories, twelve monthly windows per repository, labels, one primary baseline model, predictions, and two indicators per prediction. It lives outside Flyway's `db/migration` directory, so application startup never loads sample data. Run it only against a local development database after migrations have applied:
