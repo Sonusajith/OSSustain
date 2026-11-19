@@ -13,6 +13,7 @@ from ossustain_pipeline.collect.validation import build_quality_report
 from ossustain_pipeline.config import load_config
 from ossustain_pipeline.db import connect
 from ossustain_pipeline.experiment import load_experiment_config
+from ossustain_pipeline.features.runner import build_features
 from ossustain_pipeline.github.cache import JsonResponseCache
 from ossustain_pipeline.github.client import GitHubClient
 from ossustain_pipeline.snapshots.runner import build_snapshots
@@ -128,6 +129,16 @@ def build_parser() -> argparse.ArgumentParser:
     )
     snapshots_parser.add_argument(
         "--report", type=Path, default=Path("pipeline/data/reports/phase5-snapshots.json")
+    )
+    features_parser = commands.add_parser(
+        "build-features", help="Build versioned leakage-safe snapshot features and display metrics."
+    )
+    features_parser.add_argument(
+        "--dataset-version-id", type=int,
+        help="Phase 5 dataset version (default: the most recently created version).",
+    )
+    features_parser.add_argument(
+        "--report", type=Path, default=Path("pipeline/data/reports/phase6-features.json")
     )
     return parser
 
@@ -257,6 +268,24 @@ def main() -> None:
         print(
             f"Snapshot report: {args.report}; dataset {report['dataset_version_id']}; "
             f"{report['overall']['snapshots']} snapshots, {report['overall']['labeled']} labeled."
+        )
+    elif args.command == "build-features":
+        if args.dataset_version_id is not None and args.dataset_version_id < 1:
+            parser.error("--dataset-version-id must be at least 1")
+        try:
+            config = load_config(args.config)
+            with connect(config) as connection:
+                report = build_features(
+                    connection,
+                    dataset_version_id=args.dataset_version_id,
+                    report_path=args.report,
+                )
+        except ValueError as error:
+            parser.error(str(error))
+        print(
+            f"Feature report: {args.report}; feature set {report['feature_set_id']}; "
+            f"{report['snapshots']} snapshots, {report['features']} features; "
+            f"{report['labeled_train_validation_test_snapshots']} eligible labeled snapshots."
         )
     else:
         parser.print_help()
