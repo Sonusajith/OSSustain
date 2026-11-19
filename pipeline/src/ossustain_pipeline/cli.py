@@ -16,6 +16,8 @@ from ossustain_pipeline.experiment import load_experiment_config
 from ossustain_pipeline.features.runner import build_features
 from ossustain_pipeline.github.cache import JsonResponseCache
 from ossustain_pipeline.github.client import GitHubClient
+from ossustain_pipeline.modeling.config import load_modeling_config
+from ossustain_pipeline.modeling.runner import train_and_evaluate
 from ossustain_pipeline.snapshots.runner import build_snapshots
 
 
@@ -83,7 +85,9 @@ def build_parser() -> argparse.ArgumentParser:
         help="Collect pull requests, reviews, issues, and first responses under request caps.",
     )
     collaboration_parser.add_argument(
-        "--cohort", type=Path, default=Path("config/cohort.yaml"),
+        "--cohort",
+        type=Path,
+        default=Path("config/cohort.yaml"),
         help="Selected cohort YAML file.",
     )
     collaboration_parser.add_argument(
@@ -93,11 +97,15 @@ def build_parser() -> argparse.ArgumentParser:
         "--limit", type=int, help="Optional repository limit for a development smoke run."
     )
     collaboration_parser.add_argument(
-        "--pr-request-cap", type=int, default=12_500,
+        "--pr-request-cap",
+        type=int,
+        default=12_500,
         help="Hard cap for PR, review, and PR-response API requests (default: 12500).",
     )
     collaboration_parser.add_argument(
-        "--issue-request-cap", type=int, default=25_000,
+        "--issue-request-cap",
+        type=int,
+        default=25_000,
         help="Hard cap for non-PR issue and response API requests (default: 25000).",
     )
     validate_parser = commands.add_parser(
@@ -105,16 +113,20 @@ def build_parser() -> argparse.ArgumentParser:
         help="Check collection completeness and write a per-repository quality report.",
     )
     validate_parser.add_argument(
-        "--cohort", type=Path, default=Path("config/cohort.yaml"),
+        "--cohort",
+        type=Path,
+        default=Path("config/cohort.yaml"),
         help="Selected cohort YAML file.",
     )
     validate_parser.add_argument(
-        "--issue-screen", type=Path,
+        "--issue-screen",
+        type=Path,
         default=Path("pipeline/data/reports/phase4-issue-budget.json"),
         help="Optional issue-count screen used to check collection completeness.",
     )
     validate_parser.add_argument(
-        "--report", type=Path,
+        "--report",
+        type=Path,
         default=Path("pipeline/data/reports/phase4-validation.json"),
         help="Quality report output path.",
     )
@@ -134,11 +146,22 @@ def build_parser() -> argparse.ArgumentParser:
         "build-features", help="Build versioned leakage-safe snapshot features and display metrics."
     )
     features_parser.add_argument(
-        "--dataset-version-id", type=int,
+        "--dataset-version-id",
+        type=int,
         help="Phase 5 dataset version (default: the most recently created version).",
     )
     features_parser.add_argument(
         "--report", type=Path, default=Path("pipeline/data/reports/phase6-features.json")
+    )
+    train_parser = commands.add_parser(
+        "train",
+        help="Tune models on validation, evaluate final models on test, and store results.",
+    )
+    train_parser.add_argument("--model-config", type=Path, default=Path("config/modeling.yaml"))
+    train_parser.add_argument("--dataset-version-id", type=int)
+    train_parser.add_argument("--feature-set-id", type=int)
+    train_parser.add_argument(
+        "--report", type=Path, default=Path("pipeline/data/reports/phase7-models.json")
     )
     return parser
 
@@ -260,8 +283,11 @@ def main() -> None:
             experiment = load_experiment_config(args.experiment)
             with connect(config) as connection:
                 report = build_snapshots(
-                    connection, cohort, experiment,
-                    quality_report=args.quality_report, report_path=args.report,
+                    connection,
+                    cohort,
+                    experiment,
+                    quality_report=args.quality_report,
+                    report_path=args.report,
                 )
         except ValueError as error:
             parser.error(str(error))
@@ -286,6 +312,29 @@ def main() -> None:
             f"Feature report: {args.report}; feature set {report['feature_set_id']}; "
             f"{report['snapshots']} snapshots, {report['features']} features; "
             f"{report['labeled_train_validation_test_snapshots']} eligible labeled snapshots."
+        )
+    elif args.command == "train":
+        if args.dataset_version_id is not None and args.dataset_version_id < 1:
+            parser.error("--dataset-version-id must be at least 1")
+        if args.feature_set_id is not None and args.feature_set_id < 1:
+            parser.error("--feature-set-id must be at least 1")
+        try:
+            pipeline_config = load_config(args.config)
+            modeling_config = load_modeling_config(args.model_config)
+            with connect(pipeline_config) as connection:
+                report = train_and_evaluate(
+                    connection,
+                    modeling_config,
+                    dataset_version_id=args.dataset_version_id,
+                    feature_set_id=args.feature_set_id,
+                    report_path=args.report,
+                )
+        except ValueError as error:
+            parser.error(str(error))
+        selected = sum(model["selected"] for model in report["models"])
+        print(
+            f"Model report: {args.report}; dataset {report['dataset_version_id']}; "
+            f"{len(report['models'])} model runs, {selected} selected feature-family models."
         )
     else:
         parser.print_help()

@@ -82,7 +82,13 @@ class CoreSchemaIntegrationTest {
     void migrationsApplyToAnEmptyPostgres16Database() throws SQLException {
         assertThat(queryStrings("SELECT version FROM flyway_schema_history "
                 + "WHERE success ORDER BY installed_rank"))
-                .containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6", "7");
+                .containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6", "7", "8");
+    }
+
+    @Test
+    void versionedPredictionsRequireBothModelAndSnapshotReferences() {
+        assertSqlState("INSERT INTO predictions (risk_score, risk_level) VALUES (0.5, 'medium')",
+                "23514");
     }
 
     @Test
@@ -94,7 +100,8 @@ class CoreSchemaIntegrationTest {
                 "pull_requests", "reviews", "collection_progress", "repo_windows", "labels",
                 "model_runs", "predictions", "risk_indicators", "collection_runs",
                 "dataset_versions", "snapshots", "feature_sets", "feature_definitions",
-                "snapshot_features", "repository_metrics_monthly");
+                "snapshot_features", "repository_metrics_monthly", "model_versions",
+                "evaluation_results", "feature_importances");
 
         assertThat(queryStrings("SELECT table_name FROM information_schema.views "
                 + "WHERE table_schema = 'public'"))

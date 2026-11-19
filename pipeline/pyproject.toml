@@ -11,6 +11,8 @@ dependencies = [
     "psycopg[binary]==3.3.6",
     "pydantic==2.14.1",
     "PyYAML==6.0.3",
+    "scikit-learn==1.9.1",
+    "joblib==1.6.0",
 ]
 
 [project.optional-dependencies]
