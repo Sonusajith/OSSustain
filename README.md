@@ -199,3 +199,27 @@ decline. The pipeline stores the cutoffs, prediction date, probability, category
 limitation flags, and model/dataset references. Explanations compare each observed
 feature with its validation median one feature at a time and describe associations,
 not causes. See [`docs/phase8-predictions.md`](docs/phase8-predictions.md).
+
+## Phase 9 backend read API
+
+Start PostgreSQL and the Spring Boot API after Flyway has applied migrations V1–V9:
+
+```powershell
+docker compose up -d postgres
+mvn -f backend/pom.xml spring-boot:run
+```
+
+The API reads stored results at `http://localhost:8080/api/v1`. It provides the
+cohort repository list and detail, monthly metrics, prediction history and
+latest prediction with indicators, plus model versions, evaluations, feature
+importance, dataset summary, and label/methodology definitions. The OpenAPI 3.1
+contract is served at <http://localhost:8080/openapi.yaml>. The health endpoint
+remains at <http://localhost:8080/actuator/health>.
+
+The default CORS origin is `http://localhost:5173`. Set `FRONTEND_ORIGIN` in the
+backend environment to a comma-separated list when using another frontend URL.
+Run the read API integration and migration tests with Docker available:
+
+```powershell
+mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test
+```

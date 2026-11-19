@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 8: Predictions, Explanations, and Model Versioning
-**Current Status:** Phase 7 merged to `main` in PR #7 (`04cf1f7`) and meets its Definition of Done. Phase 8 implementation and dataset 1 run are complete on `phase-8/predictions-explanations`; review/merge is pending. Owner authorized Phase 8 on 2026-11-19.
+**Current Phase:** Phase 9: Backend Read API
+**Current Status:** Phase 8 merged to `main` in PR #8 (`ced3c39`). Phase 9 implementation is complete on `phase-9/backend-read-api`, with 14 backend tests passing; PR review/merge is pending. Do not start Phase 10 until the owner confirms the merge.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
