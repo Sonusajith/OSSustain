@@ -1,6 +1,6 @@
 # Database guide
 
-PostgreSQL stores the collected GitHub records and the results computed by the offline research pipeline. Flyway is the only schema owner; Spring Boot reads the stored data and does not create or update database objects. Migration V3 extends the V2 repository table and adds the core collection, window, label, model, and prediction tables. Migration V4 adds per-stage collection run history. Migration V5 adds Phase 4 run stages and GitHub review IDs for idempotent upserts. V8 adds versioned model, evaluation, and feature-importance records; it also allows predictions to reference either the legacy seeded model/window pair or the research model/snapshot pair. No Java entities are needed for this schema.
+PostgreSQL stores the collected GitHub records and the results computed by the offline research pipeline. Flyway is the only schema owner; Spring Boot reads the stored data and does not create or update database objects. Migration V3 extends the V2 repository table and adds the core collection, window, label, model, and prediction tables. Migration V4 adds per-stage collection run history. Migration V5 adds Phase 4 run stages and GitHub review IDs for idempotent upserts. V8 adds versioned model, evaluation, and feature-importance records and allows research predictions to reference a model/snapshot pair. V9 adds prediction dates, limitation flags, per-repository prediction outcomes, and per-prediction explanations. No Java entities are needed for this schema.
 
 All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `BIGINT GENERATED ALWAYS AS IDENTITY`. Contributor identity is stored only as a keyed HMAC-SHA256 `contributor_key`; names, logins, email addresses, and raw GitHub user IDs are not stored. Unknown GitHub authors and reviewers remain `NULL` so their records are preserved without invented identities.
 
@@ -22,6 +22,8 @@ All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `B
 - `feature_importances` stores standardized Logistic Regression coefficients or validation-set permutation importance. These values describe predictive association, not causation.
 - `predictions` stores either a legacy model run's score/category for a repository window or a research model version's score/category for a versioned snapshot. Model and target references must be present as a matching pair.
 - `risk_indicators` stores ranked, nonnegative feature weights and their risk direction and description for a prediction. A prediction cannot repeat a rank.
+- `prediction_outcomes` records one predicted result or a skip reason for every cohort repository and model version.
+- `prediction_explanations` stores up to five ranked per-prediction feature comparisons against validation medians. Direction and probability delta describe model association, not causation.
 
 Foreign keys cascade when dependent repository data or derived results are removed. Deleting a contributor sets attribution links to `NULL`; deleting a pull request removes its reviews. This preserves collected events when an anonymized contributor record is removed.
 
@@ -48,6 +50,8 @@ erDiagram
     model_versions ||--o{ feature_importances : ranks
     model_versions ||--o{ predictions : research
     predictions ||--o{ risk_indicators : explains
+    predictions ||--o{ prediction_explanations : explains
+    model_versions ||--o{ prediction_outcomes : generates
 ```
 
 `v_repo_latest_risk` is a read-only view over repositories, model runs, predictions, and windows. It returns the latest available window prediction from the primary model only. Repositories with no primary-model prediction do not appear in the view.
@@ -68,7 +72,8 @@ erDiagram
 | `labels` | Python label stage | Python evaluation stage and Spring Boot API |
 | `model_runs` | Python training/evaluation stage | Python prediction stage and Spring Boot API |
 | `predictions` | Python prediction stage | Spring Boot API |
-| `risk_indicators` | Python explanation stage | Spring Boot API |
+| `risk_indicators`, `prediction_explanations` | Python explanation stage | Spring Boot API |
+| `prediction_outcomes` | Python prediction stage | Python reporting and Spring Boot API |
 | `v_repo_latest_risk` | None; Flyway defines the view | Spring Boot API and read-only SQL inspection |
 
 Flyway migrations are the only database-structure writer. The dashboard reads through the Spring Boot API and never connects directly to PostgreSQL.
@@ -101,6 +106,9 @@ repository-clustered confidence intervals, and feature importance. The Phase 7
 pipeline writes only through these migrated tables. It writes trained joblib
 artifacts to ignored local `pipeline/artifacts/` paths. See
 [phase7-modeling.md](phase7-modeling.md) for the validation/test protocol.
+Flyway V9 stores predictions and per-repository skipped outcomes, adds
+validation-derived risk category cutoffs and limitation flags, and stores local
+feature indicators. See [phase8-predictions.md](phase8-predictions.md).
 
 ## Development seed
 

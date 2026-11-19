@@ -181,3 +181,21 @@ and validation permutation importance in PostgreSQL. Model artifacts and the
 run summary are local under ignored `pipeline/artifacts/` and `pipeline/data/`.
 See [`docs/phase7-modeling.md`](docs/phase7-modeling.md) for the selection
 protocol and cohort limitations.
+
+## Phase 8 predictions and explanations
+
+After Phase 7 has stored selected models and local artifacts, start the backend
+once to apply Flyway V9, then generate versioned predictions and explanations:
+
+```powershell
+ossustain-pipeline --config pipeline/config.example.yaml predict --dataset-version-id 1
+ossustain-pipeline --config pipeline/config.example.yaml explain --dataset-version-id 1
+```
+
+Model choice uses the highest validation PR-AUC among the models selected within
+each feature family. Risk categories use that model's validation-score tertiles;
+they are relative categories for this cohort, not calibrated probabilities of
+decline. The pipeline stores the cutoffs, prediction date, probability, category,
+limitation flags, and model/dataset references. Explanations compare each observed
+feature with its validation median one feature at a time and describe associations,
+not causes. See [`docs/phase8-predictions.md`](docs/phase8-predictions.md).

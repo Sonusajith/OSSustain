@@ -18,6 +18,7 @@ from ossustain_pipeline.github.cache import JsonResponseCache
 from ossustain_pipeline.github.client import GitHubClient
 from ossustain_pipeline.modeling.config import load_modeling_config
 from ossustain_pipeline.modeling.runner import train_and_evaluate
+from ossustain_pipeline.predictions.runner import generate_explanations, generate_predictions
 from ossustain_pipeline.snapshots.runner import build_snapshots
 
 
@@ -162,6 +163,20 @@ def build_parser() -> argparse.ArgumentParser:
     train_parser.add_argument("--feature-set-id", type=int)
     train_parser.add_argument(
         "--report", type=Path, default=Path("pipeline/data/reports/phase7-models.json")
+    )
+    predict_parser = commands.add_parser(
+        "predict", help="Score each repository's latest snapshot with a validation-selected model."
+    )
+    predict_parser.add_argument("--dataset-version-id", type=int)
+    predict_parser.add_argument(
+        "--report", type=Path, default=Path("pipeline/data/reports/phase8-predictions.json")
+    )
+    explain_parser = commands.add_parser(
+        "explain", help="Store ranked per-prediction feature indicators and their direction."
+    )
+    explain_parser.add_argument("--dataset-version-id", type=int)
+    explain_parser.add_argument(
+        "--report", type=Path, default=Path("pipeline/data/reports/phase8-explanations.json")
     )
     return parser
 
@@ -336,6 +351,34 @@ def main() -> None:
             f"Model report: {args.report}; dataset {report['dataset_version_id']}; "
             f"{len(report['models'])} model runs, {selected} selected feature-family models."
         )
+    elif args.command in {"predict", "explain"}:
+        if args.dataset_version_id is not None and args.dataset_version_id < 1:
+            parser.error("--dataset-version-id must be at least 1")
+        try:
+            pipeline_config = load_config(args.config)
+            with connect(pipeline_config) as connection:
+                if args.command == "predict":
+                    report = generate_predictions(
+                        connection,
+                        dataset_version_id=args.dataset_version_id,
+                        report_path=args.report,
+                    )
+                    print(
+                        f"Prediction report: {args.report}; model {report['model_version_id']}; "
+                        f"{report['predicted_count']} predicted, {report['skipped_count']} skipped."
+                    )
+                else:
+                    report = generate_explanations(
+                        connection,
+                        dataset_version_id=args.dataset_version_id,
+                        report_path=args.report,
+                    )
+                    print(
+                        f"Explanation report: {args.report}; model {report['model_version_id']}; "
+                        f"{report['predictions_explained']} predictions explained."
+                    )
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
     else:
         parser.print_help()
 

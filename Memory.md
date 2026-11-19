@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–6 are complete and merged to main. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–7 are complete and merged to main. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 7: Modeling and Temporal Evaluation — implementation complete; PR pending
+Phase 8: Predictions, Explanations, and Model Versioning
 
 ## Current Task
-Phase 6 PR #6 merged to main as `ba7dad5`. Phase 7 code and the frozen cohort evaluation are complete on `phase-7/modeling`; review/merge is pending.
+Phase 8 implementation is complete on `phase-8/predictions-explanations`; the local run stored predictions and explanations for all 50 cohort repositories. Commit and PR handoff are pending.
 
 ## Last Completed Task
-Phase 7 ran eight model configurations on dataset 1: threshold baseline, Logistic Regression, Random Forest, and Gradient Boosting for activity-only and extended features. Two models were selected using validation only. The paired test PR-AUC difference (extended minus activity-only) was +0.188 (95% repository-cluster bootstrap CI −0.059 to +0.391), which is inconclusive. Test data contain 88 labeled snapshots across 12 repositories (27.3% positive). Full results are in `docs/phase7-modeling.md`; the detailed local report is ignored at `pipeline/data/reports/phase7-models.json`. Phase 6 PR #6 merged at `ba7dad5` with 23 leakage-safe features for all snapshots. Phase 5 dataset 1 hash: `20186258c8680c150ec8834af87bff9b4e9c950efef22ee8f022c2f8b8dcccab`.
+Phase 8 added V9 prediction outcome/explanation storage and `predict` / `explain` commands. Dataset 1 selected model version 3 (activity-only Random Forest; validation PR-AUC 0.6470), derived risk boundaries 0.4445/0.6041 from train-fit validation probabilities, and generated 50 predictions with 50 stored skip/prediction outcomes and 150 indicators. Rerunning both stages preserved counts. Results and interpretation limits are in `docs/phase8-predictions.md`; ignored JSON reports are under `pipeline/data/reports/`. Phase 7 ran eight configurations on dataset 1 and found the extended-vs-activity paired test PR-AUC difference +0.188 (95% repository-cluster CI −0.059 to +0.391), inconclusive. Phase 7 merged in PR #7 (`04cf1f7`).
 
 ## Completed Phases
 Phase 1: Foundation
@@ -24,7 +24,7 @@ Phase 3: Data Collection I (Repository metadata and commits)
 Phase 4: Data Collection II (PRs, reviews, issues) and Validation
 Phase 5: Snapshots and Labels
 Phase 6: Feature Engineering
-Phase 7: Modeling and Temporal Evaluation — implementation complete; PR pending
+Phase 7: Modeling and Temporal Evaluation — merged to main in PR #7 (`04cf1f7`)
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -37,17 +37,17 @@ Phase 7: Modeling and Temporal Evaluation — implementation complete; PR pendin
 - Phase 7: frozen model grid, train-only preprocessing, validation-only hyperparameter/cutoff selection, held-out test evaluation, cluster-bootstrap intervals and paired feature-family comparison, validation importance, versioned model records, and local artifacts.
 
 ## Features In Progress
-Phase 7 implementation and evaluation are complete on `phase-7/modeling`; review/merge is pending.
+None. Phase 8 is complete locally and awaiting PR review/merge.
 
 ## Pending Tasks
-- Review and merge the Phase 7 pull request; do not begin Phase 8 until the owner confirms.
+- Review and merge the Phase 8 branch/PR; after owner confirmation, begin Phase 9.
 - Local detailed reports remain ignored in `pipeline/data/reports/`; aggregate results are committed in `docs/phase4-data-quality.md` and `docs/phase5-snapshots.md`.
 
 ## Known Bugs
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-Most snapshots fall below the frozen minimum activity; only 342 labeled snapshots belong to train/validation/test (164/90/88). Test has 88 snapshots from 12 repositories; the paired PR-AUC CI includes zero. Treat this as a sample-size limitation, not a reason to retune using test results. Four Phase 4 quality flags remain retained.
+No Phase 8 implementation blocker. The research sample remains limited: 342 labeled snapshots belong to train/validation/test (164/90/88); test has 88 snapshots from 12 repositories and the Phase 7 paired PR-AUC CI includes zero. Treat this as a sample-size limitation, not a reason to retune using test results. Four Phase 4 quality flags remain retained.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -70,13 +70,13 @@ Approved by the project owner: upgraded the backend from Spring Boot 3.5.16 to S
 ## Database Changes
 Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data tables, V4 `collection_runs`, and V5 Phase 4 run stages/review IDs.
 
-Phase 5 adds V6 `dataset_versions` and `snapshots` for immutable research inputs, label completeness, and chronological splits. Existing V3 `repo_windows`/`labels` remain the development-seed/dashboard scaffold; Phase 6 consumes the versioned research snapshots. Phase 6 adds V7 `feature_sets`, `feature_definitions`, `snapshot_features`, and `repository_metrics_monthly`, with dataset-consistent foreign keys and per-dataset content hashes. Phase 7 adds V8 `model_versions`, `evaluation_results`, and `feature_importances`, and extends `predictions` to reference either the legacy model/window pair or the versioned model/snapshot pair. The feature runner reads latest completed stages from `collection_runs`; resumable `collection_progress` covers commits only.
+Phase 5 adds V6 `dataset_versions` and `snapshots` for immutable research inputs, label completeness, and chronological splits. Existing V3 `repo_windows`/`labels` remain the development-seed/dashboard scaffold; Phase 6 consumes the versioned research snapshots. Phase 6 adds V7 `feature_sets`, `feature_definitions`, `snapshot_features`, and `repository_metrics_monthly`. Phase 7 adds V8 model/evaluation/importance records and versioned prediction references. Phase 8 adds V9 validation-derived risk cutoffs, prediction dates and limitation flags, per-repository prediction outcomes, and per-prediction explanations. The feature runner reads latest completed stages from `collection_runs`; resumable `collection_progress` covers commits only.
 
 ## API Changes
 Enabled Spring Boot Actuator health at `/actuator/health`. No product API endpoints yet.
 
 ## Important Files
-- `docker-compose.yml`, `.env.example`, `.gitignore`, `README.md`, `config/experiment.yaml`, `config/modeling.yaml`, `config/cohort-candidates.yaml`, `config/cohort.yaml`, `docs/methodology.md`, `docs/phase4-data-quality.md`, `docs/phase7-modeling.md`
+- `docker-compose.yml`, `.env.example`, `.gitignore`, `README.md`, `config/experiment.yaml`, `config/modeling.yaml`, `config/cohort-candidates.yaml`, `config/cohort.yaml`, `docs/methodology.md`, `docs/phase4-data-quality.md`, `docs/phase7-modeling.md`, `docs/phase8-predictions.md`
 - `backend/pom.xml`, `backend/src/main/`, `backend/src/test/`
 - `pipeline/pyproject.toml`, `pipeline/requirements.lock`, `pipeline/src/`, `pipeline/tests/`
 - `frontend/package.json`, `frontend/pnpm-lock.yaml`, `frontend/src/`
@@ -103,9 +103,10 @@ Cohort Overview (Phase 10), Repository Detail (Phase 11), Research Results and M
 Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Windows backend tests. GitHub CLI is absent and the collection token cannot create PRs (HTTP 403); PR #5 was created through the signed-in browser without expanding token permissions.
 
 ## Testing Status
-- Phase 7 Python: 74 tests passed, 1 existing opt-in local database test skipped; Ruff and CLI help passed. Unit checks cover hand-calculated metrics, tied ranks, cutoff choice, calibration bins, repository bootstrap, estimator repeatability, train-only imputation, and strict chronological split ordering.
-- Backend: 9 tests passed with `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test`; includes V1–V8 migrations and versioned prediction constraints.
-- Local PostgreSQL migrated to V8. The live Phase 7 run persisted 8 model versions (2 selected), 454 evaluation rows, and 78 feature-importance rows; six joblib artifacts are ignored under `pipeline/artifacts/`. The paired test PR-AUC difference was +0.188 (95% CI −0.059 to +0.391), inconclusive.
+- Python: `pytest pipeline/tests -q` — 80 passed, 1 existing opt-in snapshot DB test skipped. Ruff checks and formatting check for changed files passed. `predict --help` and `explain --help` passed.
+- Backend: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` — 9 tests passed, including fresh V1–V9 migration coverage.
+- Local PostgreSQL migrated to V9. Live Phase 8 rerun persisted 50 predictions/outcomes and 150 explanation indicators; all 50 repositories have a prediction and all were explained. Model version 3 has validation-derived risk cutoffs 0.4445/0.6041.
+- Phase 7 run persisted 8 model versions (2 selected), 454 evaluation rows, and 78 feature-importance rows; six joblib artifacts are ignored under `pipeline/artifacts/`. The paired test PR-AUC difference was +0.188 (95% CI −0.059 to +0.391), inconclusive.
 - Docker Desktop and local PostgreSQL remain running.
 - Full cohort: 2,300 snapshots, 395 labeled (149 positive at theta 0.5), 1,755 low-reference, 150 incomplete-future. Of the labeled rows, 53 are purged and never eligible for modeling. Independent SQL recomputation: zero mismatches.
 - Earlier frontend foundation checks passed (ESLint, 2 Vitest tests, TypeScript/build); frontend untouched in Phase 5.
@@ -119,7 +120,7 @@ Not started.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Review and merge the Phase 7 branch/PR. After owner confirmation, begin Phase 8; do not tune against the completed test results.
+Review and merge the Phase 8 branch/PR. After owner confirmation, begin Phase 9.
 
 ## Last Updated
-2026-11-19, `phase-7/modeling` — code/tests and held-out run complete; results documented; awaiting PR review/merge.
+2026-11-19, `phase-8/predictions-explanations` — Phase 8 code/tests and dataset 1 inference complete; awaiting PR review/merge.
