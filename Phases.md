@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 6: Feature Engineering
-**Current Status:** Phase 5 merged to `main` in PR #5 and meets its Definition of Done. Phase 6 implementation is complete on `phase-6/feature-engineering`; awaiting review/merge. Owner authorized Phase 6 on 2026-11-19.
+**Current Phase:** Phase 7: Modeling and Temporal Evaluation
+**Current Status:** Phase 6 merged to `main` in PR #6 (`ba7dad5`) and meets its Definition of Done. Phase 7 modeling and the frozen cohort run are complete on `phase-7/modeling`; PR review/merge is pending. Owner authorized Phase 7 on 2026-11-19.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

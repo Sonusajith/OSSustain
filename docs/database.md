@@ -1,6 +1,6 @@
 # Database guide
 
-PostgreSQL stores the collected GitHub records and the results computed by the offline research pipeline. Flyway is the only schema owner; Spring Boot reads the stored data and does not create or update database objects. Migration V3 extends the V2 repository table and adds the core collection, window, label, model, and prediction tables. Migration V4 adds per-stage collection run history. Migration V5 adds Phase 4 run stages and GitHub review IDs for idempotent upserts. No Java entities are needed for this schema.
+PostgreSQL stores the collected GitHub records and the results computed by the offline research pipeline. Flyway is the only schema owner; Spring Boot reads the stored data and does not create or update database objects. Migration V3 extends the V2 repository table and adds the core collection, window, label, model, and prediction tables. Migration V4 adds per-stage collection run history. Migration V5 adds Phase 4 run stages and GitHub review IDs for idempotent upserts. V8 adds versioned model, evaluation, and feature-importance records; it also allows predictions to reference either the legacy seeded model/window pair or the research model/snapshot pair. No Java entities are needed for this schema.
 
 All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `BIGINT GENERATED ALWAYS AS IDENTITY`. Contributor identity is stored only as a keyed HMAC-SHA256 `contributor_key`; names, logins, email addresses, and raw GitHub user IDs are not stored. Unknown GitHub authors and reviewers remain `NULL` so their records are preserved without invented identities.
 
@@ -17,7 +17,10 @@ All timestamps use `TIMESTAMPTZ` and represent UTC instants. Primary keys are `B
 - `repo_windows` stores a repository's time-bounded feature summary: contributor counts and diversity, newcomer retention, response and merge times, pull-request and review counts, activity score, and trend slopes. Unavailable measurements stay `NULL`. A window must end after it starts, and each repository has at most one row per end time.
 - `labels` stores the outcome for a window: forecast horizon, future activity score, decline ratio, decline flag, and label version. Labels describe future outcomes and must never be included as predictors for that same window.
 - `model_runs` stores the model family and version, chronological train/test boundaries, evaluation metrics, parameters, primary-model flag, and creation time. Train end must be on or before test start; metrics are bounded from zero to one. At most one model run can be primary at a time.
-- `predictions` stores a model run's risk score and low/medium/high category for a repository window. Risk scores are between zero and one, and a model run can predict a window only once.
+- `model_versions` stores algorithm, activity-only/extended feature family, frozen parameters, seed, dataset and feature-set keys, label configuration, code revision, local artifact path, validation threshold, and validation-selected status.
+- `evaluation_results` stores split/size-group metrics, sample/class counts, thresholds, calibration details, and repository-clustered confidence intervals.
+- `feature_importances` stores standardized Logistic Regression coefficients or validation-set permutation importance. These values describe predictive association, not causation.
+- `predictions` stores either a legacy model run's score/category for a repository window or a research model version's score/category for a versioned snapshot. Model and target references must be present as a matching pair.
 - `risk_indicators` stores ranked, nonnegative feature weights and their risk direction and description for a prediction. A prediction cannot repeat a rank.
 
 Foreign keys cascade when dependent repository data or derived results are removed. Deleting a contributor sets attribution links to `NULL`; deleting a pull request removes its reviews. This preserves collected events when an anonymized contributor record is removed.
@@ -38,8 +41,12 @@ erDiagram
     repositories ||--o{ collection_runs : records
     repositories ||--o{ repo_windows : summarizes
     repo_windows ||--o| labels : labels
-    repo_windows ||--o{ predictions : receives
-    model_runs ||--o{ predictions : produces
+    repo_windows ||--o{ predictions : legacy
+    snapshots ||--o{ predictions : research
+    model_runs ||--o{ predictions : legacy
+    model_versions ||--o{ evaluation_results : evaluates
+    model_versions ||--o{ feature_importances : ranks
+    model_versions ||--o{ predictions : research
     predictions ||--o{ risk_indicators : explains
 ```
 
@@ -87,6 +94,13 @@ dashboard scaffold. Research feature engineering should consume `snapshots`,
 whose explicit `label_status` and `split` distinguish low activity, incomplete
 futures, and purge gaps. Model inputs must filter `label_status = 'labeled'` and
 the desired train/validation/test split. See [phase5-snapshots.md](phase5-snapshots.md).
+
+Flyway V7 stores versioned features and their dictionary; Flyway V8 stores
+versioned models, split/stratum evaluation metrics, calibration details,
+repository-clustered confidence intervals, and feature importance. The Phase 7
+pipeline writes only through these migrated tables. It writes trained joblib
+artifacts to ignored local `pipeline/artifacts/` paths. See
+[phase7-modeling.md](phase7-modeling.md) for the validation/test protocol.
 
 ## Development seed
 

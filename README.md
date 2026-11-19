@@ -161,3 +161,23 @@ The stage makes no GitHub requests. It requires all four collection stages to be
 complete for every repository in the dataset. Feature definitions, strict cutoff
 rules, missing-value policy, and interpretation limits are in
 [`docs/phase6-features.md`](docs/phase6-features.md).
+
+## Phase 7 temporal modeling
+
+After V8 has been applied and the Phase 6 feature set exists, run the model
+stage:
+
+```powershell
+ossustain-pipeline --config pipeline/config.example.yaml train
+python -m pytest -c pipeline/pyproject.toml
+python -m ruff check pipeline/src pipeline/tests
+```
+
+The frozen search grid and seeds are in `config/modeling.yaml`. The stage uses
+only labeled snapshots assigned to train, validation, or test; tunes parameters
+and probability cutoffs on validation, then evaluates each final configuration
+on test once. It records scores, calibration bins, repository-clustered 95% CIs,
+and validation permutation importance in PostgreSQL. Model artifacts and the
+run summary are local under ignored `pipeline/artifacts/` and `pipeline/data/`.
+See [`docs/phase7-modeling.md`](docs/phase7-modeling.md) for the selection
+protocol and cohort limitations.
