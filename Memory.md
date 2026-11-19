@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–7 are complete and merged to main. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–8 are complete and merged to main. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 8: Predictions, Explanations, and Model Versioning
+Phase 9: Backend Read API
 
 ## Current Task
-Phase 8 implementation is complete on `phase-8/predictions-explanations`; the local run stored predictions and explanations for all 50 cohort repositories. Commit and PR handoff are pending.
+Phase 8 merged to main in PR #8 as `ced3c39`. Phase 9 implementation is complete on `phase-9/backend-read-api`; all documented read-only `/api/v1` endpoints, the OpenAPI contract, validation, standardized errors, and configurable CORS are implemented. The branch is ready for PR review/merge.
 
 ## Last Completed Task
-Phase 8 added V9 prediction outcome/explanation storage and `predict` / `explain` commands. Dataset 1 selected model version 3 (activity-only Random Forest; validation PR-AUC 0.6470), derived risk boundaries 0.4445/0.6041 from train-fit validation probabilities, and generated 50 predictions with 50 stored skip/prediction outcomes and 150 indicators. Rerunning both stages preserved counts. Results and interpretation limits are in `docs/phase8-predictions.md`; ignored JSON reports are under `pipeline/data/reports/`. Phase 7 ran eight configurations on dataset 1 and found the extended-vs-activity paired test PR-AUC difference +0.188 (95% repository-cluster CI −0.059 to +0.391), inconclusive. Phase 7 merged in PR #7 (`04cf1f7`).
+Phase 9 implementation: read-only repository and research endpoints backed by the versioned database, bounded filtering/pagination, consistent JSON errors, configurable CORS, and a served OpenAPI 3.1 contract. README run instructions updated. Backend integration and migration suite passes (14 tests); YAML parses with all 10 product paths. Changes are on `phase-9/backend-read-api` awaiting PR review/merge. Phase 8 merged in PR #8 (`ced3c39`): V9 prediction outcome/explanation storage and `predict` / `explain` commands. Dataset 1 selected model version 3 (activity-only Random Forest; validation PR-AUC 0.6470), derived risk boundaries 0.4445/0.6041 from train-fit validation probabilities, and generated 50 predictions with 50 stored outcomes and 150 indicators. Rerunning both stages preserved counts. Results are in `docs/phase8-predictions.md`. Phase 7's extended-vs-activity paired test PR-AUC difference was +0.188 (95% repository-cluster CI −0.059 to +0.391), inconclusive.
 
 ## Completed Phases
 Phase 1: Foundation
@@ -25,6 +25,7 @@ Phase 4: Data Collection II (PRs, reviews, issues) and Validation
 Phase 5: Snapshots and Labels
 Phase 6: Feature Engineering
 Phase 7: Modeling and Temporal Evaluation — merged to main in PR #7 (`04cf1f7`)
+Phase 8: Predictions, Explanations, and Model Versioning — merged to main in PR #8 (`ced3c39`)
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -37,17 +38,17 @@ Phase 7: Modeling and Temporal Evaluation — merged to main in PR #7 (`04cf1f7`
 - Phase 7: frozen model grid, train-only preprocessing, validation-only hyperparameter/cutoff selection, held-out test evaluation, cluster-bootstrap intervals and paired feature-family comparison, validation importance, versioned model records, and local artifacts.
 
 ## Features In Progress
-None. Phase 8 is complete locally and awaiting PR review/merge.
+Phase 9 backend read API is implemented on `phase-9/backend-read-api`, pending PR review/merge.
 
 ## Pending Tasks
-- Review and merge the Phase 8 branch/PR; after owner confirmation, begin Phase 9.
+- Review and merge Phase 9 branch/PR; after owner confirmation, begin Phase 10.
 - Local detailed reports remain ignored in `pipeline/data/reports/`; aggregate results are committed in `docs/phase4-data-quality.md` and `docs/phase5-snapshots.md`.
 
 ## Known Bugs
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-No Phase 8 implementation blocker. The research sample remains limited: 342 labeled snapshots belong to train/validation/test (164/90/88); test has 88 snapshots from 12 repositories and the Phase 7 paired PR-AUC CI includes zero. Treat this as a sample-size limitation, not a reason to retune using test results. Four Phase 4 quality flags remain retained.
+No current implementation blocker. The research sample remains limited: 342 labeled snapshots belong to train/validation/test (164/90/88); test has 88 snapshots from 12 repositories and the Phase 7 paired PR-AUC CI includes zero. Treat this as a sample-size limitation, not a reason to retune using test results. Four Phase 4 quality flags remain retained.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -73,7 +74,7 @@ Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data ta
 Phase 5 adds V6 `dataset_versions` and `snapshots` for immutable research inputs, label completeness, and chronological splits. Existing V3 `repo_windows`/`labels` remain the development-seed/dashboard scaffold; Phase 6 consumes the versioned research snapshots. Phase 6 adds V7 `feature_sets`, `feature_definitions`, `snapshot_features`, and `repository_metrics_monthly`. Phase 7 adds V8 model/evaluation/importance records and versioned prediction references. Phase 8 adds V9 validation-derived risk cutoffs, prediction dates and limitation flags, per-repository prediction outcomes, and per-prediction explanations. The feature runner reads latest completed stages from `collection_runs`; resumable `collection_progress` covers commits only.
 
 ## API Changes
-Enabled Spring Boot Actuator health at `/actuator/health`. No product API endpoints yet.
+Spring Boot Actuator health remains available at `/actuator/health`. Phase 9 adds read-only endpoints for repository list/detail, monthly metrics, prediction history/latest indicators, models, evaluations, feature importance, dataset summary, and label/feature definitions. Lists use bounded pagination and documented filters. Errors share `{timestamp,status,code,message,path}`. CORS defaults to `http://localhost:5173` and is configurable with `FRONTEND_ORIGIN`. OpenAPI 3.1 is served at `/openapi.yaml`.
 
 ## Important Files
 - `docker-compose.yml`, `.env.example`, `.gitignore`, `README.md`, `config/experiment.yaml`, `config/modeling.yaml`, `config/cohort-candidates.yaml`, `config/cohort.yaml`, `docs/methodology.md`, `docs/phase4-data-quality.md`, `docs/phase7-modeling.md`, `docs/phase8-predictions.md`
@@ -104,7 +105,8 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 
 ## Testing Status
 - Python: `pytest pipeline/tests -q` — 80 passed, 1 existing opt-in snapshot DB test skipped. Ruff checks and formatting check for changed files passed. `predict --help` and `explain --help` passed.
-- Backend: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` — 9 tests passed, including fresh V1–V9 migration coverage.
+- Backend before Phase 9: 9 tests passed, including fresh V1–V9 migration coverage. Phase 9 final run: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` — 14 tests passed (5 API integration test groups plus 9 existing migration/health checks); Testcontainers used Docker Desktop.
+- Phase 9 OpenAPI YAML parsed successfully with PyYAML: OpenAPI 3.1, 10 product paths, 17 schemas.
 - Local PostgreSQL migrated to V9. Live Phase 8 rerun persisted 50 predictions/outcomes and 150 explanation indicators; all 50 repositories have a prediction and all were explained. Model version 3 has validation-derived risk cutoffs 0.4445/0.6041.
 - Phase 7 run persisted 8 model versions (2 selected), 454 evaluation rows, and 78 feature-importance rows; six joblib artifacts are ignored under `pipeline/artifacts/`. The paired test PR-AUC difference was +0.188 (95% CI −0.059 to +0.391), inconclusive.
 - Docker Desktop and local PostgreSQL remain running.
@@ -120,7 +122,7 @@ Not started.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Review and merge the Phase 8 branch/PR. After owner confirmation, begin Phase 9.
+Review and merge Phase 9 from `phase-9/backend-read-api` (GitHub CLI is not installed; use the comparison link provided in the session). After the owner confirms the merge, begin Phase 10.
 
 ## Last Updated
-2026-11-19, `phase-8/predictions-explanations` — Phase 8 code/tests and dataset 1 inference complete; awaiting PR review/merge.
+2026-11-19, `phase-9/backend-read-api` — Phase 9 implementation and 14 backend tests complete; ready for PR review/merge.

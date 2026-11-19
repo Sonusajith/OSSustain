@@ -1,0 +1,345 @@
+openapi: 3.1.0
+info:
+  title: OSSustain Read API
+  version: 1.0.0
+  description: Read-only API for repository activity, predictions, evaluations, and methodology.
+servers:
+  - url: /api/v1
+paths:
+  /repositories:
+    get:
+      operationId: listRepositories
+      parameters:
+        - {name: risk, in: query, schema: {type: string, enum: [low, medium, high]}}
+        - {name: sizeGroup, in: query, schema: {type: string, enum: [small, medium, large]}}
+        - {name: q, in: query, schema: {type: string, maxLength: 100}}
+        - {name: page, in: query, schema: {type: integer, minimum: 0, maximum: 100000, default: 0}}
+        - {name: pageSize, in: query, schema: {type: integer, minimum: 1, maximum: 100, default: 25}}
+        - {name: sort, in: query, schema: {type: string, enum: [fullName, stars, riskCategory, predictionDate], default: fullName}}
+        - {name: direction, in: query, schema: {type: string, enum: [asc, desc], default: asc}}
+      responses:
+        '200':
+          description: A page of repositories in the latest cohort.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RepositoryPage'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+  /repositories/{id}:
+    parameters:
+      - {$ref: '#/components/parameters/RepositoryId'}
+    get:
+      operationId: getRepository
+      responses:
+        '200':
+          description: Repository metadata and quality flags.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RepositoryDetail'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /repositories/{id}/metrics:
+    parameters:
+      - {$ref: '#/components/parameters/RepositoryId'}
+    get:
+      operationId: getRepositoryMetrics
+      responses:
+        '200':
+          description: Monthly metrics and completeness records.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/MetricPoint'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /repositories/{id}/predictions:
+    parameters:
+      - {$ref: '#/components/parameters/RepositoryId'}
+    get:
+      operationId: getRepositoryPredictionHistory
+      responses:
+        '200':
+          description: Predictions ordered from newest to oldest.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/Prediction'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /repositories/{id}/predictions/latest:
+    parameters:
+      - {$ref: '#/components/parameters/RepositoryId'}
+    get:
+      operationId: getLatestRepositoryPrediction
+      responses:
+        '200':
+          description: Latest prediction with ranked indicators.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/PredictionDetail'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /research/models:
+    get:
+      operationId: listModels
+      parameters:
+        - {$ref: '#/components/parameters/Page'}
+        - {$ref: '#/components/parameters/ResearchPageSize'}
+      responses:
+        '200':
+          description: Model versions for the latest dataset.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ModelPage'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+  /research/evaluations:
+    get:
+      operationId: listEvaluations
+      parameters:
+        - {name: split, in: query, schema: {type: string, enum: [train, validation, test]}}
+        - {name: featureSet, in: query, schema: {type: string, enum: [activity_only, extended]}}
+        - {name: stratum, in: query, schema: {type: string, enum: [overall, small, medium, large]}}
+        - {$ref: '#/components/parameters/Page'}
+        - {$ref: '#/components/parameters/ResearchPageSize'}
+      responses:
+        '200':
+          description: Stored evaluation metrics and confidence intervals.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/EvaluationPage'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+  /research/feature-importance:
+    get:
+      operationId: listFeatureImportance
+      parameters:
+        - {name: modelVersionId, in: query, schema: {type: integer, minimum: 1}}
+        - {$ref: '#/components/parameters/Page'}
+        - {$ref: '#/components/parameters/ResearchPageSize'}
+      responses:
+        '200':
+          description: Global importance values for the latest dataset.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/FeatureImportancePage'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+  /research/dataset-summary:
+    get:
+      operationId: getDatasetSummary
+      responses:
+        '200':
+          description: Counts, prevalence, and quality summary for the latest dataset.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/DatasetSummary'}
+        '404': {$ref: '#/components/responses/NotFound'}
+  /research/label-definition:
+    get:
+      operationId: getLabelDefinition
+      responses:
+        '200':
+          description: Label parameters, split dates, and feature dictionary.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/LabelDefinition'}
+        '404': {$ref: '#/components/responses/NotFound'}
+components:
+  parameters:
+    RepositoryId:
+      name: id
+      in: path
+      required: true
+      schema: {type: integer, minimum: 1}
+    Page:
+      name: page
+      in: query
+      schema: {type: integer, minimum: 0, maximum: 100000, default: 0}
+    ResearchPageSize:
+      name: pageSize
+      in: query
+      schema: {type: integer, minimum: 1, maximum: 200, default: 50}
+  responses:
+    BadRequest:
+      description: Invalid query parameter.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
+    NotFound:
+      description: Requested record was not found.
+      content:
+        application/json:
+          schema: {$ref: '#/components/schemas/ApiError'}
+  schemas:
+    ApiError:
+      type: object
+      required: [timestamp, status, code, message, path]
+      properties:
+        timestamp: {type: string, format: date-time}
+        status: {type: integer}
+        code: {type: string}
+        message: {type: string}
+        path: {type: string}
+    PageMetadata:
+      type: object
+      required: [page, pageSize, totalElements, totalPages]
+      properties:
+        page: {type: integer}
+        pageSize: {type: integer}
+        totalElements: {type: integer, format: int64}
+        totalPages: {type: integer}
+    RepositoryPage:
+      allOf:
+        - {$ref: '#/components/schemas/PageMetadata'}
+        - type: object
+          required: [content]
+          properties:
+            content:
+              type: array
+              items: {$ref: '#/components/schemas/RepositorySummary'}
+    RepositorySummary:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        fullName: {type: string}
+        owner: {type: string}
+        name: {type: string}
+        sizeGroup: {type: string}
+        stars: {type: integer, format: int64}
+        dataQualityFlags: {type: array, items: {type: string}}
+        latestProbability: {type: [number, 'null']}
+        latestRiskCategory: {type: [string, 'null']}
+        predictionDate: {type: [string, 'null'], format: date}
+    RepositoryDetail:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        githubId: {type: integer, format: int64}
+        fullName: {type: string}
+        owner: {type: string}
+        name: {type: string}
+        defaultBranch: {type: [string, 'null']}
+        createdAt: {type: string, format: date-time}
+        stars: {type: integer, format: int64}
+        sizeGroup: {type: string}
+        primaryLanguage: {type: [string, 'null']}
+        archived: {type: boolean}
+        fork: {type: boolean}
+        metadata: {type: object}
+        dataQualityFlags: {type: array, items: {type: string}}
+    MetricPoint:
+      type: object
+      properties:
+        predictionDate: {type: string, format: date}
+        metrics: {type: object}
+        completeness: {type: object}
+    Prediction:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        repositoryId: {type: integer, format: int64}
+        snapshotId: {type: integer, format: int64}
+        datasetVersionId: {type: integer, format: int64}
+        datasetVersionHash: {type: string}
+        modelVersionId: {type: integer, format: int64}
+        algorithm: {type: string}
+        featureSet: {type: string}
+        probability: {type: number}
+        riskCategory: {type: string, enum: [low, medium, high]}
+        predictionDate: {type: string, format: date}
+        limitationFlags: {type: array, items: {type: string}}
+    PredictionDetail:
+      type: object
+      properties:
+        prediction: {$ref: '#/components/schemas/Prediction'}
+        indicators:
+          type: array
+          items:
+            type: object
+            properties:
+              featureName: {type: string}
+              featureValue: {type: [number, 'null']}
+              referenceValue: {type: [number, 'null']}
+              probabilityDelta: {type: number}
+              direction: {type: string}
+              rank: {type: integer}
+              description: {type: string}
+    ModelPage:
+      allOf:
+        - {$ref: '#/components/schemas/PageMetadata'}
+        - type: object
+          properties:
+            content: {type: array, items: {$ref: '#/components/schemas/ModelVersion'}}
+    ModelVersion:
+      type: object
+      required: [id, datasetVersionId, datasetVersionHash, featureSetId, featureSet, algorithm, parameters, seed, validationThreshold, selected]
+      properties:
+        id: {type: integer, format: int64}
+        datasetVersionId: {type: integer, format: int64}
+        datasetVersionHash: {type: string}
+        featureSetId: {type: integer, format: int64}
+        featureSet: {type: string}
+        algorithm: {type: string}
+        parameters: {type: object, additionalProperties: true}
+        seed: {type: integer}
+        validationThreshold: {type: number}
+        riskLowCutoff: {type: [number, 'null']}
+        riskHighCutoff: {type: [number, 'null']}
+        selected: {type: boolean}
+        codeRevision: {type: [string, 'null']}
+        trainedAt: {type: [string, 'null'], format: date-time}
+    EvaluationPage:
+      allOf:
+        - {$ref: '#/components/schemas/PageMetadata'}
+        - type: object
+          properties:
+            content: {type: array, items: {$ref: '#/components/schemas/Evaluation'}}
+    Evaluation:
+      type: object
+      properties:
+        modelVersionId: {type: integer, format: int64}
+        featureSet: {type: string}
+        algorithm: {type: string}
+        split: {type: string}
+        stratum: {type: string}
+        metric: {type: string}
+        value: {type: [number, 'null']}
+        ciLow: {type: [number, 'null']}
+        ciHigh: {type: [number, 'null']}
+        details: {type: object, additionalProperties: true}
+    FeatureImportancePage:
+      allOf:
+        - {$ref: '#/components/schemas/PageMetadata'}
+        - type: object
+          properties:
+            content: {type: array, items: {$ref: '#/components/schemas/FeatureImportance'}}
+    FeatureImportance:
+      type: object
+      properties:
+        modelVersionId: {type: integer, format: int64}
+        featureSet: {type: string}
+        algorithm: {type: string}
+        method: {type: string}
+        featureName: {type: string}
+        value: {type: number}
+        rank: {type: integer}
+    DatasetSummary:
+      type: object
+      properties:
+        id: {type: integer, format: int64}
+        versionHash: {type: string}
+        cohortName: {type: string}
+        createdAt: {type: string, format: date-time}
+        summary: {type: object}
+    LabelDefinition:
+      type: object
+      properties:
+        datasetVersionId: {type: integer, format: int64}
+        datasetVersionHash: {type: string}
+        label: {type: object}
+        splits: {type: object}
+        protocol: {type: object}
+        featureDictionary: {type: array, items: {$ref: '#/components/schemas/FeatureDefinition'}}
+    FeatureDefinition:
+      type: object
+      properties:
+        featureName: {type: string}
+        featureGroup: {type: string}
+        description: {type: string}
+        timeWindow: {type: string}
+        missingPolicy: {type: string}

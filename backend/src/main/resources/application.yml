@@ -12,6 +12,10 @@ spring:
   flyway:
     enabled: true
 
+ossustain:
+  cors:
+    allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
+
 management:
   endpoints:
     web:
