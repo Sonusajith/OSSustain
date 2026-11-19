@@ -33,6 +33,7 @@ class RequestBudgetExceeded(RuntimeError):
 class RequestBudget:
     limit: int
     used: int = 0
+    on_consume: Callable[[], None] | None = None
 
     def __post_init__(self) -> None:
         if self.limit < 1:
@@ -42,6 +43,8 @@ class RequestBudget:
         if self.used >= self.limit:
             raise RequestBudgetExceeded(f"Request budget of {self.limit} has been reached")
         self.used += 1
+        if self.on_consume is not None:
+            self.on_consume()
 
 
 @dataclass(frozen=True)

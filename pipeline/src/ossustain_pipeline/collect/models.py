@@ -21,6 +21,7 @@ class SelectedRepository(BaseModel):
     default_branch: str = Field(min_length=1)
     created_at: date
     stars: int = Field(ge=0)
+    prs_in_observation_period: int | None = Field(default=None, ge=0)
     primary_language: str | None
     archived: bool
     fork: bool
@@ -135,3 +136,96 @@ def redact_commit_page(payload: Any, hash_secret: str) -> list[dict[str, Any]]:
             }
         )
     return redacted
+
+
+def redact_search_page(payload: Any, hash_secret: str) -> dict[str, Any]:
+    """Keep only event fields needed by the database and remove public profile data."""
+    if not isinstance(payload, dict) or not isinstance(payload.get("items"), list):
+        raise ValueError("GitHub search response must contain an items array")
+    items = []
+    for item in payload["items"]:
+        if not isinstance(item, dict):
+            raise ValueError("GitHub search entries must be JSON objects")
+        items.append(
+            {
+                "number": item.get("number"),
+                "state": item.get("state"),
+                "created_at": item.get("created_at"),
+                "closed_at": item.get("closed_at"),
+                "comments": item.get("comments", 0),
+                "author": contributor_identity(item.get("user"), hash_secret),
+            }
+        )
+    return {
+        "total_count": payload.get("total_count"),
+        "incomplete_results": payload.get("incomplete_results"),
+        "items": items,
+    }
+
+
+def redact_repository_issue_page(payload: Any, hash_secret: str) -> list[dict[str, Any]]:
+    """Redact issue-list pages and mark pull requests for downstream filtering."""
+    if not isinstance(payload, list):
+        raise ValueError("Repository issue response must be a JSON array")
+    redacted = []
+    for item in payload:
+        if not isinstance(item, dict):
+            continue
+        redacted.append(
+            {
+                "number": item.get("number"),
+                "state": item.get("state"),
+                "created_at": item.get("created_at"),
+                "closed_at": item.get("closed_at"),
+                "comments": item.get("comments", 0),
+                "author": contributor_identity(item.get("user"), hash_secret),
+                "is_pull_request": "pull_request" in item,
+            }
+        )
+    return redacted
+
+
+def redact_pull_request(payload: Any) -> dict[str, Any]:
+    if not isinstance(payload, dict):
+        raise ValueError("Pull request detail response must be an object")
+    fields = ("number", "state", "created_at", "merged_at", "closed_at")
+    return {field: payload.get(field) for field in fields}
+
+
+def redact_pull_request_page(payload: Any) -> list[dict[str, Any]]:
+    if not isinstance(payload, list):
+        raise ValueError("Pull request list response must be a JSON array")
+    fields = ("number", "state", "created_at", "merged_at", "closed_at")
+    return [
+        {field: item.get(field) for field in fields}
+        for item in payload
+        if isinstance(item, dict)
+    ]
+
+
+def redact_reviews(payload: Any, hash_secret: str) -> list[dict[str, Any]]:
+    if not isinstance(payload, list):
+        raise ValueError("Review response must be a JSON array")
+    return [
+        {
+            "github_id": item.get("id"),
+            "state": str(item.get("state", "")).casefold(),
+            "submitted_at": item.get("submitted_at"),
+            "reviewer": contributor_identity(item.get("user"), hash_secret),
+        }
+        for item in payload
+        if isinstance(item, dict)
+    ]
+
+
+def redact_comments(payload: Any, hash_secret: str) -> list[dict[str, Any]]:
+    if not isinstance(payload, list):
+        raise ValueError("Comment response must be a JSON array")
+    return [
+        {
+            "created_at": item.get("created_at"),
+            "author": contributor_identity(item.get("user"), hash_secret),
+        }
+        for item in payload
+        if isinstance(item, dict)
+    ]
