@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 5: Snapshots and Labels
-**Current Status:** Phase 5 meets its Definition of Done. All 50 repositories have 46 versioned snapshots each; 395 labels are available, including 53 in purge gaps. Boundary, database, and idempotency checks passed; prevalence and frozen parameters are recorded in `docs/phase5-snapshots.md`. Phase 6 awaits owner confirmation.
+**Current Phase:** Phase 6: Feature Engineering
+**Current Status:** Phase 5 merged to `main` in PR #5 and meets its Definition of Done. Phase 6 implementation is complete on `phase-6/feature-engineering`; awaiting review/merge. Owner authorized Phase 6 on 2026-11-19.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

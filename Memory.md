@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–5 are complete. Phase 5 adds 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–5 are complete and merged to main. Phase 5 adds 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 5: Snapshots and Labels — complete; Phase 6 not started
+Phase 6: Feature Engineering — in progress
 
 ## Current Task
-Phase 5 acceptance is complete and [PR #5](https://github.com/Sonusajith/OSSustain/pull/5) is open into main. Phase 4 PR #4 remains a prerequisite; merge it first. This branch includes those commits and the measured results/handoff.
+Phase 6 implementation is complete on `phase-6/feature-engineering`; awaiting push review and merge. Phase 5 PR #5 is merged to main as `02ed5c5`.
 
 ## Last Completed Task
-Built 46 snapshots per repository for all 50 repositories using the frozen protocol (theta 0.5, 20 minimum reference commits, 90-day windows, 30-day interval). Dataset ID 1 / hash `20186258c8680c150ec8834af87bff9b4e9c950efef22ee8f022c2f8b8dcccab` was produced by committed revision `61ecefb`. Independent SQL found zero count/label mismatches. Reruns preserve version, snapshot IDs, and labels. See `docs/phase5-snapshots.md` for actual prevalence by date, split, size group, and thresholds 0.3/0.5/0.7.
+Phase 6 feature engineering is implemented: 23 registered features over all 2,300 dataset 1 snapshots, including all 342 eligible labeled train/validation/test rows. The real PostgreSQL run succeeded twice with one feature set, 23 definitions, and 2,300 matching feature and monthly metric rows. Pure tests cover all feature groups, cutoff leakage, missingness, and hand-checked values. Phase 5 provenance: dataset ID 1 / hash `20186258c8680c150ec8834af87bff9b4e9c950efef22ee8f022c2f8b8dcccab`, built from revision `61ecefb`; independent SQL found zero label mismatches. PR #5 merged Phase 5 to main.
 
 ## Completed Phases
 Phase 1: Foundation
@@ -23,6 +23,7 @@ Phase 2: Research Protocol and Cohort Selection
 Phase 3: Data Collection I (Repository metadata and commits)
 Phase 4: Data Collection II (PRs, reviews, issues) and Validation
 Phase 5: Snapshots and Labels
+Phase 6: Feature Engineering — implementation complete; PR pending
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -31,20 +32,20 @@ Phase 5: Snapshots and Labels
 - Phase 4: privacy-filtered PR/review/issue collection; first-response timestamps; request caps with durable append-only local journal; resumable, idempotent stages; pagination fallback for single-day GitHub Search overflow; per-repository quality validation.
 
 - Phase 5: versioned snapshot builder, UTC half-open windows, explicit unlabeled reasons, chronological split/purge assignment, input fingerprints, atomic reruns, and prevalence summaries.
+- Phase 6: 23 leakage-safe registered features, per-feature missingness and completeness summaries, monthly display metrics, content-addressed/idempotent storage, and the `build-features` CLI. Inputs are versioned V6 snapshots and events strictly before each prediction date.
 
 ## Features In Progress
-None. Phase 5 meets its Definition of Done; Phase 6 awaits owner confirmation.
+Phase 6 implementation is complete on `phase-6/feature-engineering`; review/merge is pending.
 
 ## Pending Tasks
-- Review and merge Phase 4 PR #4 before the dependent Phase 5 PR.
-- Phase 6: leakage-safe feature engineering, only after owner confirmation.
+- Review and merge the Phase 6 pull request; do not begin Phase 7 until the owner confirms.
 - Local detailed reports remain ignored in `pipeline/data/reports/`; aggregate results are committed in `docs/phase4-data-quality.md` and `docs/phase5-snapshots.md`.
 
 ## Known Bugs
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-No Phase 5 implementation blockers. Most snapshots fall below the frozen minimum activity; only 342 labeled snapshots belong to train/validation/test (164/90/88). Treat this as a sample-size limitation, not a reason to retune thresholds using test results. Four Phase 4 quality flags remain retained.
+Most snapshots fall below the frozen minimum activity; only 342 labeled snapshots belong to train/validation/test (164/90/88). Treat this as a sample-size limitation, not a reason to retune thresholds using test results. Four Phase 4 quality flags remain retained.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -66,7 +67,7 @@ Approved by the project owner: upgraded the backend from Spring Boot 3.5.16 to S
 ## Database Changes
 Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data tables, V4 `collection_runs`, and V5 Phase 4 run stages/review IDs.
 
-Phase 5 adds V6 `dataset_versions` and `snapshots` for immutable research inputs, label completeness, and chronological splits. Existing V3 `repo_windows`/`labels` remain the development-seed/dashboard scaffold; Phase 6 should consume the versioned research snapshots. No new dependencies.
+Phase 5 adds V6 `dataset_versions` and `snapshots` for immutable research inputs, label completeness, and chronological splits. Existing V3 `repo_windows`/`labels` remain the development-seed/dashboard scaffold; Phase 6 consumes the versioned research snapshots. Phase 6 adds V7 `feature_sets`, `feature_definitions`, `snapshot_features`, and `repository_metrics_monthly`, with dataset-consistent foreign keys and per-dataset content hashes. The feature runner reads latest completed stages from `collection_runs`; resumable `collection_progress` covers commits only. No new dependencies.
 
 ## API Changes
 Enabled Spring Boot Actuator health at `/actuator/health`. No product API endpoints yet.
@@ -99,9 +100,9 @@ Cohort Overview (Phase 10), Repository Detail (Phase 11), Research Results and M
 Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Windows backend tests. GitHub CLI is absent and the collection token cannot create PRs (HTTP 403); PR #5 was created through the signed-in browser without expanding token permissions.
 
 ## Testing Status
-- Phase 5 Python: 59 tests passed with `OSSUSTAIN_TEST_SNAPSHOTS=1`, including real-database rerun idempotency; Ruff passed. Without that flag, 58 pass and the local-database test is skipped.
-- Backend: 8 tests passed with `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test`; includes V1–V6 migrations and constraints against incomplete labels and duplicate snapshot keys.
-- Local PostgreSQL migrated to V6 through Spring Boot/Flyway; temporary backend process stopped afterward, PostgreSQL left running.
+- Phase 6 Python: 64 tests passed, 1 existing opt-in local database test skipped; Ruff passed. The feature builder ran twice against the local cohort and verified idempotency: 2,300 snapshots, 23 features, 342 eligible labeled rows.
+- Backend: 8 tests passed with `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test`; includes V1–V7 migrations and schema checks.
+- Local PostgreSQL migrated to V7 through Spring Boot/Flyway; PostgreSQL remains running. Docker Desktop was started for Testcontainers.
 - Full cohort: 2,300 snapshots, 395 labeled (149 positive at theta 0.5), 1,755 low-reference, 150 incomplete-future. Of the labeled rows, 53 are purged and never eligible for modeling. Independent SQL recomputation: zero mismatches.
 - Earlier frontend foundation checks passed (ESLint, 2 Vitest tests, TypeScript/build); frontend untouched in Phase 5.
 
@@ -114,7 +115,7 @@ Not started.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Review the Phase 5 PR and measured summary, merging Phase 4 prerequisites first. After owner confirmation, begin Phase 6 feature engineering from the versioned `snapshots` table; filter both split and label_status for modeling. Do not use future activity as a feature.
+Review and merge the Phase 6 branch/PR. After owner confirmation, start Phase 7 modeling using only labeled snapshots assigned to train, validation, or test; never use future activity as a feature or tune on the test split.
 
 ## Last Updated
-2026-11-19, `phase-5/snapshots-labels` — Phase 5 completed and verified; snapshot provenance, prevalence, sample-size limitation, and next-phase handoff recorded.
+2026-11-19, `phase-6/feature-engineering` — Phase 6 implementation and live 2,300-snapshot idempotency check complete; awaiting PR review/merge.

@@ -142,3 +142,22 @@ counts, and labels remain unchanged on rerun. It requires migrated PostgreSQL an
 the local Phase 4 validation report. The ordinary suite skips this test when the
 flag is unset. See [docs/phase5-snapshots.md](docs/phase5-snapshots.md) for window
 semantics, exclusions, versioning, and measured results.
+
+## Phase 6 feature engineering
+
+After the Phase 5 snapshots exist and commit, PR, review, and issue collections
+are complete, start the backend once so Flyway applies V7, then build the
+registered feature set:
+
+```powershell
+ossustain-pipeline --config pipeline/config.example.yaml build-features
+python -m pytest -c pipeline/pyproject.toml
+python -m ruff check pipeline/src pipeline/tests
+```
+
+Use `--dataset-version-id` to select a specific dataset and `--report` to choose
+the JSON summary path (default: `pipeline/data/reports/phase6-features.json`).
+The stage makes no GitHub requests. It requires all four collection stages to be
+complete for every repository in the dataset. Feature definitions, strict cutoff
+rules, missing-value policy, and interpretation limits are in
+[`docs/phase6-features.md`](docs/phase6-features.md).
