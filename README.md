@@ -74,9 +74,13 @@ pnpm dev
 
 Vite prints the local URL (normally <http://localhost:5173>). The Cohort
 Overview supports URL-backed search, risk, size, and quality filters, sorting,
-and pagination. The Research Results, Methodology, and Repository Detail routes
-are placeholders for their planned phases. API types are generated from the
-backend OpenAPI contract by `pnpm api:types`.
+and pagination. Repository Detail at `/repositories/:id` loads stored repository
+metadata, monthly metric trends with expandable accessible tables, prediction
+indicators, and prediction history. Its charts and tables show stored values and
+leave missing measures blank; the available API has first-response times but no
+separate review-duration series. Research Results and Methodology remain
+placeholders for Phase 12. API types are generated from the backend OpenAPI
+contract by `pnpm api:types`.
 
 Run frontend checks:
 

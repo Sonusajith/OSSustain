@@ -1,7 +1,13 @@
 import type { components, paths } from './generated'
 
 export type Repository = components['schemas']['RepositorySummary']
+export type RepositoryDetail = components['schemas']['RepositoryDetail']
 export type RepositoryPage = paths['/repositories']['get']['responses'][200]['content']['application/json']
+export type RepositoryMetrics = paths['/repositories/{id}/metrics']['get']['responses'][200]['content']['application/json']
+export type Prediction = components['schemas']['Prediction']
+export type PredictionDetail = components['schemas']['PredictionDetail']
+export type PredictionIndicator = PredictionDetail['indicators'][number]
+export type PredictionHistory = paths['/repositories/{id}/predictions']['get']['responses'][200]['content']['application/json']
 export type DatasetSummary = paths['/research/dataset-summary']['get']['responses'][200]['content']['application/json']
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1').replace(/\/$/, '')
@@ -60,4 +66,25 @@ export async function getRepositories(signal?: AbortSignal): Promise<Repository[
 
 export function getDatasetSummary(signal?: AbortSignal): Promise<DatasetSummary> {
   return getJson<DatasetSummary>('/research/dataset-summary', signal)
+}
+
+export function getRepositoryDetail(repositoryId: number, signal?: AbortSignal): Promise<RepositoryDetail> {
+  return getJson<RepositoryDetail>(`/repositories/${repositoryId}`, signal)
+}
+
+export function getRepositoryMetrics(repositoryId: number, signal?: AbortSignal): Promise<RepositoryMetrics> {
+  return getJson<RepositoryMetrics>(`/repositories/${repositoryId}/metrics`, signal)
+}
+
+export function getPredictionHistory(repositoryId: number, signal?: AbortSignal): Promise<PredictionHistory> {
+  return getJson<PredictionHistory>(`/repositories/${repositoryId}/predictions`, signal)
+}
+
+export async function getLatestPrediction(repositoryId: number, signal?: AbortSignal): Promise<PredictionDetail | null> {
+  try {
+    return await getJson<PredictionDetail>(`/repositories/${repositoryId}/predictions/latest`, signal)
+  } catch (error) {
+    if (error instanceof ApiRequestError && error.status === 404) return null
+    throw error
+  }
 }

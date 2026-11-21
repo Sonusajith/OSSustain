@@ -1,5 +1,5 @@
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { fireEvent, render, screen, waitFor } from '@testing-library/react'
+import { fireEvent, render, screen, waitFor, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { delay, http, HttpResponse } from 'msw'
 import { MemoryRouter, useLocation } from 'react-router-dom'
@@ -58,6 +58,73 @@ const datasetSummary = {
   },
 }
 
+const repositoryDetail = {
+  id: 11,
+  githubId: 1011,
+  fullName: 'acme/alpha',
+  owner: 'acme',
+  name: 'alpha',
+  defaultBranch: 'main',
+  createdAt: '2020-04-12T00:00:00Z',
+  stars: 1200,
+  sizeGroup: 'small',
+  primaryLanguage: 'TypeScript',
+  archived: false,
+  fork: false,
+  metadata: {},
+  dataQualityFlags: ['limited_issue_history'],
+}
+
+const repositoryMetrics = [
+  {
+    predictionDate: '2024-01-01',
+    metrics: { commits_30d: 8, commits_90d: 21, contributor_gini_90d: 0.4, median_pr_first_response_hours_90d: null },
+    completeness: { commits_observed_90d: 21 },
+  },
+  {
+    predictionDate: '2024-02-01',
+    metrics: { commits_30d: 12, commits_90d: 25, contributor_gini_90d: 0.3, median_pr_first_response_hours_90d: 18 },
+    completeness: { commits_observed_90d: 25 },
+  },
+]
+
+const predictionRecord = {
+  id: 91,
+  repositoryId: 11,
+  snapshotId: 81,
+  datasetVersionId: 7,
+  datasetVersionHash: 'abcdef0123456789abcdef0123456789',
+  modelVersionId: 3,
+  algorithm: 'random_forest',
+  featureSet: 'activity_only',
+  probability: 0.71,
+  riskCategory: 'high',
+  predictionDate: '2024-02-01',
+  limitationFlags: ['low_activity'],
+}
+
+function installDetailApi({ metrics = repositoryMetrics, latest = true, history = [predictionRecord] } = {}) {
+  server.use(
+    http.get('*/api/v1/repositories/11', () => HttpResponse.json(repositoryDetail)),
+    http.get('*/api/v1/repositories/11/metrics', () => HttpResponse.json(metrics)),
+    http.get('*/api/v1/repositories/11/predictions/latest', () => latest
+      ? HttpResponse.json({
+        prediction: predictionRecord,
+        indicators: [{
+          featureName: 'commits_30d',
+          featureValue: 8,
+          referenceValue: 15,
+          probabilityDelta: 0.12,
+          direction: 'increases_risk',
+          rank: 1,
+          description: 'This value is associated with a higher model risk score, not a causal effect.',
+        }],
+      })
+      : HttpResponse.json({ message: 'No prediction is available for this repository.' }, { status: 404 })),
+    http.get('*/api/v1/repositories/11/predictions', () => HttpResponse.json(history)),
+  )
+}
+
 function installApi(repositories = repositoryRows) {
   server.use(
     http.get('*/api/v1/repositories', () =>
@@ -92,7 +159,7 @@ function renderApp(entry = '/') {
   )
 }
 
-describe('Cohort Overview', () => {
+describe('Dashboard screens', () => {
   it('loads the live cohort and dataset summary', async () => {
     installApi()
     renderApp()
@@ -100,7 +167,7 @@ describe('Cohort Overview', () => {
     expect(await screen.findByRole('heading', { name: 'Cohort overview' })).toBeInTheDocument()
     expect(await screen.findByRole('link', { name: /acme\/alpha/i })).toHaveAttribute('href', '/repositories/11')
     expect(screen.getByText('High risk')).toBeInTheDocument()
-    expect(screen.getByText('71.0%')).toBeInTheDocument()
+    expect(await screen.findByText('71.0%')).toBeInTheDocument()
     expect(screen.getByText('#7')).toBeInTheDocument()
     expect(screen.getByText('2024-01-01 – 2025-01-01')).toBeInTheDocument()
     expect(screen.getByText('Showing', { exact: false })).toHaveTextContent('Showing 1–3 of 3 repositories')
@@ -194,5 +261,64 @@ describe('Cohort Overview', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     expect(screen.getByLabelText('Current URL query')).toHaveTextContent('page=1')
     expect(screen.getByText('Page 2 of 2')).toBeInTheDocument()
+  })
+
+  it('renders live repository detail, prediction indicators, charts, and accessible table data', async () => {
+    const user = userEvent.setup()
+    installDetailApi()
+    renderApp('/repositories/11')
+
+    expect(await screen.findByRole('heading', { name: 'acme/alpha' })).toBeInTheDocument()
+    expect(screen.getByText('TypeScript')).toBeInTheDocument()
+    expect(await screen.findAllByText('71.0%')).toHaveLength(2)
+    expect(screen.getAllByText('Low Activity')).toHaveLength(2)
+    expect(screen.getByText('This value is associated with a higher model risk score, not a causal effect.')).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Commits · 30 days over 2 prediction dates/ })).toBeInTheDocument()
+    expect(screen.getByText(/separate review-duration measure is not available/)).toBeInTheDocument()
+
+    await user.click(screen.getAllByText('View data table')[0])
+    const metricTable = screen.getByRole('table', { name: 'Commits · 30 days by prediction date' })
+    expect(metricTable).toBeInTheDocument()
+    expect(within(metricTable).getByText('2024-02-01')).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'Stored prediction records for this repository' })).toBeInTheDocument()
+
+    const responseMetric = screen.getByRole('heading', { name: 'Pull request first response' }).closest('article')
+    expect(responseMetric).not.toBeNull()
+    if (!responseMetric) throw new Error('Response metric card was not rendered.')
+    await user.click(within(responseMetric).getByText('View data table'))
+    expect(within(responseMetric).getByText('—')).toBeInTheDocument()
+  })
+
+  it('shows explicit empty states when a repository has no stored metrics or prediction', async () => {
+    installDetailApi({ metrics: [], latest: false, history: [] })
+    renderApp('/repositories/11')
+
+    expect(await screen.findByRole('heading', { name: 'acme/alpha' })).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'No prediction available' })).toBeInTheDocument()
+    expect(screen.getByText(/No monthly metrics are available/)).toBeInTheDocument()
+    expect(screen.getByText(/No prediction history is available/)).toBeInTheDocument()
+  })
+
+  it('shows a retryable error for an unavailable repository', async () => {
+    server.use(
+      http.get('*/api/v1/repositories/11', () => HttpResponse.json({ message: 'Repository was not found.' }, { status: 404 })),
+    )
+    renderApp('/repositories/11')
+
+    expect(await screen.findByRole('heading', { name: 'We couldn’t load this repository' })).toBeInTheDocument()
+    expect(screen.getByText('This repository does not exist in the current dataset.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeEnabled()
+  })
+
+  it('shows the repository loading state while the detail request is pending', () => {
+    server.use(
+      http.get('*/api/v1/repositories/11', async () => {
+        await delay(300)
+        return HttpResponse.json(repositoryDetail)
+      }),
+    )
+    renderApp('/repositories/11')
+
+    expect(screen.getByText('Loading repository details…')).toBeInTheDocument()
   })
 })
