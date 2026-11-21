@@ -244,12 +244,14 @@ docker compose up -d postgres
 mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.jvmArguments=-Duser.timezone=Asia/Kolkata"
 ```
 
-The API reads stored results at `http://localhost:8080/api/v1`. It provides the
-cohort repository list and detail, monthly metrics, prediction history and
+The API reads stored results at `http://localhost:8080/api/v1`. Opening that
+base URL returns an API index with links to the available resources. It provides
+the cohort repository list and detail, monthly metrics, prediction history and
 latest prediction with indicators, plus model versions, evaluations, feature
-importance, dataset summary, and label/methodology definitions. The OpenAPI 3.1
-contract is served at <http://localhost:8080/openapi.yaml>. The health endpoint
-remains at <http://localhost:8080/actuator/health>.
+importance, dataset summary, and label/methodology definitions. The dashboard
+itself runs separately at <http://localhost:5173> after starting Vite. The
+OpenAPI 3.1 contract is served at <http://localhost:8080/openapi.yaml>. The
+health endpoint remains at <http://localhost:8080/actuator/health>.
 
 The default CORS origin is `http://localhost:5173`. Set `FRONTEND_ORIGIN` in the
 backend environment to a comma-separated list when using another frontend URL.

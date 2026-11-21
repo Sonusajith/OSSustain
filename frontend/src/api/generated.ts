@@ -4,6 +4,23 @@
  */
 
 export interface paths {
+    "/": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Discover API resources and the local dashboard URL. */
+        get: operations["getApiIndex"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/repositories": {
         parameters: {
             query?: never;
@@ -176,6 +193,14 @@ export interface paths {
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        ApiIndex: {
+            service: string;
+            version: string;
+            dashboard: string;
+            endpoints: {
+                [key: string]: string;
+            };
+        };
         ApiError: {
             /** Format: date-time */
             timestamp: string;
@@ -381,6 +406,26 @@ export interface components {
 }
 export type $defs = Record<string, never>;
 export interface operations {
+    getApiIndex: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description API resource links and dashboard instructions. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ApiIndex"];
+                };
+            };
+        };
+    };
     listRepositories: {
         parameters: {
             query?: {

@@ -12,7 +12,7 @@ Phases 1–11 are complete and merged to main. Phase 5 produced 2,300 versioned 
 Phase 12: Research Dashboard, Methodology, and Documentation
 
 ## Current Task
-Phase 12 screens and reproducibility documentation are complete on `phase-12/research-dashboard`; lint, tests, production build, and live research API checks passed. A full pipeline rebuild against a clean database was not rerun in this session.
+Phase 12 screens and reproducibility documentation are complete on `phase-12/research-dashboard`; lint, tests, production build, and live research API checks passed. The API base path now returns an index instead of a 404. A full pipeline rebuild against a clean database was not rerun in this session.
 
 ## Last Completed Task
 Phase 11 Repository Detail merged in PR #11 (`85f6e65`): real metadata, metric charts/tables, prediction indicators and history, and explicit limitations. Phase 10 Cohort Overview merged in PR #10 (`c281ca7`); Phase 9 Read API merged in PR #9 (`8e32a6b`). Phase 12 now integrates Research Results and Methodology & Limitations with typed API data, accessible chart tables, responsive layouts, loading/empty/error states, and the README.
@@ -79,7 +79,7 @@ Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data ta
 Phase 5 adds V6 `dataset_versions` and `snapshots` for immutable research inputs, label completeness, and chronological splits. Existing V3 `repo_windows`/`labels` remain the development-seed/dashboard scaffold; Phase 6 consumes the versioned research snapshots. Phase 6 adds V7 `feature_sets`, `feature_definitions`, `snapshot_features`, and `repository_metrics_monthly`. Phase 7 adds V8 model/evaluation/importance records and versioned prediction references. Phase 8 adds V9 validation-derived risk cutoffs, prediction dates and limitation flags, per-repository prediction outcomes, and per-prediction explanations. The feature runner reads latest completed stages from `collection_runs`; resumable `collection_progress` covers commits only.
 
 ## API Changes
-Spring Boot Actuator health remains available at `/actuator/health`. Phase 9 adds read-only endpoints for repository list/detail, monthly metrics, prediction history/latest indicators, models, evaluations, feature importance, dataset summary, and label/feature definitions. Lists use bounded pagination and documented filters. Errors share `{timestamp,status,code,message,path}`. CORS defaults to `http://localhost:5173` and is configurable with `FRONTEND_ORIGIN`. OpenAPI 3.1 is served at `/openapi.yaml`.
+Spring Boot Actuator health remains available at `/actuator/health`. Phase 9 adds read-only endpoints for repository list/detail, monthly metrics, prediction history/latest indicators, models, evaluations, feature importance, dataset summary, and label/feature definitions. `GET /api/v1` now returns an API index so opening the base URL is informative; the dashboard runs separately at Vite's `http://localhost:5173`. Lists use bounded pagination and documented filters. Errors share `{timestamp,status,code,message,path}`. CORS defaults to `http://localhost:5173` and is configurable with `FRONTEND_ORIGIN`. OpenAPI 3.1 is served at `/openapi.yaml`.
 
 ## Important Files
 - `docker-compose.yml`, `.env.example`, `.gitignore`, `README.md`, `config/experiment.yaml`, `config/modeling.yaml`, `config/cohort-candidates.yaml`, `config/cohort.yaml`, `docs/methodology.md`, `docs/phase4-data-quality.md`, `docs/phase7-modeling.md`, `docs/phase8-predictions.md`
@@ -114,7 +114,7 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 - Phase 9 OpenAPI YAML parsed successfully with PyYAML: OpenAPI 3.1, 10 product paths, 17 schemas.
 - Phase 10 frontend: frozen-lock install and OpenAPI type generation passed; `pnpm lint`, `pnpm test` (7 passed), and `pnpm build` passed after the table header fix. Live API check against local PostgreSQL returned all 50 cohort repositories and dataset summary #1.
 - Phase 11 frontend: `pnpm lint`, `pnpm test` (11 passed), and `pnpm build` passed. Live API smoke checks returned repository metadata, 46 monthly metric points, the latest prediction with indicators, and prediction history for a real cohort repository.
-- Phase 12 verification: frontend lint passed, 17 component tests passed, production build passed. Live API smoke check at port 8081 returned 8 models, 454 evaluations, 23 selected-model importance rows, 23 feature definitions, 50 repositories, 2,300 snapshots, 395 labeled snapshots, 600 test snapshots (88 labeled), and four repository quality-flag records. The selected test PR-AUC difference (extended minus activity-only) is +0.188 (95% repository-cluster CI −0.059 to +0.391), which includes zero.
+- Phase 12 verification: frontend lint passed, 17 component tests passed, production build passed. Backend integration suite passed (14 tests). Live API smoke check returned API index at `/api/v1` plus 8 models, 454 evaluations, 23 selected-model importance rows, 23 feature definitions, 50 repositories, 2,300 snapshots, 395 labeled snapshots, 600 test snapshots (88 labeled), and four repository quality-flag records. The selected test PR-AUC difference (extended minus activity-only) is +0.188 (95% repository-cluster CI −0.059 to +0.391), which includes zero.
 - Local PostgreSQL migrated to V9. Live Phase 8 rerun persisted 50 predictions/outcomes and 150 explanation indicators; all 50 repositories have a prediction and all were explained. Model version 3 has validation-derived risk cutoffs 0.4445/0.6041.
 - Phase 7 run persisted 8 model versions (2 selected), 454 evaluation rows, and 78 feature-importance rows; six joblib artifacts are ignored under `pipeline/artifacts/`. The paired test PR-AUC difference was +0.188 (95% CI −0.059 to +0.391), inconclusive.
 - Docker Desktop and local PostgreSQL remain running.
@@ -133,4 +133,4 @@ Not started.
 Review and merge the Phase 12 pull request. Wait for explicit merge confirmation before starting Phase 13.
 
 ## Last Updated
-2026-11-21, `phase-12/research-dashboard` — Phase 12 screens, README, and checks complete; ready for owner review.
+2026-11-21, `phase-12/research-dashboard` — API base URL 404 fixed with a discoverable index; backend tests passed, follow-up push pending.
