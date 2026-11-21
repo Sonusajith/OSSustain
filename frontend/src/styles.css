@@ -123,7 +123,7 @@ a { color: inherit; }
 .filter-note { color: var(--text-muted); font-size: 10px; }
 .table-scroll-region { overflow-x: auto; outline-offset: -3px; }
 .repository-table { width: 100%; min-width: 820px; border-collapse: collapse; text-align: left; }
-.repository-table thead { position: sticky; top: 64px; z-index: 1; background: #f1f5f9; }
+.repository-table thead { background: #f1f5f9; }
 .repository-table th, .repository-table td { border-top: 1px solid var(--border); padding: 11px 14px; font-size: 11px; }
 .repository-table thead th { color: var(--text-muted); font-size: 9px; font-weight: 650; letter-spacing: .07em; text-transform: uppercase; white-space: nowrap; }
 .repository-table tbody th { font-weight: 500; }

@@ -15,7 +15,7 @@ Phase 10: Frontend Foundation and Cohort Overview
 Phase 10 Cohort Overview is implemented on `phase-10/cohort-overview` and pushed for owner review. Do not begin Phase 11 until the owner confirms the merge.
 
 ## Last Completed Task
-Phase 10 Cohort Overview implementation: responsive Stitch-based dashboard connected to the typed generated OpenAPI client and live Phase 9 endpoints; URL-backed search, filters, sorting, and pagination; dataset summary; and loading, empty, error/retry, and success states. Frontend build and lint passed; 7 MSW-backed component tests passed. Branch is pushed for review; create the pull request from the comparison link because GitHub CLI is unavailable. Phase 9 merged in PR #9 (`8e32a6b`): read-only API, bounded filters/pagination, JSON errors, CORS, and OpenAPI 3.1; 14 backend tests passed.
+Phase 10 Cohort Overview implementation: responsive Stitch-based dashboard connected to the typed generated OpenAPI client and live Phase 9 endpoints; URL-backed search, filters, sorting, and pagination; dataset summary; and loading, empty, error/retry, and success states. Fixed a review-reported table issue by removing the sticky header offset that placed column headings below the first row. Frontend build and lint passed; 7 MSW-backed component tests passed. Branch is pushed for review; create the pull request from the comparison link because GitHub CLI is unavailable. Phase 9 merged in PR #9 (`8e32a6b`): read-only API, bounded filters/pagination, JSON errors, CORS, and OpenAPI 3.1; 14 backend tests passed.
 
 ## Completed Phases
 Phase 1: Foundation
@@ -110,7 +110,7 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 - Python: `pytest pipeline/tests -q` — 80 passed, 1 existing opt-in snapshot DB test skipped. Ruff checks and formatting check for changed files passed. `predict --help` and `explain --help` passed.
 - Backend before Phase 9: 9 tests passed, including fresh V1–V9 migration coverage. Phase 9 final run: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` — 14 tests passed (5 API integration test groups plus 9 existing migration/health checks); Testcontainers used Docker Desktop.
 - Phase 9 OpenAPI YAML parsed successfully with PyYAML: OpenAPI 3.1, 10 product paths, 17 schemas.
-- Phase 10 frontend: frozen-lock install and OpenAPI type generation passed; `pnpm lint`, `pnpm test` (7 passed), and `pnpm build` passed. Live API check against local PostgreSQL returned all 50 cohort repositories and dataset summary #1.
+- Phase 10 frontend: frozen-lock install and OpenAPI type generation passed; `pnpm lint`, `pnpm test` (7 passed), and `pnpm build` passed after the table header fix. Live API check against local PostgreSQL returned all 50 cohort repositories and dataset summary #1.
 - Local PostgreSQL migrated to V9. Live Phase 8 rerun persisted 50 predictions/outcomes and 150 explanation indicators; all 50 repositories have a prediction and all were explained. Model version 3 has validation-derived risk cutoffs 0.4445/0.6041.
 - Phase 7 run persisted 8 model versions (2 selected), 454 evaluation rows, and 78 feature-importance rows; six joblib artifacts are ignored under `pipeline/artifacts/`. The paired test PR-AUC difference was +0.188 (95% CI −0.059 to +0.391), inconclusive.
 - Docker Desktop and local PostgreSQL remain running.
@@ -129,4 +129,4 @@ Not started.
 Review and merge the pushed Phase 10 branch using the GitHub comparison link. Begin Phase 11 only after the owner confirms merge.
 
 ## Last Updated
-2026-11-21, `phase-10/cohort-overview` — Phase 10 complete, checks passed, branch pushed for review.
+2026-11-21, `phase-10/cohort-overview` — corrected table header placement after owner review; checks passed, push pending.
