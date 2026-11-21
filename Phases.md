@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 11: Repository Detail Screen
-**Current Status:** Phase 10 merged to `main` in PR #10 (`c281ca7`). Phase 11 Repository Detail implementation is complete on `phase-11/repository-detail`; build, lint, and 11 component tests pass. Review/merge is pending; begin Phase 12 after owner confirmation.
+**Current Phase:** Phase 12: Research Dashboard, Methodology, and Documentation
+**Current Status:** Phase 11 merged to `main` in PR #11 (`85f6e65`). Phase 12 implementation is complete on `phase-12/research-dashboard`; lint, component tests, and production build passed. Owner review and merge are pending.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

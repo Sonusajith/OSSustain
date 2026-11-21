@@ -78,9 +78,13 @@ and pagination. Repository Detail at `/repositories/:id` loads stored repository
 metadata, monthly metric trends with expandable accessible tables, prediction
 indicators, and prediction history. Its charts and tables show stored values and
 leave missing measures blank; the available API has first-response times but no
-separate review-duration series. Research Results and Methodology remain
-placeholders for Phase 12. API types are generated from the backend OpenAPI
-contract by `pnpm api:types`.
+separate review-duration series. Research Results compares stored model runs,
+held-out performance, paired feature-family results, size groups, calibration,
+and feature importance. Methodology & Limitations shows the versioned label,
+chronological splits, sensitivity counts, feature dictionary, and retained data
+quality flags. Both screens read the Spring API; charts include accessible
+tabular values and findings are scoped to this observational cohort. API types
+are generated from the backend OpenAPI contract by `pnpm api:types`.
 
 Run frontend checks:
 

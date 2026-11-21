@@ -103,6 +103,53 @@ const predictionRecord = {
   limitationFlags: ['low_activity'],
 }
 
+const researchModels = [
+  { id: 3, datasetVersionId: 7, datasetVersionHash: 'abcdef0123456789', featureSetId: 1, featureSet: 'activity_only', algorithm: 'random_forest', parameters: {}, seed: 42, validationThreshold: 0.5, riskLowCutoff: 0.3, riskHighCutoff: 0.7, selected: true, codeRevision: 'abc123', trainedAt: '2025-01-01T00:00:00Z' },
+  { id: 6, datasetVersionId: 7, datasetVersionHash: 'abcdef0123456789', featureSetId: 2, featureSet: 'extended', algorithm: 'logistic_regression', parameters: {}, seed: 42, validationThreshold: 0.5, riskLowCutoff: 0.3, riskHighCutoff: 0.7, selected: true, codeRevision: 'abc123', trainedAt: '2025-01-01T00:00:00Z' },
+]
+
+const researchEvaluations = [
+  { modelVersionId: 3, featureSet: 'activity_only', algorithm: 'random_forest', split: 'validation', stratum: 'overall', metric: 'pr_auc', value: 0.647, ciLow: null, ciHigh: null, details: {} },
+  { modelVersionId: 3, featureSet: 'activity_only', algorithm: 'random_forest', split: 'test', stratum: 'overall', metric: 'pr_auc', value: 0.272, ciLow: 0.133, ciHigh: 0.528, details: { n_snapshots: 88, n_repositories: 12, calibration_bins: [{ bin: 1, count: 10, observed_rate: 0.2, mean_probability: 0.25 }] } },
+  { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'validation', stratum: 'overall', metric: 'pr_auc', value: 0.628, ciLow: null, ciHigh: null, details: {} },
+  { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'test', stratum: 'overall', metric: 'pr_auc', value: 0.46, ciLow: 0.232, ciHigh: 0.709, details: { n_snapshots: 88, n_repositories: 12, calibration_bins: [{ bin: 1, count: 10, observed_rate: 0.3, mean_probability: 0.35 }] } },
+  { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'test', stratum: 'overall', metric: 'paired_delta_pr_auc_vs_activity_only', value: 0.188, ciLow: -0.059, ciHigh: 0.391, details: { n_snapshots: 88, n_repositories: 12 } },
+  { modelVersionId: 3, featureSet: 'activity_only', algorithm: 'random_forest', split: 'test', stratum: 'overall', metric: 'calibration_curve', value: null, ciLow: null, ciHigh: null, details: { calibration_bins: [{ bin: 1, count: 10, observed_rate: 0.2, mean_probability: 0.25 }] } },
+  { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'test', stratum: 'overall', metric: 'calibration_curve', value: null, ciLow: null, ciHigh: null, details: { calibration_bins: [{ bin: 1, count: 10, observed_rate: 0.3, mean_probability: 0.35 }] } },
+]
+
+const researchDefinition = {
+  datasetVersionId: 7,
+  datasetVersionHash: 'abcdef0123456789',
+  label: { theta: 0.5, sensitivity_theta: [0.3, 0.7], min_reference_commits: 20, reference_window_days: 90, future_window_days: 90, activity_definition: 'non_bot_default_branch_commits' },
+  splits: { train: { start: '2022-04-01', end: '2023-06-30' }, validation: { start: '2023-10-01', end: '2024-06-30' }, test: { start: '2024-10-01', end: '2025-09-30' } },
+  protocol: { protocol_version: '1.0.0', observation_start: '2022-01-01', observation_end: '2025-12-31', snapshot_interval_days: 30, purge_gap_days: 90, random_seed: 42 },
+  featureDictionary: [
+    { featureName: 'commits_30d', featureGroup: 'activity', description: 'Default branch commits in 30 days.', timeWindow: '30 days', missingPolicy: 'Zero when observed.' },
+    { featureName: 'contributors_90d', featureGroup: 'collaboration', description: 'Distinct contributors in 90 days.', timeWindow: '90 days', missingPolicy: 'Null when unavailable.' },
+  ],
+}
+
+const researchSummary = {
+  ...datasetSummary,
+  summary: {
+    overall: { snapshots: 2300, labeled: 395, thresholds: { '0.3': { positive: 100, prevalence: 0.25 }, '0.5': { positive: 149, prevalence: 0.377 }, '0.7': { positive: 200, prevalence: 0.5 } } },
+    by_split: { test: { snapshots: 88, labeled: 88, thresholds: { '0.3': { positive: 14, prevalence: 0.159 }, '0.5': { positive: 24, prevalence: 0.273 }, '0.7': { positive: 40, prevalence: 0.455 } } } },
+    repositories: Array.from({ length: 50 }, (_, index) => ({ id: index + 1 })),
+    quality_flags: [{ full_name: 'acme/alpha', flags: ['no_collaboration_events'] }],
+  },
+}
+
+function installResearchApi({ models = researchModels, evaluations = researchEvaluations, definition = researchDefinition, summary = researchSummary } = {}) {
+  server.use(
+    http.get('*/api/v1/research/models', () => HttpResponse.json({ content: models, page: 0, pageSize: 200, totalElements: models.length, totalPages: models.length ? 1 : 0 })),
+    http.get('*/api/v1/research/evaluations', () => HttpResponse.json({ content: evaluations, page: 0, pageSize: 200, totalElements: evaluations.length, totalPages: 1 })),
+    http.get('*/api/v1/research/feature-importance', () => HttpResponse.json({ content: [{ modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', method: 'standardized_coefficients', featureName: 'commits_30d', value: 0.82, rank: 1 }], page: 0, pageSize: 200, totalElements: 1, totalPages: 1 })),
+    http.get('*/api/v1/research/label-definition', () => HttpResponse.json(definition)),
+    http.get('*/api/v1/research/dataset-summary', () => HttpResponse.json(summary)),
+  )
+}
+
 function installDetailApi({ metrics = repositoryMetrics, latest = true, history = [predictionRecord] } = {}) {
   server.use(
     http.get('*/api/v1/repositories/11', () => HttpResponse.json(repositoryDetail)),
@@ -320,5 +367,74 @@ describe('Dashboard screens', () => {
     renderApp('/repositories/11')
 
     expect(screen.getByText('Loading repository details…')).toBeInTheDocument()
+  })
+
+  it('renders held-out research comparisons, calibration data, and feature importance', async () => {
+    installResearchApi()
+    renderApp('/research')
+
+    expect(await screen.findByRole('heading', { name: 'Research Results' })).toBeInTheDocument()
+    expect(screen.getByText('Extended vs. activity-only')).toBeInTheDocument()
+    expect(screen.getByText(/0\.188 \[-0\.059, 0\.391\]/)).toBeInTheDocument()
+    expect(screen.getByText(/does not establish a reliable improvement/)).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'Stored model metrics on the held-out test split; validation PR-AUC is displayed only as the selection metric' })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: /Calibration chart comparing observed event rate/ })).toBeInTheDocument()
+    expect(await screen.findByText('Commits 30d')).toBeInTheDocument()
+  })
+
+  it('renders methodology definitions, split design, sensitivity and filtered feature dictionary', async () => {
+    const user = userEvent.setup()
+    installResearchApi()
+    renderApp('/methodology')
+
+    expect(await screen.findByRole('heading', { name: 'Methodology & Limitations' })).toBeInTheDocument()
+    expect(screen.getByText(/at most θ times the commits/)).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'Prediction date ranges for each chronological split' })).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: 'Observed label prevalence under the configured decline thresholds' })).toBeInTheDocument()
+    expect(screen.getByText('No Collaboration Events · 1 repository')).toBeInTheDocument()
+    const featureTable = screen.getByRole('table', { name: 'Feature definitions in the stored versioned experiment' })
+    expect(within(featureTable).getByText('Commits 30d')).toBeInTheDocument()
+    await user.type(screen.getByRole('searchbox', { name: 'Filter features' }), 'collaboration')
+    expect(within(featureTable).getByText('Contributors 90d')).toBeInTheDocument()
+    expect(within(featureTable).queryByText('Commits 30d')).not.toBeInTheDocument()
+  })
+
+  it('shows research loading and retryable errors', async () => {
+    server.use(
+      http.get('*/api/v1/research/models', async () => { await delay(250); return HttpResponse.json({ content: [], page: 0, pageSize: 200, totalElements: 0, totalPages: 0 }) }),
+      http.get('*/api/v1/research/evaluations', () => HttpResponse.json({ message: 'Research API offline.' }, { status: 503 })),
+      http.get('*/api/v1/research/dataset-summary', () => HttpResponse.json(researchSummary)),
+    )
+    renderApp('/research')
+    expect(screen.getByText('Loading stored evaluation results…')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Research data could not be loaded' })).toBeInTheDocument()
+    expect(screen.getByText('Research API offline.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Try again' })).toBeEnabled()
+  })
+
+  it('shows an explicit empty state when the methodology dictionary is missing', async () => {
+    installResearchApi({ definition: { ...researchDefinition, featureDictionary: [] } })
+    renderApp('/methodology')
+    expect(await screen.findByText(/does not include its label, split, and feature dictionary records/)).toBeInTheDocument()
+  })
+
+  it('shows methodology loading and retryable API error states', async () => {
+    const user = userEvent.setup()
+    server.use(
+      http.get('*/api/v1/research/label-definition', async () => { await delay(250); return HttpResponse.json(researchDefinition) }),
+      http.get('*/api/v1/research/dataset-summary', () => HttpResponse.json({ message: 'Dataset summary unavailable.' }, { status: 503 })),
+    )
+    renderApp('/methodology')
+    expect(screen.getByText('Loading study methodology and dataset records…')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Research data could not be loaded' })).toBeInTheDocument()
+    server.use(http.get('*/api/v1/research/dataset-summary', () => HttpResponse.json(researchSummary)))
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+    expect(await screen.findByRole('heading', { name: 'Methodology & Limitations' })).toBeInTheDocument()
+  })
+
+  it('shows an empty state when no stored research models or evaluations exist', async () => {
+    installResearchApi({ models: [], evaluations: [] })
+    renderApp('/research')
+    expect(await screen.findByText('No stored models or evaluation results are available for this dataset.')).toBeInTheDocument()
   })
 })

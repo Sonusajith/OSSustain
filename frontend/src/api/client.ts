@@ -9,6 +9,13 @@ export type PredictionDetail = components['schemas']['PredictionDetail']
 export type PredictionIndicator = PredictionDetail['indicators'][number]
 export type PredictionHistory = paths['/repositories/{id}/predictions']['get']['responses'][200]['content']['application/json']
 export type DatasetSummary = paths['/research/dataset-summary']['get']['responses'][200]['content']['application/json']
+export type ModelVersion = components['schemas']['ModelVersion']
+export type ModelPage = paths['/research/models']['get']['responses'][200]['content']['application/json']
+export type Evaluation = components['schemas']['Evaluation']
+export type EvaluationPage = paths['/research/evaluations']['get']['responses'][200]['content']['application/json']
+export type FeatureImportance = components['schemas']['FeatureImportance']
+export type FeatureImportancePage = paths['/research/feature-importance']['get']['responses'][200]['content']['application/json']
+export type LabelDefinition = paths['/research/label-definition']['get']['responses'][200]['content']['application/json']
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1').replace(/\/$/, '')
 const PAGE_SIZE = 100
@@ -61,7 +68,7 @@ export async function getRepositories(signal?: AbortSignal): Promise<Repository[
       getRepositoryPage(index + 1, signal),
     ),
   )
-  return [firstPage, ...laterPages].flatMap((page) => page.content)
+  return [firstPage, ...laterPages].flatMap((page) => page?.content ?? [])
 }
 
 export function getDatasetSummary(signal?: AbortSignal): Promise<DatasetSummary> {
@@ -87,4 +94,31 @@ export async function getLatestPrediction(repositoryId: number, signal?: AbortSi
     if (error instanceof ApiRequestError && error.status === 404) return null
     throw error
   }
+}
+
+export function getResearchModels(signal?: AbortSignal): Promise<ModelPage> {
+  return getJson<ModelPage>('/research/models?page=0&pageSize=200', signal)
+}
+
+async function getEvaluationPage(page: number, signal?: AbortSignal): Promise<EvaluationPage> {
+  return getJson<EvaluationPage>(`/research/evaluations?page=${page}&pageSize=200`, signal)
+}
+
+export async function getAllEvaluations(signal?: AbortSignal): Promise<Evaluation[]> {
+  const firstPage = await getEvaluationPage(0, signal)
+  const laterPages = await Promise.all(
+    Array.from({ length: Math.max(0, firstPage.totalPages - 1) }, (_, index) =>
+      getEvaluationPage(index + 1, signal),
+    ),
+  )
+  return [firstPage, ...laterPages].flatMap((page) => page?.content ?? [])
+}
+
+export function getFeatureImportance(modelVersionId: number, signal?: AbortSignal): Promise<FeatureImportancePage> {
+  const query = new URLSearchParams({ modelVersionId: String(modelVersionId), page: '0', pageSize: '200' })
+  return getJson<FeatureImportancePage>(`/research/feature-importance?${query.toString()}`, signal)
+}
+
+export function getLabelDefinition(signal?: AbortSignal): Promise<LabelDefinition> {
+  return getJson<LabelDefinition>('/research/label-definition', signal)
 }

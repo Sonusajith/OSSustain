@@ -1,6 +1,8 @@
 import { Link, NavLink, Route, Routes } from 'react-router-dom'
 
 import { CohortOverview } from './features/cohort/CohortOverview'
+import { MethodologyPage } from './features/research/MethodologyPage'
+import { ResearchResultsPage } from './features/research/ResearchResultsPage'
 import { RepositoryDetailPage } from './features/repository/RepositoryDetailPage'
 
 function PlaceholderPage({ title, description }: { title: string; description: string }) {
@@ -42,11 +44,11 @@ export function App() {
         />
         <Route
           path="/research"
-          element={<PlaceholderPage title="Research results" description="Model comparisons are planned for Phase 12." />}
+          element={<ResearchResultsPage />}
         />
         <Route
           path="/methodology"
-          element={<PlaceholderPage title="Methodology & limitations" description="The research methods screen is planned for Phase 12." />}
+          element={<MethodologyPage />}
         />
         <Route path="*" element={<PlaceholderPage title="Page not found" description="This route is not part of the current dashboard." />} />
       </Routes>
