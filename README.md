@@ -127,6 +127,24 @@ ossustain-pipeline --config pipeline/config.yaml collect --report pipeline/data/
 
 The collector follows GitHub pagination, ETags, and rate limits; stores progress after each page so an interrupted run can resume; and writes a per-repository JSON completeness report with cumulative stored-commit counts. Rerunning a completed cohort skips its commit history; pass `--refresh` to start a new history snapshot. Collection cache, reports, and raw local data stay under the ignored `pipeline/data/` directory. See [docs/database.md](docs/database.md) for the run log and progress tables.
 
+## Phase 4 collaboration collection and validation
+
+After Phase 3 completes, start the backend once so Flyway applies V4 and V5.
+Then collect pull requests, reviews, non-PR issues, and first-response data,
+followed by the per-repository completeness and quality report:
+
+```powershell
+ossustain-pipeline --config pipeline/config.example.yaml collect-collaboration --pr-request-cap 12500 --issue-request-cap 25000 --report pipeline/data/reports/phase4-quality.json
+ossustain-pipeline --config pipeline/config.example.yaml validate --report pipeline/data/reports/phase4-validation.json
+```
+
+The collector resumes completed stages, uses the privacy-filtered GitHub cache,
+and stops before exceeding either hard request cap. Keep the local `.env` token
+and hash secret private. Review the quality report before continuing; snapshots
+require a complete Phase 4 collection and this report. The ledger and detailed
+reports are local and ignored by Git. See [docs/database.md](docs/database.md)
+for retry behavior and the report fields.
+
 ## Phase 5 snapshots and labels
 
 After Phase 4 collection and validation, start the backend once so Flyway applies V6.

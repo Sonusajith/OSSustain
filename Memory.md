@@ -12,7 +12,7 @@ Phases 1–11 are complete and merged to main. Phase 5 produced 2,300 versioned 
 Phase 12: Research Dashboard, Methodology, and Documentation
 
 ## Current Task
-Phase 12 implementation is complete on `phase-12/research-dashboard`; lint, tests, production build, and live research API checks passed. The branch is ready for owner review and merge.
+Phase 12 screens and reproducibility documentation are complete on `phase-12/research-dashboard`; lint, tests, production build, and live research API checks passed. A full pipeline rebuild against a clean database was not rerun in this session.
 
 ## Last Completed Task
 Phase 11 Repository Detail merged in PR #11 (`85f6e65`): real metadata, metric charts/tables, prediction indicators and history, and explicit limitations. Phase 10 Cohort Overview merged in PR #10 (`c281ca7`); Phase 9 Read API merged in PR #9 (`8e32a6b`). Phase 12 now integrates Research Results and Methodology & Limitations with typed API data, accessible chart tables, responsive layouts, loading/empty/error states, and the README.
@@ -45,6 +45,7 @@ Phase 12 implementation is complete on `phase-12/research-dashboard`; PR review 
 
 ## Pending Tasks
 - Owner review and merge of Phase 12 PR.
+- If the team requires fresh end-to-end evidence before merge, run the README pipeline against an isolated empty database; this session verified the existing live dataset and added the missing Phase 4 run-order commands.
 - Local detailed reports remain ignored in `pipeline/data/reports/`; aggregate results are committed in `docs/phase4-data-quality.md` and `docs/phase5-snapshots.md`.
 
 ## Known Bugs
