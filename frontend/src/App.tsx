@@ -1,19 +1,14 @@
-import { Link, Route, Routes, useLocation } from 'react-router-dom'
+import { Link, NavLink, Route, Routes } from 'react-router-dom'
 
-const routes = [
-  { label: 'Cohort', path: '/' },
-  { label: 'Research', path: '/research' },
-  { label: 'Methodology', path: '/methodology' },
-]
+import { CohortOverview } from './features/cohort/CohortOverview'
 
-function FoundationRoute() {
-  const location = useLocation()
-
+function PlaceholderPage({ title, description }: { title: string; description: string }) {
   return (
-    <main>
-      <h1>OSSustain foundation</h1>
-      <p>The application shell is ready. Product screens are added in their planned phases.</p>
-      <p className="route-path">Current route: {location.pathname}</p>
+    <main className="placeholder-page">
+      <p className="eyebrow">OSSustain research platform</p>
+      <h1>{title}</h1>
+      <p>{description}</p>
+      <Link className="text-link" to="/">Return to the cohort overview</Link>
     </main>
   )
 }
@@ -22,24 +17,42 @@ export function App() {
   return (
     <div className="app-shell">
       <header className="site-header">
-        <Link className="wordmark" to="/" aria-label="OSSustain home">
-          OSSustain
-        </Link>
-        <nav aria-label="Main navigation">
-          {routes.map((route) => (
-            <Link key={route.path} to={route.path}>
-              {route.label}
-            </Link>
-          ))}
-        </nav>
+        <div className="header-inner">
+          <div className="brand-group">
+            <Link className="wordmark" to="/" aria-label="OSSustain home">OSSustain</Link>
+            <span className="release-badge">Research MVP</span>
+          </div>
+          <nav aria-label="Main navigation">
+            <NavLink end to="/">Cohort Overview</NavLink>
+            <NavLink to="/research">Research Results</NavLink>
+            <NavLink to="/methodology">Methodology &amp; Limitations</NavLink>
+          </nav>
+          <a className="source-link" href="https://github.com/Sonusajith/OSSustain" aria-label="OSSustain source repository">
+            <span aria-hidden="true">↗</span>
+            <span className="source-label">Source</span>
+          </a>
+        </div>
       </header>
       <Routes>
-        <Route path="/" element={<FoundationRoute />} />
-        <Route path="/repositories/:repositoryId" element={<FoundationRoute />} />
-        <Route path="/research" element={<FoundationRoute />} />
-        <Route path="/methodology" element={<FoundationRoute />} />
-        <Route path="*" element={<FoundationRoute />} />
+        <Route path="/" element={<CohortOverview />} />
+        <Route
+          path="/repositories/:repositoryId"
+          element={<PlaceholderPage title="Repository detail" description="Repository analytics are planned for Phase 11." />}
+        />
+        <Route
+          path="/research"
+          element={<PlaceholderPage title="Research results" description="Model comparisons are planned for Phase 12." />}
+        />
+        <Route
+          path="/methodology"
+          element={<PlaceholderPage title="Methodology & limitations" description="The research methods screen is planned for Phase 12." />}
+        />
+        <Route path="*" element={<PlaceholderPage title="Page not found" description="This route is not part of the current dashboard." />} />
       </Routes>
+      <footer className="site-footer">
+        <span>OSSustain · empirical research on contribution activity</span>
+        <span>Predictions describe activity decline only; they do not claim causation.</span>
+      </footer>
     </div>
   )
 }

@@ -29,7 +29,7 @@ The database listens on `localhost:5432` by default. The example credentials are
 In a second terminal, from the repository root:
 
 ```sh
-mvn -f backend/pom.xml spring-boot:run
+mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.jvmArguments=-Duser.timezone=Asia/Kolkata"
 ```
 
 Flyway applies the versioned foundation migration at startup. If you change the Compose database settings, set the matching `SPRING_DATASOURCE_URL`, `POSTGRES_USER`, and `POSTGRES_PASSWORD` values in the backend terminal. Check the health endpoint at <http://localhost:8080/actuator/health>.
@@ -58,16 +58,25 @@ python -m ruff check pipeline/src pipeline/tests
 
 The configuration loader reads a YAML file and validates its PostgreSQL URL. The scaffold opens no database connection unless a later stage explicitly requests it. Set `OSSUSTAIN_DATABASE_URL` in the process environment to override the value in the config file.
 
-### Start the frontend shell
+### Start the frontend dashboard
+
+Start PostgreSQL and the backend first. The cohort overview reads the latest
+repository cohort and dataset summary from the API. Set `VITE_API_BASE_URL` in
+the frontend environment if the API runs at a different URL.
 
 From `frontend/`:
 
 ```sh
 pnpm install --frozen-lockfile
+pnpm api:types
 pnpm dev
 ```
 
-Vite prints the local URL (normally <http://localhost:5173>). The shell has route placeholders only; no Stitch design or product screen is integrated in Phase 1.
+Vite prints the local URL (normally <http://localhost:5173>). The Cohort
+Overview supports URL-backed search, risk, size, and quality filters, sorting,
+and pagination. The Research Results, Methodology, and Repository Detail routes
+are placeholders for their planned phases. API types are generated from the
+backend OpenAPI contract by `pnpm api:types`.
 
 Run frontend checks:
 
@@ -206,7 +215,7 @@ Start PostgreSQL and the Spring Boot API after Flyway has applied migrations V1â
 
 ```powershell
 docker compose up -d postgres
-mvn -f backend/pom.xml spring-boot:run
+mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.jvmArguments=-Duser.timezone=Asia/Kolkata"
 ```
 
 The API reads stored results at `http://localhost:8080/api/v1`. It provides the

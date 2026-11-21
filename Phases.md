@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 9: Backend Read API
-**Current Status:** Phase 8 merged to `main` in PR #8 (`ced3c39`). Phase 9 implementation is complete on `phase-9/backend-read-api`, with 14 backend tests passing; PR review/merge is pending. Do not start Phase 10 until the owner confirms the merge.
+**Current Phase:** Phase 10: Frontend Foundation and Cohort Overview
+**Current Status:** Phase 10 Cohort Overview implementation is complete on `phase-10/cohort-overview`, with build, lint, and component tests passing. Review/merge is pending; begin Phase 11 only after owner confirmation.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

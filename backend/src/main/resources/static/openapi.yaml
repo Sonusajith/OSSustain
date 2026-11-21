@@ -194,6 +194,7 @@ components:
               items: {$ref: '#/components/schemas/RepositorySummary'}
     RepositorySummary:
       type: object
+      required: [id, fullName, owner, name, sizeGroup, stars, dataQualityFlags, latestProbability, latestRiskCategory, predictionDate]
       properties:
         id: {type: integer, format: int64}
         fullName: {type: string}
@@ -207,6 +208,7 @@ components:
         predictionDate: {type: [string, 'null'], format: date}
     RepositoryDetail:
       type: object
+      required: [id, githubId, fullName, owner, name, defaultBranch, createdAt, stars, sizeGroup, primaryLanguage, archived, fork, metadata, dataQualityFlags]
       properties:
         id: {type: integer, format: int64}
         githubId: {type: integer, format: int64}
@@ -224,12 +226,14 @@ components:
         dataQualityFlags: {type: array, items: {type: string}}
     MetricPoint:
       type: object
+      required: [predictionDate, metrics, completeness]
       properties:
         predictionDate: {type: string, format: date}
         metrics: {type: object}
         completeness: {type: object}
     Prediction:
       type: object
+      required: [id, repositoryId, snapshotId, datasetVersionId, datasetVersionHash, modelVersionId, algorithm, featureSet, probability, riskCategory, predictionDate, limitationFlags]
       properties:
         id: {type: integer, format: int64}
         repositoryId: {type: integer, format: int64}
@@ -245,6 +249,7 @@ components:
         limitationFlags: {type: array, items: {type: string}}
     PredictionDetail:
       type: object
+      required: [prediction, indicators]
       properties:
         prediction: {$ref: '#/components/schemas/Prediction'}
         indicators:
@@ -267,7 +272,7 @@ components:
             content: {type: array, items: {$ref: '#/components/schemas/ModelVersion'}}
     ModelVersion:
       type: object
-      required: [id, datasetVersionId, datasetVersionHash, featureSetId, featureSet, algorithm, parameters, seed, validationThreshold, selected]
+      required: [id, datasetVersionId, datasetVersionHash, featureSetId, featureSet, algorithm, parameters, seed, validationThreshold, riskLowCutoff, riskHighCutoff, selected, codeRevision, trainedAt]
       properties:
         id: {type: integer, format: int64}
         datasetVersionId: {type: integer, format: int64}
@@ -291,6 +296,7 @@ components:
             content: {type: array, items: {$ref: '#/components/schemas/Evaluation'}}
     Evaluation:
       type: object
+      required: [modelVersionId, featureSet, algorithm, split, stratum, metric, value, ciLow, ciHigh, details]
       properties:
         modelVersionId: {type: integer, format: int64}
         featureSet: {type: string}
@@ -310,6 +316,7 @@ components:
             content: {type: array, items: {$ref: '#/components/schemas/FeatureImportance'}}
     FeatureImportance:
       type: object
+      required: [modelVersionId, featureSet, algorithm, method, featureName, value, rank]
       properties:
         modelVersionId: {type: integer, format: int64}
         featureSet: {type: string}
@@ -320,6 +327,7 @@ components:
         rank: {type: integer}
     DatasetSummary:
       type: object
+      required: [id, versionHash, cohortName, createdAt, summary]
       properties:
         id: {type: integer, format: int64}
         versionHash: {type: string}
@@ -328,6 +336,7 @@ components:
         summary: {type: object}
     LabelDefinition:
       type: object
+      required: [datasetVersionId, datasetVersionHash, label, splits, protocol, featureDictionary]
       properties:
         datasetVersionId: {type: integer, format: int64}
         datasetVersionHash: {type: string}
@@ -337,6 +346,7 @@ components:
         featureDictionary: {type: array, items: {$ref: '#/components/schemas/FeatureDefinition'}}
     FeatureDefinition:
       type: object
+      required: [featureName, featureGroup, description, timeWindow, missingPolicy]
       properties:
         featureName: {type: string}
         featureGroup: {type: string}
