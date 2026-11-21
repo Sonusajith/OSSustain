@@ -1,6 +1,7 @@
 import { Link, NavLink, Route, Routes } from 'react-router-dom'
 
 import { CohortOverview } from './features/cohort/CohortOverview'
+import { RepositoryDetailPage } from './features/repository/RepositoryDetailPage'
 
 function PlaceholderPage({ title, description }: { title: string; description: string }) {
   return (
@@ -37,7 +38,7 @@ export function App() {
         <Route path="/" element={<CohortOverview />} />
         <Route
           path="/repositories/:repositoryId"
-          element={<PlaceholderPage title="Repository detail" description="Repository analytics are planned for Phase 11." />}
+          element={<RepositoryDetailPage />}
         />
         <Route
           path="/research"
