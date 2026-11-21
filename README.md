@@ -78,9 +78,13 @@ and pagination. Repository Detail at `/repositories/:id` loads stored repository
 metadata, monthly metric trends with expandable accessible tables, prediction
 indicators, and prediction history. Its charts and tables show stored values and
 leave missing measures blank; the available API has first-response times but no
-separate review-duration series. Research Results and Methodology remain
-placeholders for Phase 12. API types are generated from the backend OpenAPI
-contract by `pnpm api:types`.
+separate review-duration series. Research Results compares stored model runs,
+held-out performance, paired feature-family results, size groups, calibration,
+and feature importance. Methodology & Limitations shows the versioned label,
+chronological splits, sensitivity counts, feature dictionary, and retained data
+quality flags. Both screens read the Spring API; charts include accessible
+tabular values and findings are scoped to this observational cohort. API types
+are generated from the backend OpenAPI contract by `pnpm api:types`.
 
 Run frontend checks:
 
@@ -122,6 +126,24 @@ ossustain-pipeline --config pipeline/config.yaml collect --report pipeline/data/
 ```
 
 The collector follows GitHub pagination, ETags, and rate limits; stores progress after each page so an interrupted run can resume; and writes a per-repository JSON completeness report with cumulative stored-commit counts. Rerunning a completed cohort skips its commit history; pass `--refresh` to start a new history snapshot. Collection cache, reports, and raw local data stay under the ignored `pipeline/data/` directory. See [docs/database.md](docs/database.md) for the run log and progress tables.
+
+## Phase 4 collaboration collection and validation
+
+After Phase 3 completes, start the backend once so Flyway applies V4 and V5.
+Then collect pull requests, reviews, non-PR issues, and first-response data,
+followed by the per-repository completeness and quality report:
+
+```powershell
+ossustain-pipeline --config pipeline/config.example.yaml collect-collaboration --pr-request-cap 12500 --issue-request-cap 25000 --report pipeline/data/reports/phase4-quality.json
+ossustain-pipeline --config pipeline/config.example.yaml validate --report pipeline/data/reports/phase4-validation.json
+```
+
+The collector resumes completed stages, uses the privacy-filtered GitHub cache,
+and stops before exceeding either hard request cap. Keep the local `.env` token
+and hash secret private. Review the quality report before continuing; snapshots
+require a complete Phase 4 collection and this report. The ledger and detailed
+reports are local and ignored by Git. See [docs/database.md](docs/database.md)
+for retry behavior and the report fields.
 
 ## Phase 5 snapshots and labels
 
@@ -222,12 +244,14 @@ docker compose up -d postgres
 mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.jvmArguments=-Duser.timezone=Asia/Kolkata"
 ```
 
-The API reads stored results at `http://localhost:8080/api/v1`. It provides the
-cohort repository list and detail, monthly metrics, prediction history and
+The API reads stored results at `http://localhost:8080/api/v1`. Opening that
+base URL returns an API index with links to the available resources. It provides
+the cohort repository list and detail, monthly metrics, prediction history and
 latest prediction with indicators, plus model versions, evaluations, feature
-importance, dataset summary, and label/methodology definitions. The OpenAPI 3.1
-contract is served at <http://localhost:8080/openapi.yaml>. The health endpoint
-remains at <http://localhost:8080/actuator/health>.
+importance, dataset summary, and label/methodology definitions. The dashboard
+itself runs separately at <http://localhost:5173> after starting Vite. The
+OpenAPI 3.1 contract is served at <http://localhost:8080/openapi.yaml>. The
+health endpoint remains at <http://localhost:8080/actuator/health>.
 
 The default CORS origin is `http://localhost:5173`. Set `FRONTEND_ORIGIN` in the
 backend environment to a comma-separated list when using another frontend URL.

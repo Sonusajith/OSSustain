@@ -6,6 +6,16 @@ info:
 servers:
   - url: /api/v1
 paths:
+  /:
+    get:
+      operationId: getApiIndex
+      summary: Discover API resources and the local dashboard URL.
+      responses:
+        '200':
+          description: API resource links and dashboard instructions.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ApiIndex'}
   /repositories:
     get:
       operationId: listRepositories
@@ -166,6 +176,16 @@ components:
         application/json:
           schema: {$ref: '#/components/schemas/ApiError'}
   schemas:
+    ApiIndex:
+      type: object
+      required: [service, version, dashboard, endpoints]
+      properties:
+        service: {type: string}
+        version: {type: string}
+        dashboard: {type: string}
+        endpoints:
+          type: object
+          additionalProperties: {type: string}
     ApiError:
       type: object
       required: [timestamp, status, code, message, path]

@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–10 are complete and merged to main. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–11 are complete and merged to main. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 11: Repository Detail Screen
+Phase 12: Research Dashboard, Methodology, and Documentation
 
 ## Current Task
-Phase 11 Repository Detail is complete on `phase-11/repository-detail` and ready for review. Phase 10 merged in PR #10 (`c281ca7`).
+Phase 12 screens and reproducibility documentation are complete on `phase-12/research-dashboard`; lint, tests, production build, and live research API checks passed. The API base path now returns an index instead of a 404. A full pipeline rebuild against a clean database was not rerun in this session.
 
 ## Last Completed Task
-Phase 11 Repository Detail is complete on `phase-11/repository-detail`: real repository metadata, the available monthly metrics grouped into accessible SVG trends and expandable tables, latest prediction with model-version lineage, non-causal indicator wording, prediction history, data-quality and model limitation notices, and loading/error/empty states. Frontend lint/build passed and 11 MSW-backed tests passed. Phase 10 Cohort Overview merged in PR #10 (`c281ca7`), including the review fix for table heading placement. Phase 9 merged in PR #9 (`8e32a6b`): read-only API, bounded filtering/pagination, consistent JSON errors, CORS, and OpenAPI 3.1.
+Phase 11 Repository Detail merged in PR #11 (`85f6e65`): real metadata, metric charts/tables, prediction indicators and history, and explicit limitations. Phase 10 Cohort Overview merged in PR #10 (`c281ca7`); Phase 9 Read API merged in PR #9 (`8e32a6b`). Phase 12 now integrates Research Results and Methodology & Limitations with typed API data, accessible chart tables, responsive layouts, loading/empty/error states, and the README.
 
 ## Completed Phases
 Phase 1: Foundation
@@ -28,7 +28,7 @@ Phase 7: Modeling and Temporal Evaluation — merged to main in PR #7 (`04cf1f7`
 Phase 8: Predictions, Explanations, and Model Versioning — merged to main in PR #8 (`ced3c39`)
 Phase 9: Backend Read API — merged to main in PR #9 (`8e32a6b`)
 Phase 10: Frontend Foundation and Cohort Overview — merged to main in PR #10 (`c281ca7`)
-Phase 11: Repository Detail Screen — implementation complete on `phase-11/repository-detail`, review pending
+Phase 11: Repository Detail Screen — merged to main in PR #11 (`85f6e65`)
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -41,17 +41,18 @@ Phase 11: Repository Detail Screen — implementation complete on `phase-11/repo
 - Phase 7: frozen model grid, train-only preprocessing, validation-only hyperparameter/cutoff selection, held-out test evaluation, cluster-bootstrap intervals and paired feature-family comparison, validation importance, versioned model records, and local artifacts.
 
 ## Features In Progress
-None. Phase 11 is ready for owner review on `phase-11/repository-detail`.
+Phase 12 implementation is complete on `phase-12/research-dashboard`; PR review and merge are pending. Do not begin Phase 13 until the owner confirms the merge.
 
 ## Pending Tasks
-- Review and merge the Phase 11 pull request. Begin Phase 12 after merge confirmation.
+- Owner review and merge of Phase 12 PR.
+- If the team requires fresh end-to-end evidence before merge, run the README pipeline against an isolated empty database; this session verified the existing live dataset and added the missing Phase 4 run-order commands.
 - Local detailed reports remain ignored in `pipeline/data/reports/`; aggregate results are committed in `docs/phase4-data-quality.md` and `docs/phase5-snapshots.md`.
 
 ## Known Bugs
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-No current implementation blockers. GitHub CLI is unavailable; use the GitHub comparison link to open the Phase 11 pull request after the branch is pushed.
+GitHub CLI is unavailable; open the Phase 12 pull request from the pushed branch using the compare link. Live API smoke checks used `http://localhost:8081/api/v1`; port 8080 returned 403 in this workstation session. The Stitch HTML contains unsupported sample claims and figures; it was used only as visual reference, and displayed results come from the real API records.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -78,7 +79,7 @@ Added Flyway V1 foundation baseline, V2 cohort-selection tables, V3 core data ta
 Phase 5 adds V6 `dataset_versions` and `snapshots` for immutable research inputs, label completeness, and chronological splits. Existing V3 `repo_windows`/`labels` remain the development-seed/dashboard scaffold; Phase 6 consumes the versioned research snapshots. Phase 6 adds V7 `feature_sets`, `feature_definitions`, `snapshot_features`, and `repository_metrics_monthly`. Phase 7 adds V8 model/evaluation/importance records and versioned prediction references. Phase 8 adds V9 validation-derived risk cutoffs, prediction dates and limitation flags, per-repository prediction outcomes, and per-prediction explanations. The feature runner reads latest completed stages from `collection_runs`; resumable `collection_progress` covers commits only.
 
 ## API Changes
-Spring Boot Actuator health remains available at `/actuator/health`. Phase 9 adds read-only endpoints for repository list/detail, monthly metrics, prediction history/latest indicators, models, evaluations, feature importance, dataset summary, and label/feature definitions. Lists use bounded pagination and documented filters. Errors share `{timestamp,status,code,message,path}`. CORS defaults to `http://localhost:5173` and is configurable with `FRONTEND_ORIGIN`. OpenAPI 3.1 is served at `/openapi.yaml`.
+Spring Boot Actuator health remains available at `/actuator/health`. Phase 9 adds read-only endpoints for repository list/detail, monthly metrics, prediction history/latest indicators, models, evaluations, feature importance, dataset summary, and label/feature definitions. `GET /api/v1` now returns an API index so opening the base URL is informative; the dashboard runs separately at Vite's `http://localhost:5173`. Lists use bounded pagination and documented filters. Errors share `{timestamp,status,code,message,path}`. CORS defaults to `http://localhost:5173` and is configurable with `FRONTEND_ORIGIN`. OpenAPI 3.1 is served at `/openapi.yaml`.
 
 ## Important Files
 - `docker-compose.yml`, `.env.example`, `.gitignore`, `README.md`, `config/experiment.yaml`, `config/modeling.yaml`, `config/cohort-candidates.yaml`, `config/cohort.yaml`, `docs/methodology.md`, `docs/phase4-data-quality.md`, `docs/phase7-modeling.md`, `docs/phase8-predictions.md`
@@ -96,13 +97,13 @@ Phase 7 adds scikit-learn 1.9.1 and joblib 1.6.0 (approved by the project owner;
 `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, `OSSUSTAIN_DATABASE_URL`, `SPRING_DATASOURCE_URL`, `VITE_API_BASE_URL`, `GITHUB_TOKEN`, and `OSSUSTAIN_HASH_SECRET` (documented in `.env.example`).
 
 ## UI Integration Status
-Phase 10 Cohort Overview and Phase 11 Repository Detail are integrated from `UIUX/cohort_overview/code.html` and `UIUX/repository_detail_facebook_react/code.html`. The Repository Detail `screen.png` is invalid; preserve the usable HTML reference and do not replace the image file. Its API has first-response metrics but no separate review-duration series; the screen marks that measure unavailable.
+Phase 10 Cohort Overview and Phase 11 Repository Detail are integrated. Phase 12 Research Results and Methodology & Limitations are integrated using `UIUX/ossustain_empirical_research_platform/code.html` and `UIUX/empirical_observational_research/DESIGN.md` as visual references; unsupported sample claims were replaced with live API values.
 
 ## Google Stitch Screens Integrated
 `UIUX/cohort_overview` — Cohort Overview (Phase 10); `UIUX/repository_detail_facebook_react` — Repository Detail (Phase 11).
 
 ## Google Stitch Screens Pending
-Research Results and Methodology & Limitations (Phase 12). Repository Comparison (Phase 14, post-MVP).
+Research Results and Methodology & Limitations (Phase 12, in progress). Repository Comparison (Phase 14, post-MVP).
 
 ## Temporary Workarounds
 Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Windows backend tests. GitHub CLI is absent and the collection token cannot create PRs (HTTP 403); PR #5 was created through the signed-in browser without expanding token permissions.
@@ -113,6 +114,7 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 - Phase 9 OpenAPI YAML parsed successfully with PyYAML: OpenAPI 3.1, 10 product paths, 17 schemas.
 - Phase 10 frontend: frozen-lock install and OpenAPI type generation passed; `pnpm lint`, `pnpm test` (7 passed), and `pnpm build` passed after the table header fix. Live API check against local PostgreSQL returned all 50 cohort repositories and dataset summary #1.
 - Phase 11 frontend: `pnpm lint`, `pnpm test` (11 passed), and `pnpm build` passed. Live API smoke checks returned repository metadata, 46 monthly metric points, the latest prediction with indicators, and prediction history for a real cohort repository.
+- Phase 12 verification: frontend lint passed, 17 component tests passed, production build passed. Backend integration suite passed (14 tests). Live API smoke check returned API index at `/api/v1` plus 8 models, 454 evaluations, 23 selected-model importance rows, 23 feature definitions, 50 repositories, 2,300 snapshots, 395 labeled snapshots, 600 test snapshots (88 labeled), and four repository quality-flag records. The selected test PR-AUC difference (extended minus activity-only) is +0.188 (95% repository-cluster CI −0.059 to +0.391), which includes zero.
 - Local PostgreSQL migrated to V9. Live Phase 8 rerun persisted 50 predictions/outcomes and 150 explanation indicators; all 50 repositories have a prediction and all were explained. Model version 3 has validation-derived risk cutoffs 0.4445/0.6041.
 - Phase 7 run persisted 8 model versions (2 selected), 454 evaluation rows, and 78 feature-importance rows; six joblib artifacts are ignored under `pipeline/artifacts/`. The paired test PR-AUC difference was +0.188 (95% CI −0.059 to +0.391), inconclusive.
 - Docker Desktop and local PostgreSQL remain running.
@@ -128,7 +130,7 @@ Not started.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Review and merge the Phase 11 branch using its GitHub comparison link. Begin Phase 12 only after the owner confirms merge.
+Review and merge the Phase 12 pull request. Wait for explicit merge confirmation before starting Phase 13.
 
 ## Last Updated
-2026-11-21, `phase-11/repository-detail` — Phase 10 merge verified (PR #10, `c281ca7`); Phase 11 implementation and checks complete for review.
+2026-11-21, `phase-12/research-dashboard` — API base URL 404 fixed with a discoverable index; backend tests passed, follow-up push pending.

@@ -2,9 +2,13 @@ import { useQuery } from '@tanstack/react-query'
 
 import {
   getDatasetSummary,
+  getAllEvaluations,
+  getFeatureImportance,
+  getLabelDefinition,
   getLatestPrediction,
   getPredictionHistory,
   getRepositories,
+  getResearchModels,
   getRepositoryDetail,
   getRepositoryMetrics,
 } from './client'
@@ -16,6 +20,10 @@ export const cohortQueryKeys = {
   repositoryMetrics: (id: number) => ['repository', id, 'metrics'] as const,
   repositoryPrediction: (id: number) => ['repository', id, 'latest-prediction'] as const,
   repositoryHistory: (id: number) => ['repository', id, 'prediction-history'] as const,
+  researchModels: ['research', 'models'] as const,
+  researchEvaluations: ['research', 'evaluations'] as const,
+  researchImportance: (modelVersionId: number) => ['research', 'importance', modelVersionId] as const,
+  researchLabelDefinition: ['research', 'label-definition'] as const,
 }
 
 export function useRepositories() {
@@ -31,6 +39,43 @@ export function useDatasetSummary() {
   return useQuery({
     queryKey: cohortQueryKeys.datasetSummary,
     queryFn: ({ signal }) => getDatasetSummary(signal),
+    staleTime: 60_000,
+    retry: 1,
+  })
+}
+
+export function useResearchModels() {
+  return useQuery({
+    queryKey: cohortQueryKeys.researchModels,
+    queryFn: ({ signal }) => getResearchModels(signal),
+    staleTime: 60_000,
+    retry: 1,
+  })
+}
+
+export function useResearchEvaluations() {
+  return useQuery({
+    queryKey: cohortQueryKeys.researchEvaluations,
+    queryFn: ({ signal }) => getAllEvaluations(signal),
+    staleTime: 60_000,
+    retry: 1,
+  })
+}
+
+export function useResearchFeatureImportance(modelVersionId: number, enabled: boolean) {
+  return useQuery({
+    queryKey: cohortQueryKeys.researchImportance(modelVersionId),
+    queryFn: ({ signal }) => getFeatureImportance(modelVersionId, signal),
+    enabled,
+    staleTime: 60_000,
+    retry: 1,
+  })
+}
+
+export function useLabelDefinition() {
+  return useQuery({
+    queryKey: cohortQueryKeys.researchLabelDefinition,
+    queryFn: ({ signal }) => getLabelDefinition(signal),
     staleTime: 60_000,
     retry: 1,
   })

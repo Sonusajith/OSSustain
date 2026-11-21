@@ -248,7 +248,12 @@ class ApiIntegrationTest {
 
     @Test
     void corsIsRestrictedAndOpenApiDocumentIsServed() throws Exception {
-        HttpResponse<String> response = options("/api/v1/repositories", "http://localhost:5173");
+        HttpResponse<String> response = get("/api/v1");
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("OSSustain Read API", "http://localhost:5173",
+                "/api/v1/research", "/openapi.yaml");
+
+        response = options("/api/v1/repositories", "http://localhost:5173");
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.headers().firstValue(HttpHeaders.ACCESS_CONTROL_ALLOW_ORIGIN))
                 .contains("http://localhost:5173");
