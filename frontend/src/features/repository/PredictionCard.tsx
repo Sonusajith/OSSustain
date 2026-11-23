@@ -32,6 +32,7 @@ export function PredictionCard({ prediction, isLoading, error, onRetry }: {
 
   const result = prediction.prediction
   const limitations = result.limitationFlags ?? []
+  const explanationMethod = prediction.indicators[0]?.method
   return (
     <section className="detail-card prediction-card" aria-labelledby="current-prediction-title">
       <div className="prediction-heading">
@@ -58,8 +59,10 @@ export function PredictionCard({ prediction, isLoading, error, onRetry }: {
         </div>
       )}
       <div className="indicator-section">
-        <h3>Associated model indicators</h3>
-        <p className="detail-footnote">One-at-a-time score difference from the validation reference value; not a causal effect.</p>
+        <h3>Model explanations</h3>
+        <p className="detail-footnote">{explanationMethod === 'shap'
+          ? 'SHAP contributions describe how each feature shifts the model probability from its expected value under validation data. They are not causal effects.'
+          : 'One-at-a-time score differences compare observed features with validation reference values. They are not causal effects.'}</p>
         {prediction.indicators.length ? (
           <ol className="indicator-list">
             {prediction.indicators.map((indicator, index) => (
@@ -68,8 +71,8 @@ export function PredictionCard({ prediction, isLoading, error, onRetry }: {
                 <p>{indicator.description ?? 'This stored indicator is an association and does not establish a causal effect.'}</p>
                 <dl>
                   <div><dt>Observed</dt><dd>{displayValue(indicator.featureValue)}</dd></div>
-                  <div><dt>Validation reference</dt><dd>{displayValue(indicator.referenceValue)}</dd></div>
-                  <div><dt>Model score difference</dt><dd>{indicator.probabilityDelta === undefined ? 'Not available' : `${indicator.probabilityDelta > 0 ? '+' : ''}${(indicator.probabilityDelta * 100).toFixed(1)} percentage points`}</dd></div>
+                  <div><dt>{indicator.method === 'shap' ? 'Expected model probability' : 'Validation reference value'}</dt><dd>{displayValue(indicator.referenceValue)}</dd></div>
+                  <div><dt>{indicator.method === 'shap' ? 'SHAP probability contribution' : 'Model score difference'}</dt><dd>{indicator.probabilityDelta === undefined ? 'Not available' : `${indicator.probabilityDelta > 0 ? '+' : ''}${(indicator.probabilityDelta * 100).toFixed(1)} percentage points`}</dd></div>
                 </dl>
               </li>
             ))}

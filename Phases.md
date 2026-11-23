@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 14: Repository Comparison
-**Current Status:** Phase 13 merged to `main` in PR #13 (`9f27bb2`). Phase 14 implementation is on `phase-14/repository-comparison`; all four GitHub Actions jobs passed on `abf21cf`.
+**Current Phase:** Phase 15: SHAP and Robustness Analyses
+**Current Status:** Phase 14 merged to `main` in PR #14 (`70a21a3`). Phase 15 implementation and local verification are complete on `phase-15/shap-robustness`; PR review/merge is pending.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
@@ -153,7 +153,14 @@ Phase 1 is complete. Work proceeds in order; do not start a phase before its dep
 - **Definition of done:** comparison API and screen use live stored data, targeted tests pass, and `Memory.md` records implementation and verification. Excludes on-demand analysis.
 
 ### Phase 15: SHAP and Robustness Analyses
-SHAP explanations (added dependency requires approval); alternative thresholds and activity definitions surfaced in the dashboard. Depends on Phase 12.
+- **Goal:** Provide SHAP probability attributions for stored model predictions and quantify sensitivity to alternate decline thresholds and activity definitions.
+- **Features included:** repository detail explanations identify SHAP versus the threshold-rule baseline substitution method; research results show held-out PR-AUC, F1, and Brier scores under θ 0.30, θ 0.70, and commits plus merged pull requests.
+- **Analysis protocol:** robustness reuses fixed validation-selected model test probabilities. It does not refit or tune using test outcomes. Repository-cluster bootstrap intervals are reported; alternate activity outcomes apply the configured minimum reference activity.
+- **SHAP protocol:** pinned SHAP with a validation-only background and probability-scale contributions. The threshold-rule baseline has no fitted estimator and keeps its explicitly identified substitution explanation.
+- **Dependencies:** SHAP 0.54.1 was approved and pinned in `pipeline/pyproject.toml` and `pipeline/requirements.lock`.
+- **Design:** no Phase 15 Stitch screen exists; additions extend the current Repository Detail and Research Results screens.
+- **Testing:** pipeline, backend migration/API, and frontend suites; pipeline lint; frontend lint and production build; dependency audit.
+- **Definition of done:** stored explanations and robustness metrics use the declared protocols, are served and displayed with clear method labels, targeted tests pass, and `Memory.md` records verification.
 
 ### Phase 16: On-Demand Repository Analysis
 Collection and prediction for user-submitted repositories (requires an architecture revision: job handling, live-inference path, rate-limit strategy). Depends on Phase 13; requires an explicit approved architecture change first.

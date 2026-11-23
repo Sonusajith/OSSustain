@@ -134,6 +134,47 @@ function SizeBreakdown({ models, evaluations }: { models: ModelVersion[]; evalua
   )
 }
 
+function RobustnessAnalysis({ models, evaluations }: { models: ModelVersion[]; evaluations: Evaluation[] }) {
+  const variants = [
+    { key: 'robustness_theta_0.3', label: 'θ = 0.30 · commits' },
+    { key: 'robustness_theta_0.7', label: 'θ = 0.70 · commits' },
+    { key: 'robustness_commits_plus_merged_prs', label: 'θ = 0.50 · commits + merged PRs' },
+  ]
+  const selected = models.filter((model) => model.selected)
+  const hasResults = selected.some((model) => variants.some((variant) =>
+    evaluationFor(evaluations, model.id, `${variant.key}_pr_auc`, 'test')))
+
+  return (
+    <section className="research-panel" aria-labelledby="robustness-title">
+      <div className="research-panel-heading">
+        <div><p className="eyebrow">Fixed selected models · held-out test</p><h2 id="robustness-title">Target definition sensitivity</h2></div>
+        <span className="research-tag">Repository-cluster intervals</span>
+      </div>
+      {!hasResults ? <ResearchEmpty>Robustness results have not been generated for this dataset version. Rerun the offline evaluation pipeline to populate them.</ResearchEmpty> : (
+        <div className="table-scroll-region">
+          <table className="research-table">
+            <caption>Held-out performance under alternate decline thresholds and activity definitions, using fixed validation-selected model predictions</caption>
+            <thead><tr><th scope="col">Model</th><th scope="col">Outcome definition</th><th scope="col">PR-AUC (95% CI)</th><th scope="col">F1</th><th scope="col">Brier</th><th scope="col">Snapshots</th><th scope="col">Repositories</th></tr></thead>
+            <tbody>{selected.flatMap((model) => variants.map((variant) => {
+              const prAuc = evaluationFor(evaluations, model.id, `${variant.key}_pr_auc`, 'test')
+              const f1 = evaluationFor(evaluations, model.id, `${variant.key}_f1`, 'test')
+              const brier = evaluationFor(evaluations, model.id, `${variant.key}_brier_score`, 'test')
+              const details = asRecord(prAuc?.details)
+              return <tr key={`${model.id}-${variant.key}`}>
+                <th scope="row">{humanize(model.featureSet)} · {humanize(model.algorithm)}</th><td>{variant.label}</td>
+                <td>{prAuc ? formatInterval(prAuc.value, prAuc.ciLow, prAuc.ciHigh) : '—'}</td>
+                <td>{f1 ? formatDecimal(f1.value) : '—'}</td><td>{brier ? formatDecimal(brier.value) : '—'}</td>
+                <td>{formatCount(details.n_snapshots)}</td><td>{formatCount(details.n_repositories)}</td>
+              </tr>
+            }))}</tbody>
+          </table>
+        </div>
+      )}
+      <p className="research-footnote">Each row reuses the model’s fixed test probabilities; no test outcomes select or tune a model. θ changes the decline label. The activity variant adds merged pull requests to non-bot default-branch commits. Intervals resample repositories.</p>
+    </section>
+  )
+}
+
 export function ResearchResultsPage() {
   const summaryQuery = useDatasetSummary()
   const modelsQuery = useResearchModels()
@@ -192,6 +233,7 @@ export function ResearchResultsPage() {
         <p className="research-footnote">Intervals are 95% repository-cluster bootstrap intervals. Lower Brier scores indicate better probability error. The held-out test results are reported once and do not select the stored models.</p>
       </section>
       <PairComparison models={modelContent} evaluations={evaluations} />
+      <RobustnessAnalysis models={modelContent} evaluations={evaluations} />
       <SizeBreakdown models={modelContent} evaluations={evaluations} />
       <CalibrationChart models={modelContent} evaluations={evaluations} />
       <FeatureImportancePanel

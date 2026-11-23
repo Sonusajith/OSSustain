@@ -82,11 +82,12 @@ WITH latest_dataset AS (
         PredictionResponse latest = rows.getFirst();
         List<PredictionIndicatorResponse> indicators = jdbcTemplate.query(
                 """
-SELECT feature_name, feature_value, reference_value, probability_delta,
+SELECT method, feature_name, feature_value, reference_value, probability_delta,
                           direction, rank, description
                    FROM prediction_explanations WHERE prediction_id = ? ORDER BY rank""",
                 (result, rowNumber) -> new PredictionIndicatorResponse(
-                        result.getString("feature_name"), result.getObject("feature_value", Double.class),
+                        result.getString("method"), result.getString("feature_name"),
+                        result.getObject("feature_value", Double.class),
                         result.getObject("reference_value", Double.class),
                         result.getDouble("probability_delta"), result.getString("direction"),
                         result.getInt("rank"), result.getString("description")),

@@ -114,6 +114,7 @@ const researchEvaluations = [
   { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'validation', stratum: 'overall', metric: 'pr_auc', value: 0.628, ciLow: null, ciHigh: null, details: {} },
   { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'test', stratum: 'overall', metric: 'pr_auc', value: 0.46, ciLow: 0.232, ciHigh: 0.709, details: { n_snapshots: 88, n_repositories: 12, calibration_bins: [{ bin: 1, count: 10, observed_rate: 0.3, mean_probability: 0.35 }] } },
   { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'test', stratum: 'overall', metric: 'paired_delta_pr_auc_vs_activity_only', value: 0.188, ciLow: -0.059, ciHigh: 0.391, details: { n_snapshots: 88, n_repositories: 12 } },
+  { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'test', stratum: 'overall', metric: 'robustness_theta_0.3_pr_auc', value: 0.41, ciLow: 0.22, ciHigh: 0.64, details: { n_snapshots: 70, n_repositories: 11, target_definition: 'theta=0.3; non-bot default-branch commits' } },
   { modelVersionId: 3, featureSet: 'activity_only', algorithm: 'random_forest', split: 'test', stratum: 'overall', metric: 'calibration_curve', value: null, ciLow: null, ciHigh: null, details: { calibration_bins: [{ bin: 1, count: 10, observed_rate: 0.2, mean_probability: 0.25 }] } },
   { modelVersionId: 6, featureSet: 'extended', algorithm: 'logistic_regression', split: 'test', stratum: 'overall', metric: 'calibration_curve', value: null, ciLow: null, ciHigh: null, details: { calibration_bins: [{ bin: 1, count: 10, observed_rate: 0.3, mean_probability: 0.35 }] } },
 ]
@@ -158,6 +159,7 @@ function installDetailApi({ metrics = repositoryMetrics, latest = true, history 
       ? HttpResponse.json({
         prediction: predictionRecord,
         indicators: [{
+          method: 'local_substitution',
           featureName: 'commits_30d',
           featureValue: 8,
           referenceValue: 15,
@@ -429,6 +431,9 @@ describe('Dashboard screens', () => {
     expect(screen.getByText('Extended vs. activity-only')).toBeInTheDocument()
     expect(screen.getByText(/0\.188 \[-0\.059, 0\.391\]/)).toBeInTheDocument()
     expect(screen.getByText(/does not establish a reliable improvement/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Target definition sensitivity' })).toBeInTheDocument()
+    expect(screen.getByRole('table', { name: /Held-out performance under alternate decline thresholds/ })).toBeInTheDocument()
+    expect(screen.getAllByText('θ = 0.30 · commits')).toHaveLength(2)
     expect(screen.getByRole('table', { name: 'Stored model metrics on the held-out test split; validation PR-AUC is displayed only as the selection metric' })).toBeInTheDocument()
     expect(screen.getByRole('img', { name: /Calibration chart comparing observed event rate/ })).toBeInTheDocument()
     expect(await screen.findByText('Commits 30d')).toBeInTheDocument()

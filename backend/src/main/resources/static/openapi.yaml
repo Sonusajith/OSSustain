@@ -319,7 +319,9 @@ components:
           type: array
           items:
             type: object
+            required: [method, featureName, featureValue, referenceValue, probabilityDelta, direction, rank, description]
             properties:
+              method: {type: string, enum: [shap, local_substitution]}
               featureName: {type: string}
               featureValue: {type: [number, 'null']}
               referenceValue: {type: [number, 'null']}
