@@ -59,8 +59,9 @@ The pipeline reads the local `.env` for `GITHUB_TOKEN` and `OSSUSTAIN_HASH_SECRE
 ### Start the frontend dashboard
 
 Start PostgreSQL and the backend first. The cohort overview reads the latest
-repository cohort and dataset summary from the API. Set `VITE_API_BASE_URL` in
-the frontend environment if the API runs at a different URL.
+repository cohort and dataset summary from the API. Vite reads
+`VITE_API_BASE_URL` from the repository root `.env`; update it there if the API
+runs at a different URL, then restart Vite so it reloads the setting.
 
 From `frontend/`:
 
