@@ -12,7 +12,7 @@ Phases 1–17 are complete and merged to `main`; Phase 17 merged in PR #17 (`815
 All defined phases through Phase 17 are complete. No Phase 18 is planned yet.
 
 ## Current Task
-Phase 17 merged to `main` in PR #17 (`815f1fd`). The local PostgreSQL database applied V12. A local bootstrap admin was created from ignored `.env`, signed in, rotated its password, signed out, and signed in again. The currently running API on port 8081 predates Phase 17 and returns 404 for `/api/v1/auth/csrf`; a temporary Phase 17 API on port 8082 was used for verification and stopped afterward. Restart the desired local API process to load the merged code. No next phase is defined in `Phases.md`.
+Fix Phase 17 local sign-in connectivity after PR #17 merged. Root `.env` points Vite to the updated OSSustain API at `http://localhost:8081/api/v1`; `frontend/vite.config.ts` loads that root environment for development while pinning Vitest's mock API base to port 8080. The updated backend and Vite are running locally. Health, CSRF, CORS, and administrator sign-in checks passed. No next phase is defined in `Phases.md`.
 
 ## Last Completed Task
 Phase 17 Authentication and Admin merged in PR #17 (`815f1fd`); local V12/bootstrap sign-in and password rotation verified. Phase 16 On-Demand Repository Analysis merged in PR #16 (`be80014`), including the durable analysis queue, bounded worker, API, and `/analyze` UI. Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
@@ -55,7 +55,7 @@ No feature phase is currently in progress. Phase 17 is merged; the next phase ne
 ## Pending Tasks
 - Before release, run one live public-repository analysis against the configured local stack and selected model artifacts; CI intentionally uses no live GitHub calls.
 - The local admin account `ossustain-admin` was bootstrapped and rotated; its current password remains only in ignored `.env`. Set a separate private bootstrap password for each deployment environment.
-- Restart the existing local API on port 8081; it predates Phase 17 and returns 404 for `/api/v1/auth/csrf`. The temporary updated instance used to verify local credentials was stopped.
+- Refresh the local sign-in page at `http://localhost:5173/login` if it is still open; the corrected Vite and Phase 17 backend are currently running on ports 5173 and 8081.
 - Phase 16 has no dedicated Stitch design; screen follows the current dashboard style and should receive visual review.
 - Phase 15 has no Stitch design in `UIUX/`; additions extend existing screens and can receive visual review if a reference is supplied.
 - Phase 13 release follow-ups: retry the full backend container OS scan (Docker Scout stalled while indexing and prior attempts could not retrieve Java/base-image vulnerability metadata); perform the keyboard walkthrough and Lighthouse audit when a deployment URL is selected.
@@ -129,7 +129,8 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 
 ## Testing Status
 - Phase 17: Maven/Testcontainers — 20 passed including V12, failed/successful login, forced password change, logout, CSRF rejection, disabled-session invalidation, per-account job access, admin cancellation/audit, last-admin protection, and public research access. Pipeline — 86 passed, 1 existing opt-in database test skipped; Ruff passed. Frontend — 25 passed, ESLint passed, TypeScript/Vite production build passed; local Node is 22.18 and emits the existing >=22.19 engine warning. OpenAPI types regenerated and production Compose config validated. `mvn clean` could not remove the shared target directory while the existing API process had loaded classes; a full-source recompilation and complete Maven suite passed without stopping that process.
-- Post-merge local check: Flyway applied V11 and V12 to local PostgreSQL. The bootstrap account signed in, passed the required password rotation, logged out, and signed back in using the rotated credentials; its password is kept in ignored `.env`. The stale API on port 8081 remains running until explicitly restarted; temporary verification ran the merged backend on port 8082 and was stopped.
+- Post-merge local check: Flyway applied V11 and V12 to local PostgreSQL. The bootstrap account signed in, passed the required password rotation, logged out, and signed back in using the rotated credentials; its password is kept in ignored `.env`. The earlier stale API process was replaced by the merged Phase 17 backend on port 8081 in this fix.
+- Phase 17 sign-in connectivity fix: Vite now reads root `.env` for the local API URL, and Vitest explicitly uses the default mocked API URL so local overrides cannot break MSW handlers. Updated API health, CSRF, CORS, and admin login passed. Frontend — 25 tests passed, ESLint passed, production build passed. Node 22.18 emitted the existing >=22.19 engine warning.
 - Phase 16: pipeline suite — 86 passed, 1 existing opt-in database test skipped; Ruff check and formatting check for changed files passed. Backend Maven/Testcontainers — 16 passed, including V11 migration and analysis submit/status/duplicate and IP quota coverage. Frontend lint passed, 21 tests passed including analysis success/quota error states, and production build passed. OpenAPI types regenerated; local/production Compose configs parsed; worker image built and its artifact root verified as `/app`. No live GitHub analysis was run; CI uses fixtures.
 - Phase 13 CI fix verification: GitHub Actions passed backend, container-build, frontend, and pipeline checks on `e902581`. The pinned OSV source scan also passed locally with “No issues found”. A separate Linux Docker test attempt hit the 60-second worker-start timeout on the OneDrive-backed bind mount; hosted CI completed the full frontend test/build successfully.
 - Phase 14 verification: backend Maven suite — 15 tests passed; frontend — 19 tests passed, ESLint passed, TypeScript/Vite production build passed. API types regenerated from OpenAPI. Local Node is 22.18 (package requirement is >=22.19), so pnpm displayed an engine warning. All four hosted GitHub Actions jobs (backend, frontend, pipeline, container-build) passed on `abf21cf` using the pinned CI Node version.
@@ -156,7 +157,7 @@ Phase 13 local stack passed container smoke checks at `http://localhost:8088`; f
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Restart the local backend on port 8081 so it loads Phase 17, then select or approve a scope for the next phase; no Phase 18 is currently planned.
+Refresh `http://localhost:5173/login` and verify sign-in using the local admin account. Review and merge the Phase 17 sign-in configuration fix; no Phase 18 is currently planned.
 
 ## Last Updated
-2026-11-23, `phase-17/post-merge-handoff` — verified PR #17 merged, applied local V12, and confirmed the bootstrap account can rotate its password and sign in again.
+2026-11-23, `phase-17/sign-in-api-config` — fixed local Vite API configuration and verified frontend tests/build plus live Phase 17 sign-in.
