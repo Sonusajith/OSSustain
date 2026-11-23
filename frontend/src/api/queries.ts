@@ -1,4 +1,4 @@
-import { useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery } from '@tanstack/react-query'
 
 import {
   getDatasetSummary,
@@ -12,9 +12,12 @@ import {
   getRepositoryDetail,
   getRepositoryComparison,
   getRepositoryMetrics,
+  getAnalysis,
+  submitAnalysis,
 } from './client'
 
 export const cohortQueryKeys = {
+  analysis: (id: string) => ['analysis', id] as const,
   repositories: ['cohort', 'repositories'] as const,
   datasetSummary: ['cohort', 'dataset-summary'] as const,
   repository: (id: number) => ['repository', id] as const,
@@ -26,6 +29,23 @@ export const cohortQueryKeys = {
   researchEvaluations: ['research', 'evaluations'] as const,
   researchImportance: (modelVersionId: number) => ['research', 'importance', modelVersionId] as const,
   researchLabelDefinition: ['research', 'label-definition'] as const,
+}
+
+export function useSubmitAnalysis() {
+  return useMutation({ mutationFn: submitAnalysis })
+}
+
+export function useAnalysis(id: string | undefined) {
+  return useQuery({
+    queryKey: cohortQueryKeys.analysis(id ?? ''),
+    queryFn: ({ signal }) => getAnalysis(id ?? '', signal),
+    enabled: Boolean(id),
+    refetchInterval: (query) => {
+      const status = query.state.data?.status
+      return status === 'queued' || status === 'running' ? 2000 : false
+    },
+    retry: 1,
+  })
 }
 
 export function useRepositories() {

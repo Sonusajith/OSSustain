@@ -5,6 +5,7 @@ import org.ossustain.api.dto.ApiErrorResponse;
 import org.springframework.dao.DataAccessException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -22,10 +23,11 @@ public class ApiExceptionHandler {
         return response(error.status(), error.code(), error.getMessage(), request);
     }
 
-    @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class})
+    @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class,
+            HttpMessageNotReadableException.class})
     ResponseEntity<ApiErrorResponse> handleInvalidParameter(Exception error, HttpServletRequest request) {
         return response(HttpStatus.BAD_REQUEST, "invalid_parameter",
-                "A request parameter has an invalid value or type.", request);
+                "A request value has an invalid format or type.", request);
     }
 
     @ExceptionHandler(NoResourceFoundException.class)

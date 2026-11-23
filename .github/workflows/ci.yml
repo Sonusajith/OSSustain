@@ -58,6 +58,7 @@ jobs:
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
       - run: docker build -f backend/Dockerfile -t ossustain-backend:ci .
+      - run: docker build -f pipeline/Dockerfile -t ossustain-analysis-worker:ci .
       - run: docker build -f frontend/Dockerfile -t ossustain-frontend:ci .
       - name: Scan pinned dependencies
         run: docker run --rm -v "$PWD:/src" ghcr.io/google/osv-scanner:v2.7.1@sha256:a70ffffc2bfd33482953e5d6b64c6fcdb30239717a07b0f0d3ab2859ce3e4cde scan source --recursive /src

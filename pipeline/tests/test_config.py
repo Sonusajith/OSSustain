@@ -33,6 +33,35 @@ def test_environment_database_url_overrides_yaml(
     assert str(config.database_url) == "postgresql://env:password@localhost:5432/env"
 
 
+def test_postgres_environment_encodes_reserved_password_characters(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    config_path = tmp_path / "pipeline.yaml"
+    config_path.write_text(
+        "database_url: postgresql://yaml:password@localhost:5432/yaml\n", encoding="utf-8"
+    )
+    for name in (
+        "OSSUSTAIN_DATABASE_URL",
+        "PGHOST",
+        "PGUSER",
+        "PGPASSWORD",
+        "PGPORT",
+        "PGDATABASE",
+    ):
+        monkeypatch.delenv(name, raising=False)
+    monkeypatch.setenv("PGHOST", "postgres")
+    monkeypatch.setenv("PGUSER", "ossustain")
+    monkeypatch.setenv("PGPASSWORD", "chars:@/word")
+    monkeypatch.setenv("PGDATABASE", "ossustain")
+
+    config = load_config(config_path, env_path=tmp_path / ".env")
+
+    assert (
+        str(config.database_url)
+        == "postgresql://ossustain:chars%3A%40%2Fword@postgres:5432/ossustain"
+    )
+
+
 def test_load_config_rejects_missing_database_url(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch
 ) -> None:

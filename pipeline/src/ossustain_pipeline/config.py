@@ -2,6 +2,7 @@
 
 import os
 from pathlib import Path
+from urllib.parse import quote
 
 import yaml
 from pydantic import BaseModel, PostgresDsn, SecretStr, ValidationError
@@ -56,6 +57,13 @@ def load_config(path: Path, env_path: Path | None = None) -> PipelineConfig:
     database_url = os.getenv("OSSUSTAIN_DATABASE_URL")
     if database_url:
         values["database_url"] = database_url
+    elif os.getenv("PGHOST"):
+        user = quote(os.getenv("PGUSER", "ossustain"), safe="")
+        password = quote(os.getenv("PGPASSWORD", ""), safe="")
+        host = os.environ["PGHOST"]
+        port = os.getenv("PGPORT", "5432")
+        database = quote(os.getenv("PGDATABASE", "ossustain"), safe="")
+        values["database_url"] = f"postgresql://{user}:{password}@{host}:{port}/{database}"
     github_token = os.getenv("GITHUB_TOKEN")
     if github_token:
         values["github_token"] = github_token

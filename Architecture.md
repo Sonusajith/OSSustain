@@ -1,38 +1,33 @@
-# OSSustain: Architecture (Proposed)
+# OSSustain: Architecture
 
-**Status:** Proposed architecture for future development. Nothing described here exists yet.
+**Status:** Approved architecture, including the Phase 16 database-backed on-demand analysis worker.
 
 ## 1. Architecture Overview
 
-A **modular monolith plus an offline pipeline**, with no microservices.
+A **modular monolith plus a scheduled research pipeline and one bounded on-demand worker**, with no microservices or external queue.
 
 ```
-GitHub REST API
-      │
-      ▼
- Python pipeline (CLI)  ──writes──►  PostgreSQL  ◄──reads──  Spring Boot API  ◄── REST/JSON ──  React + TS SPA
- (collect → validate → snapshot →         ▲
-  features → train → evaluate → predict)  │
-      │                                    └── Flyway migrations (owned by backend)
-      └── local files: raw JSON cache, model artifacts, exports (gitignored)
+GitHub REST API ◄── Python pipeline/worker ──► PostgreSQL ◄──► Spring Boot API ◄── REST/JSON ── React + TS SPA
+                       ▲                         ▲
+                       └── read-only model artifacts (worker)    └── Flyway migrations (backend-owned)
 ```
 
-**Key decision:** Spring Boot does **not** call Python at runtime in the MVP. Predictions are precomputed by the pipeline and stored in PostgreSQL. This keeps the MVP simple, makes results reproducible, and avoids a second runtime service. A Python inference service is a post-MVP option only if on-demand analysis is adopted.
+**Phase 16 decision:** Spring accepts and reports durable analysis jobs in PostgreSQL. A single Python worker polls and claims jobs, calls GitHub, computes features, and scores with an already validation-selected model. The worker alone receives `GITHUB_TOKEN`; it reads artifacts from a configured read-only mount. Job results never enter frozen cohort, snapshot, or evaluation tables. The scheduled research pipeline remains unchanged.
 
 ## 2. Technology Stack and Rationale
 
 | Component | Choice | Reason |
 |---|---|---|
 | Frontend | React + TypeScript (strict), Vite | Specified; fast, simple tooling |
-| Routing / server state | React Router, TanStack Query | Simple handling of loading, error, and caching for read-only data |
+| Routing / server state | React Router, TanStack Query | Handles dashboard reads and asynchronous analysis job status |
 | Charts | Recharts | Adequate for time series and bar charts; keeps dependencies small |
 | Styling | Tailwind CSS *(confirm against the Stitch export)* | Stitch exports are commonly HTML/Tailwind-style; the final choice follows the export |
 | API typing | OpenAPI spec from backend, `openapi-typescript` | Generates frontend types and prevents contract drift |
-| Backend | Java 21, Spring Boot 4.1.2 (Web MVC, Data JPA, Validation, Actuator), springdoc-openapi | Specified; mature, simple read-only REST |
+| Backend | Java 21, Spring Boot 4.1.2 (Web MVC, Data JPA, Validation, Actuator), springdoc-openapi | Specified; mature REST API and bounded job handling |
 | Database | **PostgreSQL 16** | Strong analytical SQL (window functions, percentiles), JSONB for flexible feature storage, good Python and Java support |
 | Migrations | Flyway (in backend) | Single owner of the schema |
 | Pipeline | Python 3.12, pandas, NumPy, scikit-learn, SQLAlchemy, psycopg, httpx, tenacity, pydantic, PyYAML, joblib, pytest, ruff | Standard ML stack; direct HTTP client gives full control over rate limits and ETags |
-| Local infra | Docker Compose (PostgreSQL only) | Reproducible local DB |
+| Local infra | Docker Compose (PostgreSQL and Python worker) | Reproducible local database and analysis processing |
 | CI (optional) | GitHub Actions: lint and test per component | Cheap quality gate |
 
 **Deliberately not used:** Redis, message queues, Kafka, Spark, microservices, MongoDB, Redux, GraphQL on the backend, deep-learning frameworks, XGBoost/LightGBM (scikit-learn's gradient boosting suffices for the MVP), MLflow (the `model_versions` table is enough for the MVP).
@@ -48,12 +43,12 @@ GitHub REST API
 
 ## 4. Backend Approach
 
-- Layered: `controller` → `service` → `repository` (Spring Data JPA/JDBC projections) → DB. Read-only in the MVP.
+- Layered: `controller` → `service` → `repository` (Spring Data JPA/JDBC projections) → DB. Phase 16 adds only the bounded analysis submit/status API alongside existing research reads.
 - DTOs as Java records; entities never exposed directly.
 - Global exception handler returning a consistent error body.
 - Read-heavy time-series queries may use JPQL or native SQL projections rather than loading full entities.
 - OpenAPI served by springdoc; Actuator health endpoint.
-- No write endpoints in the MVP.
+- `POST /analyses` validates and enqueues a public repository; `GET /analyses/{jobId}` returns job state and result. The API never calls GitHub or the worker directly.
 
 ## 5. Database Approach
 
@@ -65,13 +60,13 @@ GitHub REST API
 
 ## 6. Authentication Approach
 
-- **MVP: none.** The dashboard is public and read-only, with no user data. Pipeline operations are CLI-only on the developer's machine, not exposed over HTTP.
-- GitHub token: pipeline only, via environment variable; never in the frontend or backend.
-- Post-MVP, if admin features or on-demand analysis are added: Spring Security with a minimal approach (e.g., a single admin role) would be introduced in its own phase.
+- **No user accounts in Phase 16.** Research pages are public reads; the analysis endpoint is public and quota-bounded, and stores no user profile data.
+- GitHub token: research pipeline and Python worker only, via environment variable; never in the frontend or Spring backend.
+- If authentication or admin features are adopted in Phase 17, add Spring Security and documented authorization rules in that phase.
 
 ## 7. API Strategy
 
-REST/JSON, versioned under `/api/v1`, read-only, paginated lists.
+REST/JSON under `/api/v1`; research lists are read-only and paginated, while Phase 16 exposes only the bounded analysis submit/status operations.
 
 | Endpoint | Purpose |
 |---|---|
@@ -85,13 +80,15 @@ REST/JSON, versioned under `/api/v1`, read-only, paginated lists.
 | `GET /research/feature-importance` | Global importance by model |
 | `GET /research/dataset-summary` | Counts, label prevalence by period, quality summary |
 | `GET /research/label-definition` | Label parameters, split dates, and feature dictionary |
+| `POST /analyses` | Enqueue an on-demand analysis for a public `owner/repository` |
+| `GET /analyses/{jobId}` | Read job state and result |
 | `GET /actuator/health` | Health |
 
 Error format: `{ timestamp, status, code, message, path }`.
 
 ## 8. Third-Party Services
 
-- **GitHub REST API** (pipeline only). Cohort-selection discovery may use the search API.
+- **GitHub REST API** (research pipeline and the on-demand worker). Cohort-selection discovery may use the search API.
 - **Rate-limit budget** (important): authenticated REST allows 5,000 requests/hour. Commit listing is cheap (100 per page). Per-PR reviews and first-response data are expensive (multiple calls per PR) and can reach hundreds of thousands of calls for large repositories. Mitigations, in order: (1) cohort criteria cap PR volume; (2) restrict the observation period (e.g., ~3–4 years); (3) store raw responses so nothing is re-fetched; (4) if still infeasible, use a bounded GraphQL fallback **for review and response data only**, which must be approved (see Planning Notes).
 - Avoid the `stats/*` endpoints (asynchronous 202 responses, capped); derive contributor metrics from commits.
 
@@ -105,7 +102,7 @@ Error format: `{ timestamp, status, code, message, path }`.
   - *Splits:* chronological with 90-day purge gaps. All hyperparameter tuning uses the validation split only; the test split is evaluated once per final configuration.
 - **Models:** threshold baseline (e.g., recent activity decline), Logistic Regression (scaled, class-weighted), Random Forest, Gradient Boosting, each in two feature sets (activity-only; extended).
 - **Uncertainty:** bootstrap confidence intervals resampled by **repository** (snapshots from one repository are correlated).
-- **Explainability:** LR coefficients; permutation importance; per-prediction indicators (LR standardized contribution; for tree models, feature value vs. cohort percentile plus global importance). SHAP post-MVP.
+- **Explainability:** fitted-model probability SHAP with validation backgrounds; the threshold-rule baseline uses labeled local substitution indicators. Cohort predictions retain their stored method labels.
 - **Risk categories:** probability cutoffs chosen on validation data, documented, with calibration checked.
 - **Artifacts:** joblib model files stored locally under `pipeline/artifacts/` (gitignored), referenced from `model_versions`.
 
@@ -118,7 +115,8 @@ Error format: `{ timestamp, status, code, message, path }`.
 5. `build-features` computes feature JSONB per snapshot and the monthly display metrics.
 6. `train`/`evaluate` fit models on train, tune on validation, report on test; write `model_versions` and `evaluation_results`.
 7. `predict`/`explain` write `predictions` and `prediction_explanations`.
-8. Spring Boot reads these tables and serves JSON; React renders them.
+8. Spring Boot reads the research tables and serves JSON; React renders them.
+9. For on-demand analysis, Spring stores a bounded job; the worker collects only the requested repository's preceding 180 days, computes registered features, scores with the selected artifact, and writes a separate compact result for the status endpoint.
 
 ## 11. Main System Modules
 
@@ -132,9 +130,10 @@ Error format: `{ timestamp, status, code, message, path }`.
 | Explanation | pipeline + backend | Risk Explanation |
 | Read API | backend | all dashboard data |
 | Dashboard | frontend | Repository Analytics, Research Dashboard |
-| Repository comparison | frontend + backend | *post-MVP* |
+| Repository comparison | frontend + backend | Repository comparison |
+| On-demand analysis | frontend + backend + worker | Bounded live repository analysis |
 
-## 12. Proposed Database Entities
+## 12. Database Entities
 
 - `repositories` (github_id, full_name, default_branch, created_at, stars_at_selection, size_group, status flags, quality flags)
 - `cohorts`, `cohort_memberships` (repo, cohort, stratum, inclusion notes)
@@ -154,14 +153,17 @@ Error format: `{ timestamp, status, code, message, path }`.
 - `feature_importances` (model_version_id, method, feature, value)
 - `predictions` (repository_id, snapshot_id, model_version_id, probability, risk_category, predicted_for_date)
 - `prediction_explanations` (prediction_id, feature, value, contribution/direction, rank)
+- `analysis_jobs` (UUID, canonical repository, state, hashed client IP, request count, attempt count, lease and timestamps)
+- `analysis_results` (job, selected model version, score/category, UTC prediction date, compact features/indicators, limitations and request count)
+- `on_demand_api_requests` (hourly worker request ledger; old entries are purged by the worker)
 
 **Relationships:** repository 1–N commits/PRs/issues/snapshots; PR 1–N reviews; snapshot 1–1 snapshot_features; model_version 1–N evaluation_results/importances/predictions; prediction 1–N explanations; dataset_version 1–N snapshots and model_versions.
 
 ## 13. Cross-Cutting Concerns
 
-**Security:** read-only API; parameterized queries only; CORS limited to the frontend origin; token and DB credentials only in environment variables; `.env.example` committed, `.env` ignored; dependency vulnerability checks; no personal data beyond public GitHub logins already public (store the minimum, with no emails).
+**Security:** parameterized queries; CORS limited to the frontend origin; secrets only in environment variables; `.env.example` committed, `.env` ignored; dependency vulnerability checks; no emails or raw event payloads persisted for on-demand work. Only public repositories are accepted. The anonymous endpoint is bounded by 3 submissions per client IP per hour, 20 waiting jobs, one active job per canonical repository, 300 GitHub requests per job, and 1,000 on-demand requests per hour. Job/result metadata expires after 30 days; cached compact results are reusable for 24 hours. GitHub token is available only to the Python worker.
 
-**Performance:** heavy work offline; indexes on `(repository_id, prediction_date)` and on `(model_version_id, split)`; precomputed monthly metrics; pagination.
+**Performance:** research training remains offline; submitted-repository analysis is asynchronous and bounded; indexes on `(repository_id, prediction_date)` and on `(model_version_id, split)`; precomputed monthly metrics; pagination.
 
 **Scalability:** sized for ~100 repositories and tens of thousands of snapshots; a single PostgreSQL instance is sufficient. Scaling out is not a goal.
 
@@ -175,7 +177,7 @@ Error format: `{ timestamp, status, code, message, path }`.
 - Frontend: Vitest + React Testing Library + MSW; one or two Playwright smoke tests optional.
 - Cross-component: a contract check that the OpenAPI types compile in the frontend.
 
-**Deployment:** MVP is local-run (Docker Compose for PostgreSQL; documented commands for the pipeline, backend, and frontend). Production readiness (Phase 13): containerize the backend and frontend, load a database snapshot, and optionally host on a free or low-cost platform.
+**Deployment:** Local Compose runs PostgreSQL and can build/run the Python worker; backend and frontend can run from their development commands. Production Compose includes the worker and mounts selected model artifacts read-only from `MODEL_ARTIFACTS_DIR`; GitHub and database credentials come from the production environment file.
 
 ## 14. Google Stitch UI Integration Strategy
 
@@ -184,7 +186,7 @@ Error format: `{ timestamp, status, code, message, path }`.
 - Preserve the visual appearance; adapt the implementation to this architecture. Do not introduce a competing design system. Shared styling tokens come from the Stitch design as supplied.
 - Charts: Stitch will likely deliver static chart placeholders; replace them with real chart components that follow the same look.
 
-## 15. Proposed Project Structure (does not exist yet)
+## 15. Project Structure
 
 ```
 ossustain/

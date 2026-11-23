@@ -1,11 +1,52 @@
 openapi: 3.1.0
 info:
-  title: OSSustain Read API
+  title: OSSustain API
   version: 1.0.0
-  description: Read-only API for repository activity, predictions, evaluations, and methodology.
+  description: Research reads and bounded asynchronous analysis submission/status for public repositories.
 servers:
   - url: /api/v1
 paths:
+  /analyses:
+    post:
+      operationId: submitAnalysis
+      summary: Queue a bounded analysis of a public GitHub repository.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema: {$ref: '#/components/schemas/AnalysisRequest'}
+      responses:
+        '202':
+          description: Analysis accepted or an existing active/cached result returned.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Analysis'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '429':
+          description: Submission quota reached.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ApiError'}
+        '503':
+          description: Queue temporarily full.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ApiError'}
+  /analyses/{id}:
+    get:
+      operationId: getAnalysis
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: {type: string, format: uuid}
+      responses:
+        '200':
+          description: Job status and completed result, if available.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Analysis'}
+        '404': {$ref: '#/components/responses/NotFound'}
   /:
     get:
       operationId: getApiIndex
@@ -201,6 +242,44 @@ components:
         application/json:
           schema: {$ref: '#/components/schemas/ApiError'}
   schemas:
+    AnalysisRequest:
+      type: object
+      required: [repository]
+      properties:
+        repository:
+          type: string
+          pattern: '^[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}$'
+    Analysis:
+      type: object
+      required: [id, repository, status, requestsUsed, createdAt, result]
+      properties:
+        id: {type: string, format: uuid}
+        repository: {type: string}
+        status: {type: string, enum: [queued, running, succeeded, failed]}
+        requestsUsed: {type: integer, minimum: 0, maximum: 300}
+        errorCode: {type: [string, 'null']}
+        createdAt: {type: string, format: date-time}
+        startedAt: {type: [string, 'null'], format: date-time}
+        finishedAt: {type: [string, 'null'], format: date-time}
+        result:
+          oneOf:
+            - {$ref: '#/components/schemas/AnalysisResult'}
+            - {type: 'null'}
+    AnalysisResult:
+      type: object
+      required: [modelVersionId, probability, riskCategory, predictionDate, featureSet, algorithm, limitations, features, indicators, requestsUsed, completedAt]
+      properties:
+        modelVersionId: {type: integer, format: int64}
+        probability: {type: number, minimum: 0, maximum: 1}
+        riskCategory: {type: string, enum: [low, medium, high]}
+        predictionDate: {type: string, format: date}
+        featureSet: {type: string}
+        algorithm: {type: string}
+        limitations: {type: array, items: {type: string}}
+        features: {type: object, additionalProperties: {type: [number, 'null']}}
+        indicators: {type: array, items: {type: object, additionalProperties: true}}
+        requestsUsed: {type: integer, minimum: 1, maximum: 300}
+        completedAt: {type: string, format: date-time}
     ApiIndex:
       type: object
       required: [service, version, dashboard, endpoints]
