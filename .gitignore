@@ -13,6 +13,7 @@ __pycache__/
 pipeline/artifacts/
 pipeline/data/
 pipeline/config.yaml
+/backups/
 *.egg-info/
 
 # Java / Maven

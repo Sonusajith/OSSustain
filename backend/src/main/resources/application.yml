@@ -13,6 +13,8 @@ spring:
     enabled: true
 
 ossustain:
+  frontend:
+    url: ${FRONTEND_URL:http://localhost:5173}
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
 

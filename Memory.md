@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–11 are complete and merged to main. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–12 are complete and merged to main. Phase 12 merged in PR #12 (`271b24b`). Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 12: Research Dashboard, Methodology, and Documentation
+Phase 13: Production Readiness
 
 ## Current Task
-Phase 12 screens and reproducibility documentation are complete on `phase-12/research-dashboard`; lint, tests, production build, and live research API checks passed. The API base path now returns an index instead of a 404. A full pipeline rebuild against a clean database was not rerun in this session.
+Phase 12 merged in PR #12 (`271b24b`). Phase 13 production-readiness implementation is on `phase-13/production-readiness`; CI fixes were pushed in `e902581` and all four GitHub Actions checks passed.
 
 ## Last Completed Task
-Phase 11 Repository Detail merged in PR #11 (`85f6e65`): real metadata, metric charts/tables, prediction indicators and history, and explicit limitations. Phase 10 Cohort Overview merged in PR #10 (`c281ca7`); Phase 9 Read API merged in PR #9 (`8e32a6b`). Phase 12 now integrates Research Results and Methodology & Limitations with typed API data, accessible chart tables, responsive layouts, loading/empty/error states, and the README.
+Phase 12 Research Results and Methodology merged in PR #12 (`271b24b`), including live research API data, accessible chart tables, responsive layouts, loading/empty/error states, reproduction run order, and the discoverable `/api/v1` index. The previous completed phase was Phase 11 Repository Detail, merged in PR #11 (`85f6e65`).
 
 ## Completed Phases
 Phase 1: Foundation
@@ -29,6 +29,7 @@ Phase 8: Predictions, Explanations, and Model Versioning — merged to main in P
 Phase 9: Backend Read API — merged to main in PR #9 (`8e32a6b`)
 Phase 10: Frontend Foundation and Cohort Overview — merged to main in PR #10 (`c281ca7`)
 Phase 11: Repository Detail Screen — merged to main in PR #11 (`85f6e65`)
+Phase 12: Research Dashboard, Methodology, and Documentation — merged to main in PR #12 (`271b24b`)
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -41,24 +42,26 @@ Phase 11: Repository Detail Screen — merged to main in PR #11 (`85f6e65`)
 - Phase 7: frozen model grid, train-only preprocessing, validation-only hyperparameter/cutoff selection, held-out test evaluation, cluster-bootstrap intervals and paired feature-family comparison, validation importance, versioned model records, and local artifacts.
 
 ## Features In Progress
-Phase 12 implementation is complete on `phase-12/research-dashboard`; PR review and merge are pending. Do not begin Phase 13 until the owner confirms the merge.
+Phase 13: production deployment, operations, and security checks are implemented on `phase-13/production-readiness`; CI fixes are verified, and PR #13 is ready for review and merge.
 
 ## Pending Tasks
-- Owner review and merge of Phase 12 PR.
-- If the team requires fresh end-to-end evidence before merge, run the README pipeline against an isolated empty database; this session verified the existing live dataset and added the missing Phase 4 run-order commands.
+- Review and merge Phase 13 PR #13. Its updated checks all passed on `e902581`; CI uses Node 22.19+ as required by `undici@8.12.3`, and the OSV scanner path no longer has the accidental literal `\n` suffix that produced `/srcn`.
+- Retry a full backend container OS vulnerability scan: local Docker Scout could not fetch its Java vulnerability database (EOF), and OSV image extraction could not resolve the base-image chain. The backend now uses the updated Temurin Alpine runtime; source-manifest scans are clean.
+- Before public hosting, perform a browser keyboard walkthrough and Lighthouse audit against the chosen deployed URL; no public host is configured.
+- The Phase 12 full pipeline rebuild against a clean database was not repeated; documented pipeline steps and existing live dataset/API verification are available.
 - Local detailed reports remain ignored in `pipeline/data/reports/`; aggregate results are committed in `docs/phase4-data-quality.md` and `docs/phase5-snapshots.md`.
 
 ## Known Bugs
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-GitHub CLI is unavailable; open the Phase 12 pull request from the pushed branch using the compare link. Live API smoke checks used `http://localhost:8081/api/v1`; port 8080 returned 403 in this workstation session. The Stitch HTML contains unsupported sample claims and figures; it was used only as visual reference, and displayed results come from the real API records.
+GitHub CLI is unavailable; use the Phase 13 branch comparison link to open its PR. A full backend container OS scan could not complete because local scanners failed while fetching their Java vulnerability database/base-image metadata; this is recorded in Pending Tasks. Port 8080 returned 403 in a previous workstation session, so the isolated production smoke deployment uses port 8088. The Stitch HTML contains unsupported sample claims and figures; it was used only as visual reference, and displayed results come from the real API records.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
 - Java target 21 and Spring Boot 4.1.2; Testcontainers 1.21.4. Version 1.21.4 is pinned to support newer Docker Engine versions used by Docker Desktop.
 - Python 3.12 with psycopg 3.3.6, pydantic 2.14.1, PyYAML 6.0.3, pytest 9.2.0, and ruff 0.14.3.
-- Node 22.13+ with React 19.3.0, React Router 7.18.3, Vite 8.3.5, TypeScript 5.9.3, and pnpm 11.25.0. Frontend tool versions and full transitive lock are in `frontend/package.json` and `frontend/pnpm-lock.yaml`.
+- Node 22.19+ with React 19.3.0, React Router 7.18.3, Vite 8.3.5, TypeScript 5.9.3, and pnpm 11.25.0. Frontend tool versions and full transitive lock are in `frontend/package.json` and `frontend/pnpm-lock.yaml`.
 - Approved frontend dependencies: TanStack Query 5.107.1, `openapi-typescript` 7.13.0, and MSW 3.0.5 for API request mocking in tests.
 - Python direct and resolved pins are in `pipeline/pyproject.toml` and `pipeline/requirements.lock`; Phase 7 adds the approved scikit-learn 1.9.1 and joblib 1.6.0 modeling dependencies.
 - Phase 7 selects hyperparameters by validation PR-AUC, chooses probability cutoffs by validation F1, then evaluates the refit configuration on held-out test. The highest validation PR-AUC selects one model per family; no test metric influences selection.
@@ -109,6 +112,7 @@ Research Results and Methodology & Limitations (Phase 12, in progress). Reposito
 Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Windows backend tests. GitHub CLI is absent and the collection token cannot create PRs (HTTP 403); PR #5 was created through the signed-in browser without expanding token permissions.
 
 ## Testing Status
+- Phase 13 CI fix verification: GitHub Actions passed backend, container-build, frontend, and pipeline checks on `e902581`. The pinned OSV source scan also passed locally with “No issues found”. A separate Linux Docker test attempt hit the 60-second worker-start timeout on the OneDrive-backed bind mount; hosted CI completed the full frontend test/build successfully.
 - Python: `pytest pipeline/tests -q` — 80 passed, 1 existing opt-in snapshot DB test skipped. Ruff checks and formatting check for changed files passed. `predict --help` and `explain --help` passed.
 - Backend before Phase 9: 9 tests passed, including fresh V1–V9 migration coverage. Phase 9 final run: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` — 14 tests passed (5 API integration test groups plus 9 existing migration/health checks); Testcontainers used Docker Desktop.
 - Phase 9 OpenAPI YAML parsed successfully with PyYAML: OpenAPI 3.1, 10 product paths, 17 schemas.
@@ -122,7 +126,7 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 - Earlier frontend foundation checks passed (ESLint, 2 Vitest tests, TypeScript/build); frontend untouched in Phase 5.
 
 ## Deployment Status
-Not started.
+Phase 13 local stack passed container smoke checks at `http://localhost:8088`; frontend/backend/PostgreSQL health checks are green. Backup creation and restore into a new database passed, including overwrite and path-traversal refusal checks. Frontend image high/critical scan found no vulnerable packages. Python `pip-audit`, frontend production `pnpm audit`, and the pinned source-manifest scan found no known vulnerabilities. GitHub Actions passed all four jobs on `e902581`. Backend runtime uses Temurin 21 Alpine with OS packages upgraded at build; its container-level OS scan remains pending because local scanner database/registry access failed. No public hosting target was selected. Browser-level keyboard and Lighthouse checks remain for the eventual public deployment.
 
 ## Important Context for the Next AI Session
 - The owner confirmed Phase 5 on 2026-11-18. All four Phase 4 quality flags are retained; no repositories are silently excluded.
@@ -130,7 +134,7 @@ Not started.
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Review and merge the Phase 12 pull request. Wait for explicit merge confirmation before starting Phase 13.
+Review and merge [Phase 13 PR #13](https://github.com/Sonusajith/OSSustain/pull/13); all checks passed. After merge, retry the backend image vulnerability scan. Before public hosting, select a target and run the documented keyboard and Lighthouse checks.
 
 ## Last Updated
-2026-11-21, `phase-12/research-dashboard` — API base URL 404 fixed with a discoverable index; backend tests passed, follow-up push pending.
+2026-11-23, `phase-13/production-readiness` — fixed CI Node compatibility and OSV scan path; all four GitHub Actions checks passed on `e902581`.
