@@ -98,9 +98,9 @@ The MVP is a complete vertical slice: a documented cohort → collected data →
 - Phase 14: Repository Comparison (side-by-side metrics).
 - Phase 15: SHAP explanations and robustness/sensitivity analyses.
 - Phase 16: bounded on-demand public-repository analysis.
+- Phase 17: invite-only researcher/admin accounts, secure sessions, analysis ownership, and administrator controls.
 
-### Phase 17 (active, scope pending approval)
-- Authentication and administrator features are being scoped following adoption of Phase 16. The recommended boundaries and account/session choices are in `docs/phase17-architecture-proposal.md`.
+Phase 17 is complete and merged in PR #17. Its approved architecture and operational details are recorded in `docs/phase17-architecture-proposal.md`.
 
 ### Future Ideas (not planned)
 - Scheduled data refresh and drift monitoring.

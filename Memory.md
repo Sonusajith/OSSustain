@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python research pipeline and bounded on-demand worker → PostgreSQL → Spring Boot API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–16 are complete and merged to `main`; Phase 16 merged in PR #16 (`be80014`, implementation `b0c87ee`). Phase 17 implementation is complete on `phase-17/auth-admin` and awaits review/merge. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–17 are complete and merged to `main`; Phase 17 merged in PR #17 (`815f1fd`, implementation `35cbae0`). Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 17: Authentication and Admin
+All defined phases through Phase 17 are complete. No Phase 18 is planned yet.
 
 ## Current Task
-Phase 17 implementation is complete on `phase-17/auth-admin`, created from synced `origin/main`; the user approved the session, account, ownership, and administrator design. Code, docs, migration, and tests are ready for review. GitHub CLI is unavailable, so a pull request must be opened from the branch compare link after push.
+Phase 17 merged to `main` in PR #17 (`815f1fd`). The local PostgreSQL database applied V12. A local bootstrap admin was created from ignored `.env`, signed in, rotated its password, signed out, and signed in again. The currently running API on port 8081 predates Phase 17 and returns 404 for `/api/v1/auth/csrf`; a temporary Phase 17 API on port 8082 was used for verification and stopped afterward. Restart the desired local API process to load the merged code. No next phase is defined in `Phases.md`.
 
 ## Last Completed Task
-Phase 17 authentication/admin implementation is complete and awaiting review/merge. Phase 16 On-Demand Repository Analysis merged in PR #16 (`be80014`), including the durable analysis queue, bounded worker, API, and `/analyze` UI. Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
+Phase 17 Authentication and Admin merged in PR #17 (`815f1fd`); local V12/bootstrap sign-in and password rotation verified. Phase 16 On-Demand Repository Analysis merged in PR #16 (`be80014`), including the durable analysis queue, bounded worker, API, and `/analyze` UI. Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
 
 ## Completed Phases
 Phase 1: Foundation
@@ -34,6 +34,7 @@ Phase 13: Production Readiness — merged to main in PR #13 (`9f27bb2`)
 Phase 14: Repository Comparison — merged to main in PR #14 (`70a21a3`)
 Phase 15: SHAP and Robustness Analyses — merged to main in PR #15 (`0b961cc`)
 Phase 16: On-Demand Repository Analysis — merged to main in PR #16 (`be80014`)
+Phase 17: Authentication and Admin — merged to main in PR #17 (`815f1fd`, implementation `35cbae0`)
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -46,13 +47,15 @@ Phase 16: On-Demand Repository Analysis — merged to main in PR #16 (`be80014`)
 - Phase 7: frozen model grid, train-only preprocessing, validation-only hyperparameter/cutoff selection, held-out test evaluation, cluster-bootstrap intervals and paired feature-family comparison, validation importance, versioned model records, and local artifacts.
 - Phase 15 implementation: selected fitted models use probability-scale SHAP attributions with a validation-only background; the rule baseline retains its separately named substitution explanation. The research dashboard compares fixed selected-model test scores against θ 0.30/0.70 and commits-plus-merged-PR outcomes, with repository-cluster intervals.
 - Phase 16: Flyway V11 stores durable public-repository analysis jobs/results outside the frozen research dataset. Spring exposes `POST /api/v1/analyses` and `GET /api/v1/analyses/{id}`; the Python worker claims jobs with `SKIP LOCKED`, verifies public visibility, collects a 180-day window, reserves job/global request budgets transactionally, and scores with the validation-selected artifact. React `/analyze` submits and polls jobs and displays results, limitations, and indicators. Raw responses stay in memory; metadata expires after 30 days and successful compact results are reused for 24 hours.
+- Phase 17: invite-only researcher/admin accounts, PostgreSQL-backed sessions, CSRF protection, public research reads, account-owned analysis, admin account/job controls and audit, V12 migration, and login/admin UI. The local first-admin sign-in and mandatory password rotation were verified after PR #17 merged.
 
 ## Features In Progress
-Phase 17 implementation is complete on `phase-17/auth-admin`; awaiting pull request review and merge.
+No feature phase is currently in progress. Phase 17 is merged; the next phase needs an approved scope.
 
 ## Pending Tasks
 - Before release, run one live public-repository analysis against the configured local stack and selected model artifacts; CI intentionally uses no live GitHub calls.
-- After merging Phase 17, configure a private first-admin username/password for each deployment and confirm the initial admin can sign in and rotate its password. Do not reuse the documented placeholder values.
+- The local admin account `ossustain-admin` was bootstrapped and rotated; its current password remains only in ignored `.env`. Set a separate private bootstrap password for each deployment environment.
+- Restart the existing local API on port 8081; it predates Phase 17 and returns 404 for `/api/v1/auth/csrf`. The temporary updated instance used to verify local credentials was stopped.
 - Phase 16 has no dedicated Stitch design; screen follows the current dashboard style and should receive visual review.
 - Phase 15 has no Stitch design in `UIUX/`; additions extend existing screens and can receive visual review if a reference is supplied.
 - Phase 13 release follow-ups: retry the full backend container OS scan (Docker Scout stalled while indexing and prior attempts could not retrieve Java/base-image vulnerability metadata); perform the keyboard walkthrough and Lighthouse audit when a deployment URL is selected.
@@ -63,7 +66,7 @@ Phase 17 implementation is complete on `phase-17/auth-admin`; awaiting pull requ
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-No Phase 17 implementation blocker remains. The branch awaits owner review/merge; `gh` is not installed, so PR creation is via the GitHub compare page. A live GitHub analysis from Phase 16 has not been run. Phase 13 release follow-ups remain: hosted keyboard/Lighthouse audit when a deployment URL exists and a full backend container OS scan. The Stitch HTML remains visual reference only; unsupported sample claims and figures were not used.
+No Phase 17 implementation blocker remains; PR #17 is merged. No Phase 18 is currently specified. A live GitHub analysis from Phase 16 has not been run. Phase 13 release follow-ups remain: hosted keyboard/Lighthouse audit when a deployment URL exists and a full backend container OS scan. The Stitch HTML remains visual reference only; unsupported sample claims and figures were not used.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -109,7 +112,7 @@ Spring Boot Actuator health remains available at `/actuator/health`. Phase 9 add
 Phase 7 adds scikit-learn 1.9.1 and joblib 1.6.0. Phase 15 adds approved SHAP 0.54.1; its transitive dependencies are pinned in `pipeline/requirements.lock`. No additional services.
 
 ## Required Environment Variables
-`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, `OSSUSTAIN_DATABASE_URL`, `SPRING_DATASOURCE_URL`, `VITE_API_BASE_URL`, `GITHUB_TOKEN`, and `OSSUSTAIN_HASH_SECRET` (documented in `.env.example`).
+`POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`, `POSTGRES_PORT`, `OSSUSTAIN_DATABASE_URL`, `SPRING_DATASOURCE_URL`, `VITE_API_BASE_URL`, `GITHUB_TOKEN`, `OSSUSTAIN_HASH_SECRET`, `OSSUSTAIN_ADMIN_USERNAME`, `OSSUSTAIN_ADMIN_PASSWORD`, `FRONTEND_ORIGIN`, `SESSION_COOKIE_SECURE`, `SESSION_TIMEOUT`, and `OSSUSTAIN_ANALYSIS_IP_HASH_SECRET` (documented in `.env.example` and deployment configuration).
 
 ## UI Integration Status
 Phase 10 Cohort Overview and Phase 11 Repository Detail are integrated. Phase 12 Research Results and Methodology & Limitations are integrated using `UIUX/ossustain_empirical_research_platform/code.html` and `UIUX/empirical_observational_research/DESIGN.md` as visual references; Phase 15 adds SHAP details and robustness records to those screens, using live API values. Phase 16 adds `/analyze` in the existing dashboard style; no Stitch design was available.
@@ -126,6 +129,7 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 
 ## Testing Status
 - Phase 17: Maven/Testcontainers — 20 passed including V12, failed/successful login, forced password change, logout, CSRF rejection, disabled-session invalidation, per-account job access, admin cancellation/audit, last-admin protection, and public research access. Pipeline — 86 passed, 1 existing opt-in database test skipped; Ruff passed. Frontend — 25 passed, ESLint passed, TypeScript/Vite production build passed; local Node is 22.18 and emits the existing >=22.19 engine warning. OpenAPI types regenerated and production Compose config validated. `mvn clean` could not remove the shared target directory while the existing API process had loaded classes; a full-source recompilation and complete Maven suite passed without stopping that process.
+- Post-merge local check: Flyway applied V11 and V12 to local PostgreSQL. The bootstrap account signed in, passed the required password rotation, logged out, and signed back in using the rotated credentials; its password is kept in ignored `.env`. The stale API on port 8081 remains running until explicitly restarted; temporary verification ran the merged backend on port 8082 and was stopped.
 - Phase 16: pipeline suite — 86 passed, 1 existing opt-in database test skipped; Ruff check and formatting check for changed files passed. Backend Maven/Testcontainers — 16 passed, including V11 migration and analysis submit/status/duplicate and IP quota coverage. Frontend lint passed, 21 tests passed including analysis success/quota error states, and production build passed. OpenAPI types regenerated; local/production Compose configs parsed; worker image built and its artifact root verified as `/app`. No live GitHub analysis was run; CI uses fixtures.
 - Phase 13 CI fix verification: GitHub Actions passed backend, container-build, frontend, and pipeline checks on `e902581`. The pinned OSV source scan also passed locally with “No issues found”. A separate Linux Docker test attempt hit the 60-second worker-start timeout on the OneDrive-backed bind mount; hosted CI completed the full frontend test/build successfully.
 - Phase 14 verification: backend Maven suite — 15 tests passed; frontend — 19 tests passed, ESLint passed, TypeScript/Vite production build passed. API types regenerated from OpenAPI. Local Node is 22.18 (package requirement is >=22.19), so pnpm displayed an engine warning. All four hosted GitHub Actions jobs (backend, frontend, pipeline, container-build) passed on `abf21cf` using the pinned CI Node version.
@@ -152,7 +156,7 @@ Phase 13 local stack passed container smoke checks at `http://localhost:8088`; f
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Rerun backend from clean, frontend test/lint/build, and the worker suite; then sync, commit, push `phase-17/auth-admin`, and open the PR using GitHub's compare page.
+Restart the local backend on port 8081 so it loads Phase 17, then select or approve a scope for the next phase; no Phase 18 is currently planned.
 
 ## Last Updated
-2026-11-23, `phase-17/auth-admin` — implemented approved Phase 17 authentication/admin design; resolved backend login JSON binding issue; completing final checks and review handoff.
+2026-11-23, `phase-17/post-merge-handoff` — verified PR #17 merged, applied local V12, and confirmed the bootstrap account can rotate its password and sign in again.

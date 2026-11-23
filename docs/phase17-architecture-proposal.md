@@ -1,6 +1,6 @@
 # Phase 17: Authentication and Admin Architecture Proposal
 
-**Status:** Approved by the project owner and implemented on `phase-17/auth-admin`; awaiting pull request review and merge.
+**Status:** Approved by the project owner and merged in PR #17 (`815f1fd`, implementation `35cbae0`).
 
 Phase 16 is merged in PR #16. Its analysis submission and status APIs are public and quota-bounded, but the project has no user identity or authorization. Phase 17 will add identity only around analysis and administration; public research reads remain public.
 
