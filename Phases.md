@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 16: On-Demand Repository Analysis
-**Current Status:** Phase 15 merged to `main` in PR #15 (`0b961cc`, implementation `9eb0564`). Phase 16 implementation and verification are complete on `phase-16/on-demand-analysis`; ready to push for review.
+**Current Phase:** Phase 17: Authentication and Admin
+**Current Status:** Phase 16 merged to `main` in PR #16 (`be80014`, implementation `b0c87ee`). Phase 17 is approved to begin; authentication/session and admin scope is being proposed before implementation.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
@@ -166,8 +166,14 @@ Phase 1 is complete. Work proceeds in order; do not start a phase before its dep
 - **Goal:** Collect data and produce a prediction for a user-submitted public GitHub repository.
 - **Architecture:** Approved database-backed queue and one Python worker; worker-only GitHub token; separate on-demand result storage; 180-day collection; read-only trained artifacts; limits of 300 requests/job, 1,000/hour overall, 20 waiting jobs, 3 submissions/IP/hour, one active job/repository, and a 24-hour result cache. Expire completed job/result rows after 30 days. Raw event responses are not persisted.
 - **Dependencies:** Phase 13; API, collection pipeline, trained model artifacts, and prediction code from earlier phases.
-- **Current status:** Implementation and verification complete; no Phase 17 work started.
+- **Current status:** Complete and merged to `main` in PR #16 (`be80014`). A live GitHub analysis remains a pre-release smoke-test follow-up.
 - **Definition of done:** public-only repository submission and status API; durable bounded jobs and results isolated from research data; a restart-safe Python worker collects within the approved budget and scores with an existing selected artifact; accessible UI with loading/empty/error/success states; setup and retention documented; backend, worker, and frontend verification passes; `Memory.md` records handoff.
 
 ### Phase 17: Authentication and Admin (conditional)
-Only if Phase 16 or admin features are adopted. Spring Security, roles, protected endpoints.
+Phase 16 has been adopted, so this phase is active.
+- **Goal:** Add account authentication and role-based access around on-demand analysis and administrative operations.
+- **Proposed scope:** Spring Security; researcher and administrator roles; protected analysis operations with ownership checks; an administrator interface for account and job oversight; no public self-registration.
+- **Architecture decision pending:** confirm authentication/session storage and first-administrator provisioning before adding dependencies, migrations, or protected endpoints. See `docs/phase17-architecture-proposal.md`.
+- **Dependencies:** Phase 16 and its analysis job/result schema.
+- **Testing:** backend authorization and session integration tests; migration tests; frontend login/role/access-denied states; full CI.
+- **Definition of done:** documented secure account provisioning; protected endpoints enforce roles and per-user analysis access; admin actions are audited and tested; no secrets are committed; `Memory.md` records verification and handoff.

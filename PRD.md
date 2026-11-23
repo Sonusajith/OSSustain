@@ -99,8 +99,10 @@ The MVP is a complete vertical slice: a documented cohort → collected data →
 - Phase 15: SHAP explanations and robustness/sensitivity analyses.
 - Phase 16: bounded on-demand public-repository analysis.
 
+### Phase 17 (active, scope pending approval)
+- Authentication and administrator features are being scoped following adoption of Phase 16. The recommended boundaries and account/session choices are in `docs/phase17-architecture-proposal.md`.
+
 ### Future Ideas (not planned)
-- Authentication and an admin UI.
 - Scheduled data refresh and drift monitoring.
 - Features borrowed from related proposals (ReviewPulse, FirstCommit). These are separate research ideas and are **not** part of OSSustain unless explicitly adopted.
 
