@@ -33,7 +33,7 @@ public class AnalysisService {
     }
 
     @Transactional
-    public AnalysisResponse submit(String rawRepository, String remoteAddress) {
+    public AnalysisResponse submit(String rawRepository, String remoteAddress, long userId) {
         if (rawRepository == null || !rawRepository.matches(REPOSITORY_PATTERN)
                 || rawRepository.contains("..")) {
             throw new ApiException(HttpStatus.BAD_REQUEST, "invalid_repository",
@@ -43,24 +43,6 @@ public class AnalysisService {
         String ipHash = sha256(ipHashSecret + ":" + remoteAddress);
         jdbc.execute("SELECT pg_advisory_xact_lock(771603016)");
 
-        var cached = jdbc.query("""
-                SELECT j.id, j.repository_full_name, j.status, j.requests_used, j.error_code,
-                       j.created_at, j.started_at, j.finished_at,
-                       r.model_version_id, r.probability, r.risk_category, r.prediction_date,
-                       r.feature_set_name, r.algorithm, r.limitation_flags, r.features,
-                       r.indicators, r.request_count, r.completed_at
-                FROM analysis_results r JOIN analysis_jobs j ON j.id = r.job_id
-                WHERE lower(r.repository_full_name) = ? AND r.completed_at > now() - interval '24 hours'
-                  AND r.model_version_id = (
-                    SELECT version.id FROM model_versions version
-                    JOIN evaluation_results evaluation ON evaluation.model_version_id = version.id
-                    WHERE version.is_selected AND evaluation.split = 'validation'
-                      AND evaluation.stratum = 'overall' AND evaluation.metric = 'pr_auc'
-                    ORDER BY version.dataset_version_id DESC, evaluation.value DESC, version.id LIMIT 1)
-                ORDER BY r.completed_at DESC LIMIT 1
-                """, this::map, repository);
-        if (!cached.isEmpty()) return cached.getFirst();
-
         Integer submissions = jdbc.queryForObject("""
                 SELECT count(*) FROM analysis_jobs
                 WHERE client_ip_hash = ? AND created_at > now() - interval '1 hour'
@@ -69,6 +51,46 @@ public class AnalysisService {
             throw new ApiException(HttpStatus.TOO_MANY_REQUESTS, "submission_limit",
                     "The hourly submission limit has been reached. Try again later.");
         }
+        UUID cachedJobId = jdbc.query("""
+                INSERT INTO analysis_jobs (repository_full_name, client_ip_hash, submitted_by_user_id,
+                                           status, started_at, finished_at)
+                SELECT ?, ?, ?, 'succeeded', now(), now()
+                WHERE EXISTS (
+                    SELECT 1 FROM analysis_results r
+                    WHERE lower(r.repository_full_name) = ?
+                      AND r.completed_at > now() - interval '24 hours'
+                      AND r.model_version_id = (
+                        SELECT version.id FROM model_versions version
+                        JOIN evaluation_results evaluation ON evaluation.model_version_id = version.id
+                        WHERE version.is_selected AND evaluation.split = 'validation'
+                          AND evaluation.stratum = 'overall' AND evaluation.metric = 'pr_auc'
+                        ORDER BY version.dataset_version_id DESC, evaluation.value DESC, version.id LIMIT 1)
+                    ORDER BY r.completed_at DESC LIMIT 1)
+                RETURNING id
+                """, (rs, row) -> rs.getObject("id", UUID.class), repository, ipHash, userId, repository)
+                .stream().findFirst().orElse(null);
+        if (cachedJobId != null) {
+            int copied = jdbc.update("""
+                    INSERT INTO analysis_results
+                        (job_id, repository_full_name, model_version_id, probability, risk_category,
+                         prediction_date, feature_set_name, algorithm, limitation_flags, features,
+                         indicators, request_count, completed_at)
+                    SELECT ?, repository_full_name, model_version_id, probability, risk_category,
+                           prediction_date, feature_set_name, algorithm, limitation_flags, features,
+                           indicators, request_count, now()
+                    FROM analysis_results
+                    WHERE lower(repository_full_name) = ? AND completed_at > now() - interval '24 hours'
+                      AND model_version_id = (
+                        SELECT version.id FROM model_versions version
+                        JOIN evaluation_results evaluation ON evaluation.model_version_id = version.id
+                        WHERE version.is_selected AND evaluation.split = 'validation'
+                          AND evaluation.stratum = 'overall' AND evaluation.metric = 'pr_auc'
+                        ORDER BY version.dataset_version_id DESC, evaluation.value DESC, version.id LIMIT 1)
+                    ORDER BY completed_at DESC LIMIT 1
+                    """, cachedJobId, repository);
+            if (copied == 1) return getForUser(cachedJobId, userId);
+            jdbc.update("DELETE FROM analysis_jobs WHERE id = ?", cachedJobId);
+        }
         Integer waiting = jdbc.queryForObject(
                 "SELECT count(*) FROM analysis_jobs WHERE status = 'queued'", Integer.class);
         if (waiting != null && waiting >= 20) {
@@ -76,30 +98,45 @@ public class AnalysisService {
                     "The analysis queue is full. Try again later.");
         }
         var active = jdbc.query("""
-                SELECT id, repository_full_name, status, requests_used, error_code,
-                       created_at, started_at, finished_at, NULL::jsonb AS result
+                SELECT id, submitted_by_user_id
                 FROM analysis_jobs WHERE lower(repository_full_name) = ?
                   AND status IN ('queued', 'running') ORDER BY created_at LIMIT 1
-                """, (rs, row) -> mapJob(rs), repository);
-        if (!active.isEmpty()) return active.getFirst();
+                """, (rs, row) -> new ActiveJob(rs.getObject("id", UUID.class),
+                rs.getObject("submitted_by_user_id", Long.class)), repository);
+        if (!active.isEmpty()) {
+            if (active.getFirst().submittedByUserId() == userId) return getForUser(active.getFirst().id(), userId);
+            throw activeJobConflict();
+        }
 
         var inserted = jdbc.query("""
-                INSERT INTO analysis_jobs (repository_full_name, client_ip_hash)
-                VALUES (?, ?) ON CONFLICT (lower(repository_full_name))
+                INSERT INTO analysis_jobs (repository_full_name, client_ip_hash, submitted_by_user_id)
+                VALUES (?, ?, ?) ON CONFLICT (lower(repository_full_name))
                   WHERE status IN ('queued', 'running') DO NOTHING RETURNING id
-                """, (rs, row) -> rs.getObject("id", UUID.class), repository, ipHash);
+                """, (rs, row) -> rs.getObject("id", UUID.class), repository, ipHash, userId);
         if (inserted.isEmpty()) {
-            return jdbc.queryForObject("""
-                    SELECT id, repository_full_name, status, requests_used, error_code,
-                           created_at, started_at, finished_at, NULL::jsonb AS result
-                    FROM analysis_jobs WHERE lower(repository_full_name) = ?
+            var activeAfterConflict = jdbc.query("""
+                    SELECT id, submitted_by_user_id FROM analysis_jobs WHERE lower(repository_full_name) = ?
                       AND status IN ('queued', 'running') LIMIT 1
-                    """, (rs, row) -> mapJob(rs), repository);
+                    """, (rs, row) -> new ActiveJob(rs.getObject("id", UUID.class),
+                    rs.getObject("submitted_by_user_id", Long.class)), repository);
+            if (!activeAfterConflict.isEmpty() && activeAfterConflict.getFirst().submittedByUserId() != null
+                    && activeAfterConflict.getFirst().submittedByUserId() == userId) {
+                return getForUser(activeAfterConflict.getFirst().id(), userId);
+            }
+            throw activeJobConflict();
         }
-        return get(inserted.getFirst());
+        return getForUser(inserted.getFirst(), userId);
     }
 
-    public AnalysisResponse get(UUID id) {
+    public AnalysisResponse getForUser(UUID id, long userId) {
+        return getWhere("j.id = ? AND j.submitted_by_user_id = ?", id, userId);
+    }
+
+    public AnalysisResponse getForAdmin(UUID id) {
+        return getWhere("j.id = ?", id);
+    }
+
+    private AnalysisResponse getWhere(String restriction, Object... args) {
         try {
             return jdbc.queryForObject("""
                     SELECT j.id, j.repository_full_name, j.status, j.requests_used, j.error_code,
@@ -108,11 +145,16 @@ public class AnalysisService {
                            r.feature_set_name, r.algorithm, r.limitation_flags, r.features,
                            r.indicators, r.request_count, r.completed_at
                     FROM analysis_jobs j LEFT JOIN analysis_results r ON r.job_id = j.id
-                    WHERE j.id = ? AND j.created_at > now() - interval '30 days'
-                    """, this::map, id);
+                    WHERE """ + " " + restriction + " AND j.created_at > now() - interval '30 days'",
+                    this::map, args);
         } catch (EmptyResultDataAccessException error) {
             throw new ApiException(HttpStatus.NOT_FOUND, "analysis_not_found", "Analysis job was not found.");
         }
+    }
+
+    private ApiException activeJobConflict() {
+        return new ApiException(HttpStatus.CONFLICT, "analysis_already_running",
+                "This repository already has an analysis in progress. Try again after it finishes.");
     }
 
     private AnalysisResponse map(ResultSet rs, int row) throws SQLException {
@@ -131,12 +173,7 @@ public class AnalysisService {
                 rs.getObject("finished_at", OffsetDateTime.class), result);
     }
 
-    private AnalysisResponse mapJob(ResultSet rs) throws SQLException {
-        return new AnalysisResponse(rs.getObject("id", UUID.class), rs.getString("repository_full_name"),
-                rs.getString("status"), rs.getInt("requests_used"), rs.getString("error_code"),
-                rs.getObject("created_at", OffsetDateTime.class), rs.getObject("started_at", OffsetDateTime.class),
-                rs.getObject("finished_at", OffsetDateTime.class), null);
-    }
+    private record ActiveJob(UUID id, Long submittedByUserId) { }
 
     private static String sha256(String value) {
         try {

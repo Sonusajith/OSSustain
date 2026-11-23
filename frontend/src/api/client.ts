@@ -18,24 +18,98 @@ export type FeatureImportance = components['schemas']['FeatureImportance']
 export type FeatureImportancePage = paths['/research/feature-importance']['get']['responses'][200]['content']['application/json']
 export type LabelDefinition = paths['/research/label-definition']['get']['responses'][200]['content']['application/json']
 export type Analysis = components['schemas']['Analysis']
+export type CsrfToken = components['schemas']['CsrfToken']
+export type CurrentUser = components['schemas']['CurrentUser']
+export type LoginRequest = components['schemas']['LoginRequest']
+export type PasswordChangeRequest = components['schemas']['PasswordChangeRequest']
+export type AdminUser = components['schemas']['AdminUser']
+export type AdminUserPage = components['schemas']['AdminUserPage']
+export type CreatedUser = components['schemas']['CreatedUser']
+export type AdminAnalysisPage = components['schemas']['AdminAnalysisPage']
 
 async function postJson<T>(url: string, body: unknown): Promise<T> {
   let response: Response
   try {
     response = await fetch(`${API_BASE_URL}${url}`, {
       method: 'POST',
-      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': (await getCsrfToken()).token },
       body: JSON.stringify(body),
     })
   } catch {
     throw new ApiRequestError('Could not connect to the OSSustain API. Check that the backend is running.')
   }
-  if (!response.ok) {
-    let message = `The API request failed (${response.status}).`
-    try { message = getMessage(await response.json()) ?? message } catch { /* Keep the status message. */ }
-    throw new ApiRequestError(message, response.status)
-  }
+  if (!response.ok) throw await responseError(response)
   return (await response.json()) as T
+}
+
+async function patchJson<T>(url: string, body: unknown): Promise<T> {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'PATCH',
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json', 'X-CSRF-TOKEN': (await getCsrfToken()).token },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    throw new ApiRequestError('Could not connect to the OSSustain API. Check that the backend is running.')
+  }
+  if (!response.ok) throw await responseError(response)
+  return (await response.json()) as T
+}
+
+async function postNoContent(url: string): Promise<void> {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'POST',
+      credentials: 'include',
+      headers: { Accept: 'application/json', 'X-CSRF-TOKEN': (await getCsrfToken()).token },
+    })
+  } catch {
+    throw new ApiRequestError('Could not connect to the OSSustain API. Check that the backend is running.')
+  }
+  if (!response.ok) throw await responseError(response)
+}
+
+async function getCsrfToken(): Promise<CsrfToken> {
+  return getJson<CsrfToken>('/auth/csrf')
+}
+
+async function responseError(response: Response): Promise<ApiRequestError> {
+  let message = `The API request failed (${response.status}).`
+  try { message = getMessage(await response.json()) ?? message } catch { /* Keep the status message. */ }
+  return new ApiRequestError(message, response.status)
+}
+
+export async function getCurrentUser(signal?: AbortSignal): Promise<CurrentUser | null> {
+  try { return await getJson<CurrentUser>('/auth/me', signal) }
+  catch (error) {
+    if (error instanceof ApiRequestError && error.status === 401) return null
+    throw error
+  }
+}
+
+export function login(request: LoginRequest): Promise<CurrentUser> { return postJson<CurrentUser>('/auth/login', request) }
+export function logout(): Promise<void> { return postNoContent('/auth/logout') }
+export function changePassword(request: PasswordChangeRequest): Promise<CurrentUser> {
+  return postJson<CurrentUser>('/auth/password', request)
+}
+export function getAdminUsers(page = 0, pageSize = 50, signal?: AbortSignal): Promise<AdminUserPage> {
+  return getJson<AdminUserPage>(`/admin/users?page=${page}&pageSize=${pageSize}`, signal)
+}
+export function createAdminUser(username: string, role: 'ADMIN' | 'RESEARCHER'): Promise<CreatedUser> {
+  return postJson<CreatedUser>('/admin/users', { username, role })
+}
+export function setAdminUserEnabled(id: number, enabled: boolean): Promise<AdminUser> {
+  return patchJson<AdminUser>(`/admin/users/${id}/enabled`, { enabled })
+}
+export function getAdminAnalyses(page = 0, pageSize = 50, signal?: AbortSignal): Promise<AdminAnalysisPage> {
+  return getJson<AdminAnalysisPage>(`/admin/analyses?page=${page}&pageSize=${pageSize}`, signal)
+}
+export function cancelAdminAnalysis(id: string): Promise<Analysis> {
+  return postJson<Analysis>(`/admin/analyses/${encodeURIComponent(id)}/cancel`, {})
 }
 
 export function submitAnalysis(repository: string): Promise<Analysis> {
@@ -65,6 +139,7 @@ async function getJson<T>(url: string, signal?: AbortSignal): Promise<T> {
   let response: Response
   try {
     response = await fetch(`${API_BASE_URL}${url}`, {
+      credentials: 'include',
       headers: { Accept: 'application/json' },
       signal,
     })

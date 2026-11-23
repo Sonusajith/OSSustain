@@ -11,12 +11,28 @@ spring:
       ddl-auto: validate
   flyway:
     enabled: true
+  session:
+    timeout: ${SESSION_TIMEOUT:30m}
+    jdbc:
+      initialize-schema: never
+
+server:
+  servlet:
+    session:
+      cookie:
+        http-only: true
+        secure: ${SESSION_COOKIE_SECURE:false}
+        same-site: lax
+      tracking-modes: cookie
 
 ossustain:
   frontend:
     url: ${FRONTEND_URL:http://localhost:5173}
   cors:
     allowed-origins: ${FRONTEND_ORIGIN:http://localhost:5173}
+  security:
+    bootstrap-admin-username: ${OSSUSTAIN_ADMIN_USERNAME:}
+    bootstrap-admin-password: ${OSSUSTAIN_ADMIN_PASSWORD:}
 
 management:
   endpoints:

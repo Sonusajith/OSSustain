@@ -60,9 +60,10 @@ GitHub REST API ◄── Python pipeline/worker ──► PostgreSQL ◄──�
 
 ## 6. Authentication Approach
 
-- **No user accounts in Phase 16.** Research pages are public reads; the analysis endpoint is public and quota-bounded, and stores no user profile data.
-- GitHub token: research pipeline and Python worker only, via environment variable; never in the frontend or Spring backend.
-- If authentication or admin features are adopted in Phase 17, add Spring Security and documented authorization rules in that phase.
+- Phase 17 uses Spring Security with invite-only `RESEARCHER` and `ADMIN` accounts. The first administrator is bootstrapped from `OSSUSTAIN_ADMIN_USERNAME` and `OSSUSTAIN_ADMIN_PASSWORD`; initial and administrator-issued temporary passwords must be changed on first sign-in.
+- Sessions are persisted in PostgreSQL. Session cookies are HttpOnly and SameSite=Lax, CSRF checks protect state-changing requests, and production Compose enables Secure cookies behind HTTPS.
+- Cohort, repository, comparison, and research routes remain public reads. Analysis submission and status require authentication; researchers can read their own jobs, while administrators can inspect/cancel jobs and manage accounts. Administrative changes are audited.
+- GitHub credentials remain limited to the research pipeline and Python worker; they are never exposed to the frontend or Spring API.
 
 ## 7. API Strategy
 
@@ -80,8 +81,10 @@ REST/JSON under `/api/v1`; research lists are read-only and paginated, while Pha
 | `GET /research/feature-importance` | Global importance by model |
 | `GET /research/dataset-summary` | Counts, label prevalence by period, quality summary |
 | `GET /research/label-definition` | Label parameters, split dates, and feature dictionary |
+| `GET /auth/csrf`, `POST /auth/login`, `GET /auth/me`, `POST /auth/password`, `POST /auth/logout` | Session authentication and account access |
 | `POST /analyses` | Enqueue an on-demand analysis for a public `owner/repository` |
 | `GET /analyses/{jobId}` | Read job state and result |
+| `/admin/users`, `/admin/analyses` | Administrator-only account and job management |
 | `GET /actuator/health` | Health |
 
 Error format: `{ timestamp, status, code, message, path }`.

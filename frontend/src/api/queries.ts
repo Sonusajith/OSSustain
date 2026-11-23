@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@tanstack/react-query'
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
 import {
   getDatasetSummary,
@@ -14,9 +14,21 @@ import {
   getRepositoryMetrics,
   getAnalysis,
   submitAnalysis,
+  getCurrentUser,
+  login,
+  logout,
+  changePassword,
+  getAdminUsers,
+  createAdminUser,
+  setAdminUserEnabled,
+  getAdminAnalyses,
+  cancelAdminAnalysis,
 } from './client'
 
 export const cohortQueryKeys = {
+  currentUser: ['auth', 'current-user'] as const,
+  adminUsers: ['admin', 'users'] as const,
+  adminAnalyses: ['admin', 'analyses'] as const,
   analysis: (id: string) => ['analysis', id] as const,
   repositories: ['cohort', 'repositories'] as const,
   datasetSummary: ['cohort', 'dataset-summary'] as const,
@@ -29,6 +41,75 @@ export const cohortQueryKeys = {
   researchEvaluations: ['research', 'evaluations'] as const,
   researchImportance: (modelVersionId: number) => ['research', 'importance', modelVersionId] as const,
   researchLabelDefinition: ['research', 'label-definition'] as const,
+}
+
+export function useCurrentUser() {
+  return useQuery({
+    queryKey: cohortQueryKeys.currentUser,
+    queryFn: ({ signal }) => getCurrentUser(signal),
+    retry: false,
+    staleTime: 30_000,
+  })
+}
+
+export function useLogin() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: login,
+    onSuccess: (user) => queryClient.setQueryData(cohortQueryKeys.currentUser, user),
+  })
+}
+
+export function useLogout() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: logout,
+    onSuccess: () => {
+      queryClient.setQueryData(cohortQueryKeys.currentUser, null)
+      void queryClient.invalidateQueries({ queryKey: cohortQueryKeys.adminUsers })
+      void queryClient.invalidateQueries({ queryKey: cohortQueryKeys.adminAnalyses })
+    },
+  })
+}
+
+export function useChangePassword() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: changePassword,
+    onSuccess: (user) => queryClient.setQueryData(cohortQueryKeys.currentUser, user),
+  })
+}
+
+export function useAdminUsers() {
+  return useQuery({ queryKey: cohortQueryKeys.adminUsers, queryFn: ({ signal }) => getAdminUsers(0, 100, signal), retry: 1 })
+}
+
+export function useCreateAdminUser() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ username, role }: { username: string; role: 'ADMIN' | 'RESEARCHER' }) => createAdminUser(username, role),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: cohortQueryKeys.adminUsers }),
+  })
+}
+
+export function useSetAdminUserEnabled() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: ({ id, enabled }: { id: number; enabled: boolean }) => setAdminUserEnabled(id, enabled),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: cohortQueryKeys.adminUsers }),
+  })
+}
+
+export function useAdminAnalyses() {
+  return useQuery({ queryKey: cohortQueryKeys.adminAnalyses, queryFn: ({ signal }) => getAdminAnalyses(0, 100, signal), retry: 1 })
+}
+
+export function useCancelAdminAnalysis() {
+  const queryClient = useQueryClient()
+  return useMutation({
+    mutationFn: cancelAdminAnalysis,
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: cohortQueryKeys.adminAnalyses }),
+  })
 }
 
 export function useSubmitAnalysis() {

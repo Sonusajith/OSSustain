@@ -268,6 +268,32 @@ itself runs separately at <http://localhost:5173> after starting Vite. The
 OpenAPI 3.1 contract is served at <http://localhost:8080/openapi.yaml>. The
 health endpoint remains at <http://localhost:8080/actuator/health>.
 
+### Phase 17 accounts and administrator setup
+
+Phase 17 keeps research pages public and requires an account for on-demand
+analysis. There is no public registration. Set `OSSUSTAIN_ADMIN_USERNAME` and
+`OSSUSTAIN_ADMIN_PASSWORD` in the backend process environment before its first
+start; use a unique password with at least 16 characters. The backend creates
+that first administrator if the username does not exist. Sign in at `/login` and
+change the initial password when prompted. An administrator can then create
+researcher or administrator accounts; each generated temporary password is
+shown once and must be changed at first sign-in. Keep these credentials private.
+
+For PowerShell development, set the variables in the backend terminal before
+starting Spring Boot:
+
+```powershell
+$env:OSSUSTAIN_ADMIN_USERNAME = "your-admin-name"
+$env:OSSUSTAIN_ADMIN_PASSWORD = Read-Host "Enter a unique password (16+ characters)"
+mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.jvmArguments=-Duser.timezone=Asia/Kolkata"
+```
+
+The dashboard uses the same `/login` page. Public research screens need no
+account. Analysis job status is visible only to its owner and administrators.
+Production Compose enables secure session cookies; production must be served over
+HTTPS and configured with `OSSUSTAIN_ADMIN_USERNAME` and
+`OSSUSTAIN_ADMIN_PASSWORD` in the private deployment environment file.
+
 The default CORS origin is `http://localhost:5173`. Set `FRONTEND_ORIGIN` in the
 backend environment to a comma-separated list when using another frontend URL.
 Run the read API integration and migration tests with Docker available:
