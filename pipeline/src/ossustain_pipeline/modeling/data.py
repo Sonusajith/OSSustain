@@ -33,6 +33,74 @@ class ModelDataset:
     feature_names: tuple[str, ...]
 
 
+@dataclass(frozen=True)
+class RobustnessOutcome:
+    snapshot_id: int
+    repo_id: int
+    reference_activity: int
+    future_activity: int
+    combined_reference_activity: int
+    combined_future_activity: int
+
+
+def load_test_robustness_outcomes(
+    connection: psycopg.Connection[Any], dataset_version_id: int
+) -> tuple[RobustnessOutcome, ...]:
+    """Load held-out outcomes for sensitivity checks, including merged-PR activity."""
+    rows = connection.execute(
+        """SELECT snapshot.id, snapshot.repo_id, snapshot.reference_activity,
+                  snapshot.future_activity,
+                  reference_commits.activity + reference_prs.activity,
+                  future_commits.activity + future_prs.activity
+           FROM snapshots snapshot
+           CROSS JOIN LATERAL (
+               SELECT count(*)::integer AS activity
+               FROM commits commit
+               LEFT JOIN contributors author ON author.id = commit.contributor_id
+               WHERE commit.repo_id = snapshot.repo_id
+                 AND commit.committed_at >= (snapshot.reference_start::timestamp AT TIME ZONE 'UTC')
+                 AND commit.committed_at < (snapshot.prediction_date::timestamp AT TIME ZONE 'UTC')
+                 AND author.is_bot IS DISTINCT FROM TRUE
+           ) reference_commits
+           CROSS JOIN LATERAL (
+               SELECT count(*)::integer AS activity
+               FROM pull_requests request
+               WHERE request.repo_id = snapshot.repo_id
+                 AND request.merged_at >= (snapshot.reference_start::timestamp AT TIME ZONE 'UTC')
+                 AND request.merged_at < (snapshot.prediction_date::timestamp AT TIME ZONE 'UTC')
+           ) reference_prs
+           CROSS JOIN LATERAL (
+               SELECT count(*)::integer AS activity
+               FROM commits commit
+               LEFT JOIN contributors author ON author.id = commit.contributor_id
+               WHERE commit.repo_id = snapshot.repo_id
+                 AND commit.committed_at >= (snapshot.prediction_date::timestamp AT TIME ZONE 'UTC')
+                 AND commit.committed_at < (snapshot.future_end::timestamp AT TIME ZONE 'UTC')
+                 AND author.is_bot IS DISTINCT FROM TRUE
+           ) future_commits
+           CROSS JOIN LATERAL (
+               SELECT count(*)::integer AS activity
+               FROM pull_requests request
+               WHERE request.repo_id = snapshot.repo_id
+                 AND request.merged_at >= (snapshot.prediction_date::timestamp AT TIME ZONE 'UTC')
+                 AND request.merged_at < (snapshot.future_end::timestamp AT TIME ZONE 'UTC')
+           ) future_prs
+           WHERE snapshot.dataset_version_id = %s
+             AND snapshot.split = 'test'
+             AND snapshot.label_status = 'labeled'
+             AND snapshot.label IS NOT NULL
+           ORDER BY snapshot.prediction_date, snapshot.repo_id, snapshot.id""",
+        (dataset_version_id,),
+    ).fetchall()
+    return tuple(
+        RobustnessOutcome(
+            int(snapshot_id), int(repo_id), int(reference), int(future),
+            int(combined_reference), int(combined_future),
+        )
+        for snapshot_id, repo_id, reference, future, combined_reference, combined_future in rows
+    )
+
+
 def validate_split_chronology(rows: list[ModelRow]) -> None:
     """Require non-empty, strictly ordered train, validation, and test periods."""
     split_dates = {

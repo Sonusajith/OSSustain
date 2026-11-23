@@ -196,7 +196,8 @@ class ApiIntegrationTest {
 
         response = get("/api/v1/repositories/" + alphaId + "/predictions/latest");
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("\"riskCategory\":\"high\"", "low_activity", "increases_risk");
+        assertThat(response.body()).contains("\"riskCategory\":\"high\"", "low_activity",
+                "increases_risk", "\"method\":\"local_substitution\"");
     }
 
     @Test

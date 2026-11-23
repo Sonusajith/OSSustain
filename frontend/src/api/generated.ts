@@ -308,13 +308,15 @@ export interface components {
         PredictionDetail: {
             prediction: components["schemas"]["Prediction"];
             indicators: {
-                featureName?: string;
-                featureValue?: number | null;
-                referenceValue?: number | null;
-                probabilityDelta?: number;
-                direction?: string;
-                rank?: number;
-                description?: string;
+                /** @enum {string} */
+                method: "shap" | "local_substitution";
+                featureName: string;
+                featureValue: number | null;
+                referenceValue: number | null;
+                probabilityDelta: number;
+                direction: string;
+                rank: number;
+                description: string;
             }[];
         };
         ModelPage: components["schemas"]["PageMetadata"] & {

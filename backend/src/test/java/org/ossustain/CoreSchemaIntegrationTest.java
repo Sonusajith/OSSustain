@@ -82,7 +82,7 @@ class CoreSchemaIntegrationTest {
     void migrationsApplyToAnEmptyPostgres16Database() throws SQLException {
         assertThat(queryStrings("SELECT version FROM flyway_schema_history "
                 + "WHERE success ORDER BY installed_rank"))
-                .containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6", "7", "8", "9");
+                .containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
     }
 
     @Test

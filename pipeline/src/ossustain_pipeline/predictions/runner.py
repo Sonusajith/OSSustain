@@ -7,7 +7,9 @@ from statistics import median
 from typing import Any
 
 import joblib
+import numpy as np
 import psycopg
+import shap
 from psycopg.types.json import Jsonb
 
 from ossustain_pipeline.modeling.core import activity_decline_scores
@@ -21,6 +23,7 @@ from ossustain_pipeline.predictions.core import (
 )
 
 TOP_INDICATORS = 5
+SHAP_BACKGROUND_ROWS = 25
 
 
 def _root() -> Path:
@@ -55,7 +58,7 @@ def _choose_model(
             AND result.split = 'validation' AND result.stratum = 'overall'
             AND result.metric = 'pr_auc'
            WHERE version.is_selected
-             AND (%s IS NULL OR version.dataset_version_id = %s)
+             AND (%s::BIGINT IS NULL OR version.dataset_version_id = %s)
            ORDER BY version.dataset_version_id DESC, result.value DESC, version.id ASC
            LIMIT 1""",
         (dataset_version_id, dataset_version_id),
@@ -90,6 +93,52 @@ def _as_features(raw: Any, names: tuple[str, ...]) -> dict[str, float]:
             if not isfinite(values[name]):
                 raise ValueError(f"Feature {name} is not finite")
     return values
+
+
+def _shap_values(
+    model: Any,
+    names: tuple[str, ...],
+    validation_rows: list[ModelRow],
+    prediction_features: list[dict[str, float]],
+) -> tuple[list[float], list[list[float]]]:
+    """Return probability-scale SHAP base values and attributions."""
+    if not validation_rows or not prediction_features:
+        raise ValueError("SHAP requires validation background and prediction rows")
+    background_count = min(SHAP_BACKGROUND_ROWS, len(validation_rows))
+    background_indices = sorted(
+        {
+            round(index * (len(validation_rows) - 1) / (background_count - 1))
+            if background_count > 1
+            else 0
+            for index in range(background_count)
+        }
+    )
+    background = np.asarray(
+        [
+            [row.features[name] for name in names]
+            for row in (validation_rows[i] for i in background_indices)
+        ],
+        dtype=float,
+    )
+    matrix = np.asarray([[row[name] for name in names] for row in prediction_features], dtype=float)
+    positive_index = list(model.classes_).index(1)
+
+    def positive_probability(values: np.ndarray) -> np.ndarray:
+        return model.predict_proba(values)[:, positive_index]
+
+    explainer = shap.Explainer(
+        positive_probability,
+        shap.maskers.Independent(background, max_samples=len(background)),
+        algorithm="permutation",
+    )
+    explanation = explainer(matrix, max_evals=2 * len(names) + 1)
+    values = np.asarray(explanation.values, dtype=float)
+    bases = np.asarray(explanation.base_values, dtype=float).reshape(-1)
+    if values.shape != matrix.shape or len(bases) != len(prediction_features):
+        raise ValueError("SHAP returned an unexpected explanation shape")
+    if not np.isfinite(values).all() or not np.isfinite(bases).all():
+        raise ValueError("SHAP returned non-finite probability contributions")
+    return bases.tolist(), values.tolist()
 
 
 def _load_training_rows(
@@ -460,14 +509,45 @@ def generate_explanations(
            ORDER BY snapshot.repo_id, snapshot.prediction_date""",
         (feature_set_id, model_version_id),
     ).fetchall()
+    prediction_features = [_as_features(raw, names) for _, _, _, raw in rows]
+    shap_bases: list[float] | None = None
+    shap_attributions: list[list[float]] | None = None
+    if model is not None:
+        shap_bases, shap_attributions = _shap_values(
+            model, names, validation_rows, prediction_features
+        )
     explained = 0
     report_items = []
     with connection.transaction():
-        for prediction_id, repo_id, snapshot_id, raw in rows:
-            values = _as_features(raw, names)
-            indicators = local_feature_deltas(model, names, values, reference_values)[
-                :TOP_INDICATORS
-            ]
+        for row_index, (prediction_id, repo_id, snapshot_id, _raw) in enumerate(rows):
+            values = prediction_features[row_index]
+            if shap_bases is not None and shap_attributions is not None:
+                attributions = shap_attributions[row_index]
+                ranked = sorted(
+                    range(len(names)), key=lambda index: (-abs(attributions[index]), names[index])
+                )[:TOP_INDICATORS]
+                indicators = [
+                    {
+                        "feature_name": names[index],
+                        "feature_value": (
+                            None
+                            if not isfinite(values[names[index]])
+                            else values[names[index]]
+                        ),
+                        "reference_value": shap_bases[row_index],
+                        "probability_delta": attributions[index],
+                        "direction": (
+                            "increases_risk" if attributions[index] > 0
+                            else "decreases_risk" if attributions[index] < 0
+                            else "neutral"
+                        ),
+                    }
+                    for index in ranked
+                ]
+            else:
+                indicators = local_feature_deltas(model, names, values, reference_values)[
+                    :TOP_INDICATORS
+                ]
             connection.execute(
                 "DELETE FROM prediction_explanations WHERE prediction_id = %s", (prediction_id,)
             )
@@ -478,17 +558,26 @@ def generate_explanations(
                     "decreases_risk": "is associated with a lower model risk score",
                     "neutral": "does not change the model risk score in this comparison",
                 }[indicator["direction"]]
-                indicator["description"] = (
-                    f"The observed value {direction_text} than substituting the validation median. "
-                    "This is a model association, not a causal effect."
-                )
+                if shap_bases is not None:
+                    indicator["description"] = (
+                        f"The SHAP contribution {direction_text} relative to the expected model "
+                        "probability under the validation reference sample. This is an "
+                        "attribution, not a causal effect."
+                    )
+                else:
+                    indicator["description"] = (
+                        f"The observed value {direction_text} than substituting the validation "
+                        "median. "
+                        "This is a model association, not a causal effect."
+                    )
                 connection.execute(
                     """INSERT INTO prediction_explanations (
-                               prediction_id, feature_name, feature_value, reference_value,
+                               prediction_id, method, feature_name, feature_value, reference_value,
                                probability_delta, direction, rank, description
-                           ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s)""",
+                           ) VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)""",
                     (
                         prediction_id,
+                        "shap" if shap_bases is not None else "local_substitution",
                         indicator["feature_name"],
                         indicator["feature_value"],
                         indicator["reference_value"],
@@ -508,7 +597,14 @@ def generate_explanations(
         "algorithm": algorithm,
         "feature_set": family,
         "method": (
-            "one-feature-at-a-time substitution with validation medians; associational, not causal"
+            "SHAP probability contributions with permutation explainer and validation background; "
+            "threshold baseline uses one-feature-at-a-time validation-median substitution; "
+            "attributions are not causal"
+            if model is not None
+            else (
+                "one-feature-at-a-time substitution with validation medians; "
+                "associational, not causal"
+            )
         ),
         "predictions_explained": explained,
         "top_indicators_per_prediction": TOP_INDICATORS,

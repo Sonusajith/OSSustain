@@ -25,6 +25,7 @@ from ossustain_pipeline.modeling.core import (
     classification_metrics,
     paired_repository_cluster_bootstrap,
     repository_cluster_bootstrap,
+    robustness_metrics,
     select_f1_threshold,
 )
 from ossustain_pipeline.modeling.data import (
@@ -32,7 +33,9 @@ from ossustain_pipeline.modeling.data import (
     ModelDataset,
     ModelRow,
     load_model_dataset,
+    load_test_robustness_outcomes,
 )
+from ossustain_pipeline.snapshots.core import is_decline
 
 FEATURE_FAMILIES = {
     "activity_only": ACTIVITY_FEATURES,
@@ -511,6 +514,104 @@ def train_and_evaluate(
     selected_extended = next(
         item for item in family_runs if item["family"] == "extended" and item.get("selected")
     )
+
+    # Sensitivity targets reuse each validation-selected model's fixed test scores.
+    # They do not refit, retune, or select models using test outcomes.
+    test_outcomes = load_test_robustness_outcomes(connection, dataset.dataset_version_id)
+    test_row_by_id = {row.snapshot_id: row for row in split_rows["test"]}
+    if {outcome.snapshot_id for outcome in test_outcomes} != set(test_row_by_id):
+        raise ValueError("Robustness outcomes do not match the labeled held-out test snapshots")
+    thresholds = [float(value) for value in dataset.label_config["sensitivity_theta"]]
+    minimum_reference = int(dataset.label_config["min_reference_commits"])
+    robustness_report: dict[str, Any] = {}
+    for item in (selected_activity, selected_extended):
+        score_by_id = {
+            row.snapshot_id: score
+            for row, score in zip(split_rows["test"], item["test_scores"], strict=True)
+        }
+        variants = [
+            (
+                f"robustness_theta_{theta:g}",
+                f"theta={theta:g}; non-bot default-branch commits",
+                [
+                    int(is_decline(outcome.reference_activity, outcome.future_activity, theta))
+                    for outcome in test_outcomes
+                ],
+                [True] * len(test_outcomes),
+            )
+            for theta in thresholds
+        ]
+        variants.append(
+            (
+                "robustness_commits_plus_merged_prs",
+                "theta=primary; non-bot default-branch commits plus merged pull requests",
+                [
+                    int(is_decline(
+                        outcome.combined_reference_activity,
+                        outcome.combined_future_activity,
+                        float(dataset.label_config["theta"]),
+                    ))
+                    for outcome in test_outcomes
+                ],
+                [
+                    outcome.combined_reference_activity >= minimum_reference
+                    for outcome in test_outcomes
+                ],
+            )
+        )
+        for metric_prefix, definition, all_labels, eligible in variants:
+            subset = [
+                outcome
+                for outcome, keep in zip(test_outcomes, eligible, strict=True)
+                if keep
+            ]
+            labels = [label for label, keep in zip(all_labels, eligible, strict=True) if keep]
+            scores = [score_by_id[outcome.snapshot_id] for outcome in subset]
+            repository_ids = [outcome.repo_id for outcome in subset]
+            if not labels:
+                raise ValueError(
+                    f"No eligible test outcomes for robustness variant {metric_prefix}"
+                )
+            metrics, intervals = robustness_metrics(
+                labels,
+                scores,
+                repository_ids,
+                decision_threshold=item["threshold"],
+                seed=config.random_seed,
+                resamples=config.bootstrap_resamples,
+                confidence_level=config.confidence_level,
+            )
+            details = {
+                "analysis": "fixed validation-selected model scores; target-label sensitivity only",
+                "target_definition": definition,
+                "n_snapshots": len(subset),
+                "n_excluded_low_reference_activity": len(test_outcomes) - len(subset),
+                "n_repositories": len(set(repository_ids)),
+                "positive_labels": sum(labels),
+                "negative_labels": len(labels) - sum(labels),
+                "decision_threshold_from_validation": item["threshold"],
+                "confidence_level": config.confidence_level,
+                "bootstrap_resamples": config.bootstrap_resamples,
+            }
+            for metric_name in SCORED_METRICS:
+                interval = intervals.get(metric_name)
+                item["evaluation_rows"].append(
+                    {
+                        "split": "test",
+                        "stratum": "overall",
+                        "metric": f"{metric_prefix}_{metric_name}",
+                        "value": metrics[metric_name],
+                        "ci_low": interval[0] if interval else None,
+                        "ci_high": interval[1] if interval else None,
+                        "details": details,
+                    }
+                )
+            robustness_report.setdefault(item["family"], {})[metric_prefix] = {
+                **{metric: metrics[metric] for metric in SCORED_METRICS},
+                "n_snapshots": len(subset),
+                "n_repositories": len(set(repository_ids)),
+            }
+
     paired_comparison = paired_repository_cluster_bootstrap(
         [
             {
@@ -648,6 +749,7 @@ def train_and_evaluate(
         },
         "models": report_models,
         "paired_test_comparison_extended_minus_activity_only": paired_comparison,
+        "test_target_robustness": robustness_report,
     }
     report_path.write_text(json.dumps(report, indent=2) + "\n", encoding="utf-8")
     return report

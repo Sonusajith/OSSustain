@@ -10,10 +10,12 @@ from ossustain_pipeline.modeling.core import (
     classification_metrics,
     paired_repository_cluster_bootstrap,
     repository_cluster_bootstrap,
+    robustness_metrics,
     select_f1_threshold,
 )
 from ossustain_pipeline.modeling.data import ModelRow, validate_split_chronology
 from ossustain_pipeline.modeling.runner import _estimator
+from ossustain_pipeline.predictions.runner import _shap_values
 
 
 def test_hand_checked_binary_classification_metrics():
@@ -65,6 +67,41 @@ def test_repository_cluster_bootstrap_is_reproducible_and_clustered():
     second = repository_cluster_bootstrap(rows, threshold=0.5, seed=42, resamples=100)
     assert first == second
     assert first["pr_auc"] == (1.0, 1.0)
+
+
+def test_robustness_metrics_use_fixed_scores_and_repository_clusters():
+    metrics, intervals = robustness_metrics(
+        [0, 1, 0, 1],
+        [0.2, 0.8, 0.3, 0.7],
+        [11, 11, 22, 22],
+        decision_threshold=0.5,
+        seed=42,
+        resamples=100,
+        confidence_level=0.95,
+    )
+    assert metrics["pr_auc"] == 1
+    assert metrics["f1"] == 1
+    assert intervals["pr_auc"] == (1.0, 1.0)
+
+
+def test_shap_attributions_reconcile_to_probability_with_validation_background():
+    names = ("activity", "collaboration")
+    model = _estimator(
+        "logistic_regression", {"c": 1.0, "class_weight": "balanced"}, seed=42
+    )
+    train_matrix = [[0.0, 0.0], [1.0, 0.2], [2.0, 0.5], [3.0, 1.0]]
+    model.fit(train_matrix, [0, 0, 1, 1])
+    validation_rows = [
+        ModelRow(index, index, date(2024, 1, index), "validation", "small", index % 2,
+                 dict(zip(names, values, strict=True)))
+        for index, values in enumerate(train_matrix, start=1)
+    ]
+    predicted = {"activity": 1.5, "collaboration": 0.4}
+    bases, attributions = _shap_values(model, names, validation_rows, [predicted])
+    probability = model.predict_proba([[predicted[name] for name in names]])[0][1]
+    assert len(attributions) == 1
+    assert len(attributions[0]) == len(names)
+    assert bases[0] + sum(attributions[0]) == pytest.approx(probability, abs=1e-5)
 
 
 def test_paired_cluster_bootstrap_compares_the_same_snapshot_rows():

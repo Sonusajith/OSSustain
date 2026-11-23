@@ -180,6 +180,34 @@ def repository_cluster_bootstrap(
     return intervals
 
 
+def robustness_metrics(
+    labels: list[int],
+    scores: list[float],
+    repositories: list[int],
+    *,
+    decision_threshold: float,
+    seed: int,
+    resamples: int,
+    confidence_level: float,
+) -> tuple[dict[str, float | int | None], dict[str, tuple[float, float] | None]]:
+    """Evaluate fixed predictions against a sensitivity target with repository CIs."""
+    if len(labels) != len(repositories) or not labels:
+        raise ValueError("labels, scores, and repositories must have equal non-zero length")
+    metrics = classification_metrics(labels, scores, decision_threshold)
+    rows = [
+        {"repo_id": repo_id, "label": label, "score": score}
+        for repo_id, label, score in zip(repositories, labels, scores, strict=True)
+    ]
+    intervals = repository_cluster_bootstrap(
+        rows,
+        threshold=decision_threshold,
+        seed=seed,
+        resamples=resamples,
+        confidence_level=confidence_level,
+    )
+    return metrics, intervals
+
+
 def _percentile(sorted_values: list[float], probability: float) -> float:
     position = probability * (len(sorted_values) - 1)
     lower = int(position)
