@@ -82,7 +82,7 @@ class CoreSchemaIntegrationTest {
     void migrationsApplyToAnEmptyPostgres16Database() throws SQLException {
         assertThat(queryStrings("SELECT version FROM flyway_schema_history "
                 + "WHERE success ORDER BY installed_rank"))
-                .containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6", "7", "8", "9", "10");
+                .containsExactlyInAnyOrder("1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11");
     }
 
     @Test
@@ -102,7 +102,7 @@ class CoreSchemaIntegrationTest {
                 "dataset_versions", "snapshots", "feature_sets", "feature_definitions",
                 "snapshot_features", "repository_metrics_monthly", "model_versions",
                 "evaluation_results", "feature_importances", "prediction_outcomes",
-                "prediction_explanations");
+                "prediction_explanations", "analysis_jobs", "analysis_results", "on_demand_api_requests");
 
         assertThat(queryStrings("SELECT table_name FROM information_schema.views "
                 + "WHERE table_schema = 'public'"))
@@ -113,6 +113,7 @@ class CoreSchemaIntegrationTest {
                         "idx_pull_requests_repo_created_at", "idx_commits_repo_committed_at",
                         "idx_predictions_window_id", "uq_risk_indicators_prediction_rank",
                         "idx_prediction_explanations_prediction_rank",
+                        "uq_analysis_jobs_repository_active", "idx_analysis_jobs_queue",
                         "idx_prediction_outcomes_dataset_status",
                         "idx_collection_runs_repo_started_at", "idx_collection_runs_stage_status",
                         "uq_reviews_pull_request_github_id");

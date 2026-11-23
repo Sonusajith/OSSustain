@@ -7,8 +7,8 @@
 
 OSSustain is a research-oriented web application that analyzes historical data from public GitHub repositories and estimates the risk that a repository's contribution activity will decline significantly over the next 90 days. It has two parts:
 
-1. **An offline research pipeline** (Python) that collects GitHub data, builds time-stamped snapshots, engineers features, trains and evaluates models, and stores the results.
-2. **A read-only web dashboard** (React + Spring Boot) that presents repository analytics, risk estimates, indicators, and the research evidence.
+1. **A research pipeline** (Python) that collects GitHub data, builds time-stamped snapshots, engineers features, trains and evaluates models, and stores the results.
+2. **A web dashboard and bounded analysis flow** (React + Spring Boot) that presents repository analytics, research evidence, and asynchronous predictions for public repositories using an already selected model.
 
 ## 2. Problem Statement
 
@@ -76,7 +76,7 @@ A transparent, reproducible early-warning dashboard for contribution-activity de
 
 ## 10. MVP Scope
 
-The MVP is a complete vertical slice: a documented cohort → collected data → snapshots and labels → features → trained and evaluated models → stored predictions and explanations → read-only dashboard with four screens.
+The MVP is a complete vertical slice: a documented cohort → collected data → snapshots and labels → features → trained and evaluated models → stored predictions and explanations → research dashboard, plus a bounded asynchronous workflow for user-submitted public repositories.
 
 ### Core Features (MVP)
 
@@ -94,13 +94,12 @@ The MVP is a complete vertical slice: a documented cohort → collected data →
 | F10 | Dataset, model, and evaluation versioning records |
 | F11 | Setup and reproducibility documentation |
 
-### Secondary Features (post-MVP, near term)
-- Repository Comparison (side-by-side metrics).
-- SHAP explanations and per-prediction SHAP views.
-- Robustness and sensitivity analyses (alternative thresholds, alternative activity definitions) surfaced in the dashboard.
+### Completed post-MVP additions
+- Phase 14: Repository Comparison (side-by-side metrics).
+- Phase 15: SHAP explanations and robustness/sensitivity analyses.
+- Phase 16: bounded on-demand public-repository analysis.
 
 ### Future Ideas (not planned)
-- On-demand analysis of user-submitted repositories (requires job queue, rate-limit management, and a live-prediction path).
 - Authentication and an admin UI.
 - Scheduled data refresh and drift monitoring.
 - Features borrowed from related proposals (ReviewPulse, FirstCommit). These are separate research ideas and are **not** part of OSSustain unless explicitly adopted.
@@ -130,16 +129,17 @@ The MVP is a complete vertical slice: a documented cohort → collected data →
 - FR16: Research Results: show model comparison tables and charts, the activity-only vs. extended comparison, feature importance, size-group breakdown, calibration, and the dataset summary.
 - FR17: Methodology & Limitations: show the label definition and parameters, feature dictionary, split design, and known limitations, loaded from backend data where possible so they cannot drift from the real configuration.
 - FR18: Every prediction display shall show the prediction date, model version, and a statement that the prediction concerns contribution-activity decline only.
+- FR19: The backend shall accept a canonical public `owner/repository`, enqueue a durable analysis, and expose its status/result; a separate Python worker shall collect at most 180 days of data and score it with an existing validation-selected model without changing research tables.
 
 ## 12. Non-Functional Requirements
 
 - **Reproducibility:** Fixed random seeds, recorded versions, pinned dependencies, and a documented end-to-end run order.
 - **Correctness over breadth:** Leakage prevention has priority over model sophistication.
-- **Performance:** Dashboard API responses under ~500 ms for typical queries on the local dataset; heavy computation is offline.
+- **Performance:** Dashboard API responses under ~500 ms for typical queries on the local dataset; training stays offline and submitted-repository work is asynchronous and quota-bounded.
 - **Accessibility:** WCAG 2.1 AA targets. Keyboard navigation, sufficient contrast, semantic structure, and a text or table alternative for every chart. Risk category is never conveyed by color alone.
 - **Responsiveness:** Desktop-first; all screens usable from 360 px width (charts may scroll or reflow).
 - **Reliability:** Pipeline stages are idempotent and resumable.
-- **Security:** No secrets in the repository; GitHub token only in pipeline environment; the public API is read-only.
+- **Security:** No secrets in the repository; GitHub token only in the pipeline/worker environment; the analysis endpoint is bounded by the Phase 16 quotas in `Architecture.md`.
 - **Maintainability:** Strict typing, tests for pipeline correctness, and clear module boundaries.
 - **Portability:** Runs locally via documented setup (Docker Compose for PostgreSQL).
 

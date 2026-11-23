@@ -16,5 +16,25 @@ services:
       timeout: 5s
       retries: 10
 
+  analysis-worker:
+    build:
+      context: .
+      dockerfile: pipeline/Dockerfile
+    restart: unless-stopped
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER:-ossustain}
+      PGPASSWORD: ${POSTGRES_PASSWORD:-ossustain-local}
+      PGDATABASE: ${POSTGRES_DB:-ossustain}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      OSSUSTAIN_HASH_SECRET: ${OSSUSTAIN_HASH_SECRET:-}
+    depends_on:
+      postgres:
+        condition: service_healthy
+    volumes:
+      - ./pipeline/artifacts:/app/pipeline/artifacts:ro
+    command: ["worker"]
+
 volumes:
   postgres-data:

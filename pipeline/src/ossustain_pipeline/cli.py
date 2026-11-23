@@ -18,6 +18,7 @@ from ossustain_pipeline.github.cache import JsonResponseCache
 from ossustain_pipeline.github.client import GitHubClient
 from ossustain_pipeline.modeling.config import load_modeling_config
 from ossustain_pipeline.modeling.runner import train_and_evaluate
+from ossustain_pipeline.on_demand import run_worker
 from ossustain_pipeline.predictions.runner import generate_explanations, generate_predictions
 from ossustain_pipeline.snapshots.runner import build_snapshots
 
@@ -34,6 +35,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="Path to the pipeline YAML configuration (default: pipeline/config.yaml).",
     )
     commands = parser.add_subparsers(dest="command")
+    worker_parser = commands.add_parser(
+        "worker", help="Run the bounded PostgreSQL-backed on-demand analysis worker."
+    )
+    worker_parser.add_argument("--poll-seconds", type=int, default=5)
+    worker_parser.add_argument(
+        "--once", action="store_true", help="Process at most one available job."
+    )
     select_parser = commands.add_parser(
         "select-cohort",
         help="Select a reproducible, stratified repository cohort from screened candidates.",
@@ -184,7 +192,14 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    if args.command == "select-cohort":
+    if args.command == "worker":
+        if args.poll_seconds < 1 or args.poll_seconds > 60:
+            parser.error("--poll-seconds must be between 1 and 60")
+        try:
+            run_worker(args.config, poll_seconds=args.poll_seconds, once=args.once)
+        except (ValueError, OSError) as error:
+            parser.error(str(error))
+    elif args.command == "select-cohort":
         try:
             selected = select_cohort(args.candidate_config, args.output)
         except ValueError as error:

@@ -30,6 +30,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?Set FRONTEND_ORIGIN in deploy/.env.production}
       FRONTEND_URL: ${FRONTEND_URL:?Set FRONTEND_URL in deploy/.env.production}
+      OSSUSTAIN_ANALYSIS_IP_HASH_SECRET: ${OSSUSTAIN_ANALYSIS_IP_HASH_SECRET:?Set OSSUSTAIN_ANALYSIS_IP_HASH_SECRET in deploy/.env.production}
     depends_on:
       postgres:
         condition: service_healthy
@@ -49,6 +50,34 @@ services:
     security_opt:
       - no-new-privileges:true
     mem_limit: 1g
+
+  analysis-worker:
+    build:
+      context: .
+      dockerfile: pipeline/Dockerfile
+    restart: unless-stopped
+    environment:
+      PGHOST: postgres
+      PGPORT: "5432"
+      PGUSER: ${POSTGRES_USER}
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+      PGDATABASE: ${POSTGRES_DB}
+      GITHUB_TOKEN: ${GITHUB_TOKEN:?Set GITHUB_TOKEN in deploy/.env.production}
+      OSSUSTAIN_HASH_SECRET: ${OSSUSTAIN_HASH_SECRET:?Set OSSUSTAIN_HASH_SECRET in deploy/.env.production}
+    volumes:
+      - "${MODEL_ARTIFACTS_DIR:?Set MODEL_ARTIFACTS_DIR to the selected artifacts directory}:/app/pipeline/artifacts:ro"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    security_opt:
+      - no-new-privileges:true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=128m,uid=10001,gid=10001
+    cap_drop:
+      - ALL
+    mem_limit: 1g
+    command: ["worker"]
 
   frontend:
     build:

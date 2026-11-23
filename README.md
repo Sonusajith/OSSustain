@@ -1,10 +1,8 @@
 # OSSustain
 
-OSSustain is a research-oriented early-warning system for contribution-activity decline in public GitHub repositories. It is organized as three separate local components: a Python research pipeline, a Spring Boot read API, and a React + TypeScript dashboard. See [PRD.md](PRD.md), [Architecture.md](Architecture.md), and [Phases.md](Phases.md) for product and research details.
+OSSustain is a research-oriented early-warning system for contribution-activity decline in public GitHub repositories. It includes a Python research pipeline and bounded on-demand worker, PostgreSQL, a Spring Boot API, and a React + TypeScript dashboard. See [PRD.md](PRD.md), [Architecture.md](Architecture.md), and [Phases.md](Phases.md) for product and research details.
 
-## Phase 1 foundation
-
-This phase provides runnable component skeletons only. It does not collect repository data, train models, expose product data, or implement dashboard screens.
+## Local setup
 
 ### Prerequisites
 
@@ -40,7 +38,7 @@ Run backend tests (the integration test starts PostgreSQL with Testcontainers an
 mvn -f backend/pom.xml test
 ```
 
-### Run the pipeline scaffold
+### Run the research pipeline and worker
 
 Create and activate a virtual environment, then install its pinned dependencies:
 
@@ -56,7 +54,7 @@ python -m pytest -c pipeline/pyproject.toml
 python -m ruff check pipeline/src pipeline/tests
 ```
 
-The configuration loader reads a YAML file and validates its PostgreSQL URL. The scaffold opens no database connection unless a later stage explicitly requests it. Set `OSSUSTAIN_DATABASE_URL` in the process environment to override the value in the config file.
+The pipeline reads the local `.env` for `GITHUB_TOKEN` and `OSSUSTAIN_HASH_SECRET`. The research commands use the configured PostgreSQL database. The Phase 16 worker is separate from the Spring API and can be run locally with `ossustain-pipeline --config pipeline/config.yaml worker`.
 
 ### Start the frontend dashboard
 
@@ -90,6 +88,19 @@ The Repository Comparison screen at `/compare` lets you select two to four
 repositories from the latest cohort and compare their stored estimates and
 latest monthly metrics in an accessible table.
 
+The on-demand screen at `/analyze` accepts a public GitHub `owner/repository`,
+shows durable job status, and displays its result and limitations. To run the
+worker in Docker, first ensure the selected trained model artifacts are present
+under `pipeline/artifacts/`, set `GITHUB_TOKEN` and `OSSUSTAIN_HASH_SECRET` in
+`.env`, then run `docker compose up -d --build analysis-worker`. The worker has
+read-only access to model artifacts and never stores raw GitHub responses.
+Production deployments also require a stable `OSSUSTAIN_ANALYSIS_IP_HASH_SECRET`
+and `MODEL_ARTIFACTS_DIR`; see `deploy/production.env.example`. The UI and API
+enforce public-only submissions, a 300-request job cap, a 1,000-request hourly
+worker cap, a queue of at most 20 jobs, and three new submissions per client IP
+per hour. Completed jobs expire after 30 days; compact results are reused for
+24 hours for the same repository and selected model.
+
 Run frontend checks:
 
 ```sh
@@ -100,10 +111,10 @@ pnpm build
 
 ### Component layout
 
-- `backend/`: Spring Boot application, Flyway schema ownership, health endpoint, and integration test.
-- `pipeline/`: Python package, configuration loader, PostgreSQL connection helper, CLI, and tests.
+- `backend/`: Spring Boot API, Flyway schema ownership, analysis endpoints, and integration tests.
+- `pipeline/`: Python research pipeline, bounded analysis worker, PostgreSQL connection helper, CLI, and tests.
 - `frontend/`: strict TypeScript Vite application with a routing shell and build/test/lint tooling.
-- `docker-compose.yml`: PostgreSQL 16 only; no additional services.
+- `docker-compose.yml`: PostgreSQL 16 and the on-demand worker service; start the worker after setting its token, hash secret, and model artifacts.
 
 Runtime and development dependency versions are pinned in `backend/pom.xml`, `pipeline/pyproject.toml`, `frontend/package.json`, and `frontend/pnpm-lock.yaml`.
 

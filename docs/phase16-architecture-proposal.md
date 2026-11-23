@@ -1,10 +1,10 @@
 # Phase 16 Architecture Proposal
 
-**Status:** Proposal for owner approval. This document does not change the approved architecture. No Phase 16 implementation should begin until the owner approves a design and `Architecture.md` is revised.
+**Status:** Approved by the project owner; implemented on `phase-16/on-demand-analysis`. The approved design is recorded in `Architecture.md`.
 
 ## Current constraints
 
-- The Spring API is read-only; GitHub credentials belong only to the Python pipeline.
+- Before Phase 16, the Spring API was read-only; GitHub credentials remain limited to Python processes.
 - The pipeline currently processes the frozen cohort, uses Flyway-managed tables, and stores model artifacts under the ignored `pipeline/artifacts/` directory.
 - Versioned datasets, snapshots, and evaluation results represent the fixed research study. An on-demand repository must not be added to those counts or used to retrain/select models.
 - GitHub collection must be bounded, resumable, privacy-filtered, and rate-limit aware.
@@ -17,21 +17,21 @@
 4. Flyway adds job and result tables. On-demand results are stored separately from versioned research snapshots, labels, and cohort summaries. A result records its canonical repository, model version, requested/observed time, probability, limitations, explanation method, and compact input summary.
 5. The worker receives the trained model artifacts through a read-only configured volume. Artifacts remain uncommitted. If the required selected artifact is unavailable, the job fails clearly rather than training a replacement.
 
-## Proposed operating limits (defaults to approve or change)
+## Approved operating limits
 
 - Only public GitHub repositories; verify visibility and canonical identity through GitHub's API.
 - One worker at a time; at most 20 waiting jobs; one active job per canonical repository.
-- Maximum 300 GitHub requests per job and a shared ceiling of 1,000 requests per hour for on-demand work. Stop and report an insufficient-data result when a cap prevents required features.
+- Maximum 300 GitHub requests per job and a shared ceiling of 1,000 requests per hour for on-demand work. If a cap prevents complete collection, fail the job with a request-limit status and do not store a partial prediction.
 - At most 3 submissions per client IP per hour and a 24-hour cached result per repository/model version. Treat these as abuse controls, not authentication.
 - Do not accept a GitHub token from the browser. The worker uses the operator's token and existing global rate-limit handling.
 
-## Consequences and open decisions
+## Decisions and consequences
 
 - This adds a Python worker process and durable job/result schema, but no Redis, external queue, model-training service, or new database.
-- An unauthenticated public write endpoint can still be abused through distributed clients. The proposed quotas limit ordinary use but do not provide strong identity; decide whether Phase 16 is public or restricted to a later Phase 17 authentication gate.
-- Choose the collection lookback and what constitutes sufficient event coverage before defining inference behavior. The model expects the registered feature set, including up to 180 days of history.
-- Define result and event retention/purge behavior before storing submitted-repository data.
-- Confirm how production deployment supplies the ignored model artifacts to the worker.
+- The endpoint is public and unauthenticated. IP quotas limit ordinary use but do not provide strong identity; authentication remains a conditional later phase.
+- Collection uses the 180 days preceding the UTC prediction date. If a request cap or GitHub error interrupts collection, the job fails and no partial prediction is stored. First-ever contributor and newcomer-retention inputs are unavailable because the bounded history cannot identify the true first contribution; the selected model's fitted training preprocessor handles those missing values and the result carries a limitation.
+- Raw GitHub responses remain in worker memory only. Compact results and job metadata expire after 30 days; successful compact results are reusable for 24 hours for the same repository and selected model. The hourly API request ledger is purged by the worker.
+- Local and production Compose mount `pipeline/artifacts/` read-only. Production sets `MODEL_ARTIFACTS_DIR`; no artifact is committed.
 
 ## Alternative
 

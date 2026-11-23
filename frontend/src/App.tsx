@@ -5,6 +5,7 @@ import { RepositoryComparisonPage } from './features/comparison/RepositoryCompar
 import { MethodologyPage } from './features/research/MethodologyPage'
 import { ResearchResultsPage } from './features/research/ResearchResultsPage'
 import { RepositoryDetailPage } from './features/repository/RepositoryDetailPage'
+import { AnalysisPage } from './features/analysis/AnalysisPage'
 
 function PlaceholderPage({ title, description }: { title: string; description: string }) {
   return (
@@ -31,6 +32,7 @@ export function App() {
             <NavLink to="/research">Research Results</NavLink>
             <NavLink to="/methodology">Methodology &amp; Limitations</NavLink>
             <NavLink to="/compare">Compare</NavLink>
+            <NavLink to="/analyze">Analyze repository</NavLink>
           </nav>
           <a className="source-link" href="https://github.com/Sonusajith/OSSustain" aria-label="OSSustain source repository">
             <span aria-hidden="true">↗</span>
@@ -53,6 +55,7 @@ export function App() {
           element={<MethodologyPage />}
         />
         <Route path="/compare" element={<RepositoryComparisonPage />} />
+        <Route path="/analyze" element={<AnalysisPage />} />
         <Route path="*" element={<PlaceholderPage title="Page not found" description="This route is not part of the current dashboard." />} />
       </Routes>
       <footer className="site-footer">

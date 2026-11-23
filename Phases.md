@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
 **Current Phase:** Phase 16: On-Demand Repository Analysis
-**Current Status:** Phase 15 merged to `main` in PR #15 (`0b961cc`, implementation `9eb0564`). Phase 16 is at architecture design on `phase-16/on-demand-analysis`; implementation awaits explicit architecture approval.
+**Current Status:** Phase 15 merged to `main` in PR #15 (`0b961cc`, implementation `9eb0564`). Phase 16 implementation and verification are complete on `phase-16/on-demand-analysis`; ready to push for review.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
@@ -164,10 +164,10 @@ Phase 1 is complete. Work proceeds in order; do not start a phase before its dep
 
 ### Phase 16: On-Demand Repository Analysis
 - **Goal:** Collect data and produce a prediction for a user-submitted public GitHub repository.
-- **Architecture gate:** Requires an explicitly approved Architecture.md revision before implementation. Resolve durable job handling, live-inference path, GitHub token ownership, rate limits/abuse controls, data retention, and deployment.
+- **Architecture:** Approved database-backed queue and one Python worker; worker-only GitHub token; separate on-demand result storage; 180-day collection; read-only trained artifacts; limits of 300 requests/job, 1,000/hour overall, 20 waiting jobs, 3 submissions/IP/hour, one active job/repository, and a 24-hour result cache. Expire completed job/result rows after 30 days. Raw event responses are not persisted.
 - **Dependencies:** Phase 13; API, collection pipeline, trained model artifacts, and prediction code from earlier phases.
-- **Current status:** Design only. No endpoint, schema, worker, or UI implementation may begin until the architecture revision is approved.
-- **Definition of done:** To be specified in the approved architecture revision before implementation starts.
+- **Current status:** Implementation and verification complete; no Phase 17 work started.
+- **Definition of done:** public-only repository submission and status API; durable bounded jobs and results isolated from research data; a restart-safe Python worker collects within the approved budget and scores with an existing selected artifact; accessible UI with loading/empty/error/success states; setup and retention documented; backend, worker, and frontend verification passes; `Memory.md` records handoff.
 
 ### Phase 17: Authentication and Admin (conditional)
 Only if Phase 16 or admin features are adopted. Spring Security, roles, protected endpoints.

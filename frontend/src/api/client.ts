@@ -17,6 +17,34 @@ export type EvaluationPage = paths['/research/evaluations']['get']['responses'][
 export type FeatureImportance = components['schemas']['FeatureImportance']
 export type FeatureImportancePage = paths['/research/feature-importance']['get']['responses'][200]['content']['application/json']
 export type LabelDefinition = paths['/research/label-definition']['get']['responses'][200]['content']['application/json']
+export type Analysis = components['schemas']['Analysis']
+
+async function postJson<T>(url: string, body: unknown): Promise<T> {
+  let response: Response
+  try {
+    response = await fetch(`${API_BASE_URL}${url}`, {
+      method: 'POST',
+      headers: { Accept: 'application/json', 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+    })
+  } catch {
+    throw new ApiRequestError('Could not connect to the OSSustain API. Check that the backend is running.')
+  }
+  if (!response.ok) {
+    let message = `The API request failed (${response.status}).`
+    try { message = getMessage(await response.json()) ?? message } catch { /* Keep the status message. */ }
+    throw new ApiRequestError(message, response.status)
+  }
+  return (await response.json()) as T
+}
+
+export function submitAnalysis(repository: string): Promise<Analysis> {
+  return postJson<Analysis>('/analyses', { repository })
+}
+
+export function getAnalysis(id: string, signal?: AbortSignal): Promise<Analysis> {
+  return getJson<Analysis>(`/analyses/${encodeURIComponent(id)}`, signal)
+}
 
 const API_BASE_URL = (import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080/api/v1').replace(/\/$/, '')
 const PAGE_SIZE = 100

@@ -47,6 +47,7 @@ class ApiIntegrationTest {
 
     @BeforeEach
     void seedResearchData() {
+        jdbcTemplate.update("TRUNCATE TABLE analysis_jobs, on_demand_api_requests CASCADE");
         jdbcTemplate.update("TRUNCATE TABLE repositories, cohorts, dataset_versions, model_runs "
                 + "RESTART IDENTITY CASCADE");
         alphaId = insertRepository(9001, "test/alpha", "small", 75);
@@ -167,6 +168,32 @@ class ApiIntegrationTest {
                         'Associated with a higher score, not a cause.')
                 """,
                 predictionId);
+    }
+
+    @Test
+    void analysisSubmissionIsBoundedDurableAndReadable() throws Exception {
+        HttpResponse<String> invalid = post("/api/v1/analyses", "{\"repository\":\"https://github.com/acme/repo\"}");
+        assertThat(invalid.statusCode()).isEqualTo(400);
+        assertThat(invalid.body()).contains("invalid_repository");
+
+        HttpResponse<String> accepted = post("/api/v1/analyses", "{\"repository\":\"Acme/PublicRepo\"}");
+        assertThat(accepted.statusCode()).isEqualTo(202);
+        assertThat(accepted.body()).contains("\"repository\":\"acme/publicrepo\"", "\"status\":\"queued\"");
+        String id = accepted.body().replaceAll(".*\\\"id\\\":\\\"([^\\\"]+)\\\".*", "$1");
+
+        HttpResponse<String> duplicate = post("/api/v1/analyses", "{\"repository\":\"acme/publicrepo\"}");
+        assertThat(duplicate.statusCode()).isEqualTo(202);
+        assertThat(duplicate.body()).contains(id);
+        assertThat(post("/api/v1/analyses", "{\"repository\":\"acme/secondpublic\"}").statusCode())
+                .isEqualTo(202);
+        assertThat(post("/api/v1/analyses", "{\"repository\":\"acme/thirdpublic\"}").statusCode())
+                .isEqualTo(202);
+        HttpResponse<String> limited = post("/api/v1/analyses", "{\"repository\":\"acme/fourthpublic\"}");
+        assertThat(limited.statusCode()).isEqualTo(429);
+        assertThat(limited.body()).contains("submission_limit");
+        HttpResponse<String> status = get("/api/v1/analyses/" + id);
+        assertThat(status.statusCode()).isEqualTo(200);
+        assertThat(status.body()).contains("\"status\":\"queued\"");
     }
 
     @Test
@@ -296,6 +323,13 @@ class ApiIntegrationTest {
     private HttpResponse<String> get(String path) throws Exception {
         HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                 .GET().build();
+        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> post(String path, String body) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+                .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                .POST(HttpRequest.BodyPublishers.ofString(body)).build();
         return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
     }
 
