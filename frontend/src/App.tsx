@@ -1,6 +1,7 @@
 import { Link, NavLink, Route, Routes } from 'react-router-dom'
 
 import { CohortOverview } from './features/cohort/CohortOverview'
+import { RepositoryComparisonPage } from './features/comparison/RepositoryComparisonPage'
 import { MethodologyPage } from './features/research/MethodologyPage'
 import { ResearchResultsPage } from './features/research/ResearchResultsPage'
 import { RepositoryDetailPage } from './features/repository/RepositoryDetailPage'
@@ -29,6 +30,7 @@ export function App() {
             <NavLink end to="/">Cohort Overview</NavLink>
             <NavLink to="/research">Research Results</NavLink>
             <NavLink to="/methodology">Methodology &amp; Limitations</NavLink>
+            <NavLink to="/compare">Compare</NavLink>
           </nav>
           <a className="source-link" href="https://github.com/Sonusajith/OSSustain" aria-label="OSSustain source repository">
             <span aria-hidden="true">↗</span>
@@ -50,6 +52,7 @@ export function App() {
           path="/methodology"
           element={<MethodologyPage />}
         />
+        <Route path="/compare" element={<RepositoryComparisonPage />} />
         <Route path="*" element={<PlaceholderPage title="Page not found" description="This route is not part of the current dashboard." />} />
       </Routes>
       <footer className="site-footer">

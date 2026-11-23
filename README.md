@@ -86,6 +86,10 @@ quality flags. Both screens read the Spring API; charts include accessible
 tabular values and findings are scoped to this observational cohort. API types
 are generated from the backend OpenAPI contract by `pnpm api:types`.
 
+The Repository Comparison screen at `/compare` lets you select two to four
+repositories from the latest cohort and compare their stored estimates and
+latest monthly metrics in an accessible table.
+
 Run frontend checks:
 
 ```sh

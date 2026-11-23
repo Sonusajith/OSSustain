@@ -34,6 +34,31 @@ paths:
             application/json:
               schema: {$ref: '#/components/schemas/RepositoryPage'}
         '400': {$ref: '#/components/responses/BadRequest'}
+  /compare:
+    get:
+      operationId: compareRepositories
+      summary: Compare 2–4 repositories from the latest cohort.
+      parameters:
+        - name: ids
+          in: query
+          required: true
+          style: form
+          explode: false
+          description: Two to four distinct repository IDs, in the desired comparison order.
+          schema:
+            type: array
+            minItems: 2
+            maxItems: 4
+            uniqueItems: true
+            items: {type: integer, format: int64, minimum: 1}
+      responses:
+        '200':
+          description: Repository summaries and each repository's latest stored monthly metrics.
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/RepositoryComparison'}
+        '400': {$ref: '#/components/responses/BadRequest'}
+        '404': {$ref: '#/components/responses/NotFound'}
   /repositories/{id}:
     parameters:
       - {$ref: '#/components/parameters/RepositoryId'}
@@ -226,6 +251,24 @@ components:
         latestProbability: {type: [number, 'null']}
         latestRiskCategory: {type: [string, 'null']}
         predictionDate: {type: [string, 'null'], format: date}
+    RepositoryComparison:
+      type: object
+      required: [repositories]
+      properties:
+        repositories:
+          type: array
+          minItems: 2
+          maxItems: 4
+          items: {$ref: '#/components/schemas/RepositoryComparisonEntry'}
+    RepositoryComparisonEntry:
+      type: object
+      required: [repository, latestMetrics]
+      properties:
+        repository: {$ref: '#/components/schemas/RepositorySummary'}
+        latestMetrics:
+          oneOf:
+            - {$ref: '#/components/schemas/MetricPoint'}
+            - type: 'null'
     RepositoryDetail:
       type: object
       required: [id, githubId, fullName, owner, name, defaultBranch, createdAt, stars, sizeGroup, primaryLanguage, archived, fork, metadata, dataQualityFlags]

@@ -37,6 +37,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/compare": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Compare 2–4 repositories from the latest cohort. */
+        get: operations["compareRepositories"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/repositories/{id}": {
         parameters: {
             query?: never;
@@ -233,6 +250,13 @@ export interface components {
             latestRiskCategory: string | null;
             /** Format: date */
             predictionDate: string | null;
+        };
+        RepositoryComparison: {
+            repositories: components["schemas"]["RepositoryComparisonEntry"][];
+        };
+        RepositoryComparisonEntry: {
+            repository: components["schemas"]["RepositorySummary"];
+            latestMetrics: components["schemas"]["MetricPoint"] | null;
         };
         RepositoryDetail: {
             /** Format: int64 */
@@ -453,6 +477,31 @@ export interface operations {
                 };
             };
             400: components["responses"]["BadRequest"];
+        };
+    };
+    compareRepositories: {
+        parameters: {
+            query: {
+                /** @description Two to four distinct repository IDs, in the desired comparison order. */
+                ids: number[];
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Repository summaries and each repository's latest stored monthly metrics. */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["RepositoryComparison"];
+                };
+            };
+            400: components["responses"]["BadRequest"];
+            404: components["responses"]["NotFound"];
         };
     };
     getRepository: {

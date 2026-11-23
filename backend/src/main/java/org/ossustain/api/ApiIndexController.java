@@ -23,6 +23,7 @@ public class ApiIndexController {
                 "Open the OSSustain dashboard at " + frontendUrl + ".",
                 Map.of(
                         "repositories", "/api/v1/repositories",
+                        "compare", "/api/v1/compare",
                         "research", "/api/v1/research",
                         "openapi", "/openapi.yaml",
                         "health", "/actuator/health"));

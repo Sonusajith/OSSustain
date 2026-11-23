@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 13: Production Readiness
-**Current Status:** Phase 12 merged to `main` in PR #12 (`271b24b`). Phase 13 implementation is ready for review on `phase-13/production-readiness`; CI and merge are pending.
+**Current Phase:** Phase 14: Repository Comparison
+**Current Status:** Phase 13 merged to `main` in PR #13 (`9f27bb2`). Phase 14 implementation is on `phase-14/repository-comparison`; all four GitHub Actions jobs passed on `abf21cf`.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
@@ -144,7 +144,13 @@ Phase 1 is complete. Work proceeds in order; do not start a phase before its dep
 ## Post-MVP Phases (optional; not part of the MVP)
 
 ### Phase 14: Repository Comparison
-Side-by-side metrics for 2–4 repositories (new Stitch screen, API endpoint `GET /compare`). Depends on Phase 12. Excludes on-demand analysis.
+- **Goal:** Let users inspect stored data for 2–4 repositories side by side.
+- **Features included:** comparison dashboard screen, cohort repository selection, latest risk estimates, and latest stored monthly metrics; read-only API endpoint `GET /api/v1/compare`.
+- **Dependencies:** Phase 12 and the repository/detail API from Phase 9.
+- **Tasks:** typed API contract and generated frontend types; validation for 2–4 distinct current-cohort repository IDs; responsive and accessible comparison table with loading, empty, error, and success states; navigation and documentation.
+- **Design:** no Phase 14 Stitch comparison screen exists in `UIUX/`; implement a functional screen consistent with the current dashboard and mark design follow-up in `Memory.md`.
+- **Testing:** backend integration coverage for selected ordering, invalid count, duplicates, and IDs outside the cohort; frontend MSW coverage for comparison success, error recovery, and empty cohort; full CI.
+- **Definition of done:** comparison API and screen use live stored data, targeted tests pass, and `Memory.md` records implementation and verification. Excludes on-demand analysis.
 
 ### Phase 15: SHAP and Robustness Analyses
 SHAP explanations (added dependency requires approval); alternative thresholds and activity definitions surfaced in the dashboard. Depends on Phase 12.

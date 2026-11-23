@@ -10,6 +10,7 @@ import {
   getRepositories,
   getResearchModels,
   getRepositoryDetail,
+  getRepositoryComparison,
   getRepositoryMetrics,
 } from './client'
 
@@ -18,6 +19,7 @@ export const cohortQueryKeys = {
   datasetSummary: ['cohort', 'dataset-summary'] as const,
   repository: (id: number) => ['repository', id] as const,
   repositoryMetrics: (id: number) => ['repository', id, 'metrics'] as const,
+  comparison: (ids: number[]) => ['comparison', ...ids] as const,
   repositoryPrediction: (id: number) => ['repository', id, 'latest-prediction'] as const,
   repositoryHistory: (id: number) => ['repository', id, 'prediction-history'] as const,
   researchModels: ['research', 'models'] as const,
@@ -95,6 +97,16 @@ export function useRepositoryMetrics(repositoryId: number, enabled: boolean) {
   return useQuery({
     queryKey: cohortQueryKeys.repositoryMetrics(repositoryId),
     queryFn: ({ signal }) => getRepositoryMetrics(repositoryId, signal),
+    enabled,
+    staleTime: 60_000,
+    retry: 1,
+  })
+}
+
+export function useRepositoryComparison(repositoryIds: number[], enabled: boolean) {
+  return useQuery({
+    queryKey: cohortQueryKeys.comparison(repositoryIds),
+    queryFn: ({ signal }) => getRepositoryComparison(repositoryIds, signal),
     enabled,
     staleTime: 60_000,
     retry: 1,
