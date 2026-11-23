@@ -11,7 +11,7 @@ This phase provides runnable component skeletons only. It does not collect repos
 - Docker Engine with Docker Compose v2
 - Python 3.12
 - Java 21 and Maven 3.10.0
-- Node.js 22.13+ and pnpm 11.25.0
+- Node.js 22.19+ and pnpm 11.25.0
 
 ### Configure and start PostgreSQL
 

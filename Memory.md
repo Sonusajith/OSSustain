@@ -12,7 +12,7 @@ Phases 1–12 are complete and merged to main. Phase 12 merged in PR #12 (`271b2
 Phase 13: Production Readiness
 
 ## Current Task
-Phase 12 merged in PR #12 (`271b24b`). Phase 13 production-readiness implementation is ready for review on `phase-13/production-readiness`.
+Phase 12 merged in PR #12 (`271b24b`). Phase 13 production-readiness implementation is on `phase-13/production-readiness`; CI runtime and scanner-path fixes are pushed and awaiting GitHub Actions verification.
 
 ## Last Completed Task
 Phase 12 Research Results and Methodology merged in PR #12 (`271b24b`), including live research API data, accessible chart tables, responsive layouts, loading/empty/error states, reproduction run order, and the discoverable `/api/v1` index. The previous completed phase was Phase 11 Repository Detail, merged in PR #11 (`85f6e65`).
@@ -42,10 +42,10 @@ Phase 12: Research Dashboard, Methodology, and Documentation — merged to main 
 - Phase 7: frozen model grid, train-only preprocessing, validation-only hyperparameter/cutoff selection, held-out test evaluation, cluster-bootstrap intervals and paired feature-family comparison, validation importance, versioned model records, and local artifacts.
 
 ## Features In Progress
-Phase 13: production deployment, operations, and security checks are implemented on `phase-13/production-readiness`; the GitHub CI run and merge remain pending review.
+Phase 13: production deployment, operations, and security checks are implemented on `phase-13/production-readiness`; CI fixes are pushed, with GitHub Actions verification and merge pending review.
 
 ## Pending Tasks
-- Review and merge the Phase 13 branch after its GitHub CI run passes.
+- Review and merge the Phase 13 branch after its updated GitHub CI run passes. CI now uses Node 22.19+ as required by `undici@8.12.3`, and the OSV scanner path no longer has the accidental literal `\n` suffix that produced `/srcn`.
 - Retry a full backend container OS vulnerability scan: local Docker Scout could not fetch its Java vulnerability database (EOF), and OSV image extraction could not resolve the base-image chain. The backend now uses the updated Temurin Alpine runtime; source-manifest scans are clean.
 - Before public hosting, perform a browser keyboard walkthrough and Lighthouse audit against the chosen deployed URL; no public host is configured.
 - The Phase 12 full pipeline rebuild against a clean database was not repeated; documented pipeline steps and existing live dataset/API verification are available.
@@ -61,7 +61,7 @@ GitHub CLI is unavailable; use the Phase 13 branch comparison link to open its P
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
 - Java target 21 and Spring Boot 4.1.2; Testcontainers 1.21.4. Version 1.21.4 is pinned to support newer Docker Engine versions used by Docker Desktop.
 - Python 3.12 with psycopg 3.3.6, pydantic 2.14.1, PyYAML 6.0.3, pytest 9.2.0, and ruff 0.14.3.
-- Node 22.13+ with React 19.3.0, React Router 7.18.3, Vite 8.3.5, TypeScript 5.9.3, and pnpm 11.25.0. Frontend tool versions and full transitive lock are in `frontend/package.json` and `frontend/pnpm-lock.yaml`.
+- Node 22.19+ with React 19.3.0, React Router 7.18.3, Vite 8.3.5, TypeScript 5.9.3, and pnpm 11.25.0. Frontend tool versions and full transitive lock are in `frontend/package.json` and `frontend/pnpm-lock.yaml`.
 - Approved frontend dependencies: TanStack Query 5.107.1, `openapi-typescript` 7.13.0, and MSW 3.0.5 for API request mocking in tests.
 - Python direct and resolved pins are in `pipeline/pyproject.toml` and `pipeline/requirements.lock`; Phase 7 adds the approved scikit-learn 1.9.1 and joblib 1.6.0 modeling dependencies.
 - Phase 7 selects hyperparameters by validation PR-AUC, chooses probability cutoffs by validation F1, then evaluates the refit configuration on held-out test. The highest validation PR-AUC selects one model per family; no test metric influences selection.
@@ -112,6 +112,7 @@ Research Results and Methodology & Limitations (Phase 12, in progress). Reposito
 Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Windows backend tests. GitHub CLI is absent and the collection token cannot create PRs (HTTP 403); PR #5 was created through the signed-in browser without expanding token permissions.
 
 ## Testing Status
+- Phase 13 CI fix verification: pinned OSV source scan passed locally with “No issues found”; frontend ESLint passed under Node 22.19. The Linux test run in Docker hit the 60-second worker-start timeout on this OneDrive-backed bind mount, so the updated GitHub Actions run is the authoritative frontend test/build result.
 - Python: `pytest pipeline/tests -q` — 80 passed, 1 existing opt-in snapshot DB test skipped. Ruff checks and formatting check for changed files passed. `predict --help` and `explain --help` passed.
 - Backend before Phase 9: 9 tests passed, including fresh V1–V9 migration coverage. Phase 9 final run: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` — 14 tests passed (5 API integration test groups plus 9 existing migration/health checks); Testcontainers used Docker Desktop.
 - Phase 9 OpenAPI YAML parsed successfully with PyYAML: OpenAPI 3.1, 10 product paths, 17 schemas.
@@ -125,7 +126,7 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 - Earlier frontend foundation checks passed (ESLint, 2 Vitest tests, TypeScript/build); frontend untouched in Phase 5.
 
 ## Deployment Status
-Phase 13 local stack passed container smoke checks at `http://localhost:8088`; frontend/backend/PostgreSQL health checks are green. Backup creation and restore into a new database passed, including overwrite and path-traversal refusal checks. Frontend image high/critical scan found no vulnerable packages. Python `pip-audit`, frontend production `pnpm audit`, and the pinned source-manifest scan found no known vulnerabilities. Backend runtime uses Temurin 21 Alpine with OS packages upgraded at build; its container-level OS scan remains pending because local scanner database/registry access failed. No public hosting target was selected. GitHub CI will run after the branch is pushed for review. Browser-level keyboard and Lighthouse checks remain for the eventual public deployment.
+Phase 13 local stack passed container smoke checks at `http://localhost:8088`; frontend/backend/PostgreSQL health checks are green. Backup creation and restore into a new database passed, including overwrite and path-traversal refusal checks. Frontend image high/critical scan found no vulnerable packages. Python `pip-audit`, frontend production `pnpm audit`, and the pinned source-manifest scan found no known vulnerabilities. Backend runtime uses Temurin 21 Alpine with OS packages upgraded at build; its container-level OS scan remains pending because local scanner database/registry access failed. No public hosting target was selected. Browser-level keyboard and Lighthouse checks remain for the eventual public deployment.
 
 ## Important Context for the Next AI Session
 - The owner confirmed Phase 5 on 2026-11-18. All four Phase 4 quality flags are retained; no repositories are silently excluded.
@@ -133,7 +134,7 @@ Phase 13 local stack passed container smoke checks at `http://localhost:8088`; f
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Open the Phase 13 PR from the branch comparison link, confirm CI passes, and retry the backend image vulnerability scan. Before public hosting, select a target and run the documented keyboard and Lighthouse checks.
+Confirm the updated checks on [Phase 13 PR #13](https://github.com/Sonusajith/OSSustain/pull/13), merge after they pass, and retry the backend image vulnerability scan. Before public hosting, select a target and run the documented keyboard and Lighthouse checks.
 
 ## Last Updated
-2026-11-23, `phase-13/production-readiness` — production images, isolated deployment, safe backup/restore, local smoke checks, and available security scans completed; backend image scan needs a retry because scanner database/base-image access failed.
+2026-11-23, `phase-13/production-readiness` — fixed CI Node compatibility and OSV scan path; source scan passes locally; GitHub Actions is pending confirmation.
