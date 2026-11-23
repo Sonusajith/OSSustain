@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 12: Research Dashboard, Methodology, and Documentation
-**Current Status:** Phase 11 merged to `main` in PR #11 (`85f6e65`). Phase 12 implementation is complete on `phase-12/research-dashboard`; lint, component tests, and production build passed. Owner review and merge are pending.
+**Current Phase:** Phase 13: Production Readiness
+**Current Status:** Phase 12 merged to `main` in PR #12 (`271b24b`). Phase 13 implementation is ready for review on `phase-13/production-readiness`; CI and merge are pending.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

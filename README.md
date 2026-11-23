@@ -260,3 +260,17 @@ Run the read API integration and migration tests with Docker available:
 ```powershell
 mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test
 ```
+
+## Production container deployment
+
+The production Compose stack is separate from the development PostgreSQL
+service. Copy `deploy/production.env.example` to `deploy/.env.production`, set a
+private database password and the public dashboard URL, then start the stack:
+
+```powershell
+Copy-Item deploy/production.env.example deploy/.env.production
+docker compose --env-file deploy/.env.production -f compose.production.yaml up -d --build
+```
+
+The full clean-machine deployment, backup, restore, security, accessibility, and
+performance guidance is in [`docs/production-readiness.md`](docs/production-readiness.md).
