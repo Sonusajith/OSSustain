@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
 **Current Phase:** Phase 14: Repository Comparison
-**Current Status:** Phase 13 merged to `main` in PR #13 (`9f27bb2`). Phase 14 work is on `phase-14/repository-comparison`.
+**Current Status:** Phase 13 merged to `main` in PR #13 (`9f27bb2`). Phase 14 implementation is on `phase-14/repository-comparison`; all four GitHub Actions jobs passed on `abf21cf`.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

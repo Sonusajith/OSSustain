@@ -12,7 +12,7 @@ Phases 1–13 are complete and merged to main. Phase 13 merged in PR #13 (`9f27b
 Phase 14: Repository Comparison
 
 ## Current Task
-Phase 13 is complete and merged in PR #13 (`9f27bb2`); all four CI jobs passed on code commit `e902581`. Phase 14 Repository Comparison is implemented on `phase-14/repository-comparison` from current `origin/main`; local backend and frontend verification passed, with hosted CI pending.
+Phase 13 is complete and merged in PR #13 (`9f27bb2`); all four CI jobs passed on code commit `e902581`. Phase 14 Repository Comparison is implemented on `phase-14/repository-comparison` from current `origin/main`; local checks and all four GitHub Actions jobs passed on `abf21cf`. The branch is ready for PR review.
 
 ## Last Completed Task
 Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. All four CI jobs passed on implementation commit `e902581`. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured. Phase 12 Research Results and Methodology merged in PR #12 (`271b24b`).
@@ -43,10 +43,10 @@ Phase 13: Production Readiness — merged to main in PR #13 (`9f27bb2`)
 - Phase 7: frozen model grid, train-only preprocessing, validation-only hyperparameter/cutoff selection, held-out test evaluation, cluster-bootstrap intervals and paired feature-family comparison, validation importance, versioned model records, and local artifacts.
 
 ## Features In Progress
-Phase 14: repository comparison API and dashboard are implemented on `phase-14/repository-comparison`; local verification passed and hosted CI/review are pending.
+Phase 14: repository comparison API and dashboard are implemented on `phase-14/repository-comparison`; local verification and GitHub Actions passed, with PR review/merge pending.
 
 ## Pending Tasks
-- Confirm the Phase 14 GitHub Actions run and review/merge the branch after checks pass.
+- Open Phase 14 PR #14 from `phase-14/repository-comparison` and review/merge it. All four GitHub Actions jobs passed on `abf21cf`.
 - Phase 14 has no Stitch comparison design in `UIUX/`; the functional screen follows the existing dashboard, with visual design review pending a supplied reference.
 - Phase 13 release follow-ups: retry the full backend container OS scan (Docker Scout stalled while indexing and prior attempts could not retrieve Java/base-image vulnerability metadata); perform the keyboard walkthrough and Lighthouse audit when a deployment URL is selected.
 - The Phase 12 full pipeline rebuild against a clean database was not repeated; documented pipeline steps and existing live dataset/API verification are available.
@@ -114,7 +114,7 @@ Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Wi
 
 ## Testing Status
 - Phase 13 CI fix verification: GitHub Actions passed backend, container-build, frontend, and pipeline checks on `e902581`. The pinned OSV source scan also passed locally with “No issues found”. A separate Linux Docker test attempt hit the 60-second worker-start timeout on the OneDrive-backed bind mount; hosted CI completed the full frontend test/build successfully.
-- Phase 14 local verification: backend Maven suite — 15 tests passed; frontend — 19 tests passed, ESLint passed, TypeScript/Vite production build passed. API types regenerated from OpenAPI. Local Node is 22.18 (package requirement is >=22.19), so pnpm displayed an engine warning; hosted CI uses Node 22.19. GitHub Actions pending on the pushed branch.
+- Phase 14 verification: backend Maven suite — 15 tests passed; frontend — 19 tests passed, ESLint passed, TypeScript/Vite production build passed. API types regenerated from OpenAPI. Local Node is 22.18 (package requirement is >=22.19), so pnpm displayed an engine warning. All four hosted GitHub Actions jobs (backend, frontend, pipeline, container-build) passed on `abf21cf` using the pinned CI Node version.
 - Python: `pytest pipeline/tests -q` — 80 passed, 1 existing opt-in snapshot DB test skipped. Ruff checks and formatting check for changed files passed. `predict --help` and `explain --help` passed.
 - Backend before Phase 9: 9 tests passed, including fresh V1–V9 migration coverage. Phase 9 final run: `mvn -B -ntp "-Duser.timezone=Asia/Kolkata" -f backend/pom.xml test` — 14 tests passed (5 API integration test groups plus 9 existing migration/health checks); Testcontainers used Docker Desktop.
 - Phase 9 OpenAPI YAML parsed successfully with PyYAML: OpenAPI 3.1, 10 product paths, 17 schemas.
@@ -136,7 +136,7 @@ Phase 13 local stack passed container smoke checks at `http://localhost:8088`; f
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Confirm hosted CI on `phase-14/repository-comparison`, then review and merge the comparison PR. The Phase 14 Stitch design, backend image scan, and hosted keyboard/Lighthouse audit remain follow-ups; no hosted URL is configured.
+Open [the Phase 14 comparison](https://github.com/Sonusajith/OSSustain/compare/main...phase-14/repository-comparison?expand=1), then review and merge the PR. All checks passed. The Phase 14 Stitch design, backend image scan, and hosted keyboard/Lighthouse audit remain follow-ups; no hosted URL is configured.
 
 ## Last Updated
-2026-11-23, `phase-14/repository-comparison` — added comparison API/screen; 15 backend and 19 frontend tests plus lint/build pass locally; hosted CI pending.
+2026-11-23, `phase-14/repository-comparison` — completed comparison API/screen; 15 backend and 19 frontend tests plus lint/build passed locally; all four GitHub Actions jobs passed on `abf21cf`.
