@@ -173,7 +173,8 @@ Phase 1 is complete. Work proceeds in order; do not start a phase before its dep
 Phase 16 has been adopted, so this phase is active.
 - **Goal:** Add account authentication and role-based access around on-demand analysis and administrative operations.
 - **Proposed scope:** Spring Security; researcher and administrator roles; protected analysis operations with ownership checks; an administrator interface for account and job oversight; no public self-registration.
-- **Architecture decision pending:** confirm authentication/session storage and first-administrator provisioning before adding dependencies, migrations, or protected endpoints. See `docs/phase17-architecture-proposal.md`.
+- **Architecture decision:** approved by the project owner: invite-only accounts, environment-bootstrapped first administrator, PostgreSQL-backed sessions, public research reads, owned analysis access, and audited administrator account/job controls. See `docs/phase17-architecture-proposal.md`.
 - **Dependencies:** Phase 16 and its analysis job/result schema.
 - **Testing:** backend authorization and session integration tests; migration tests; frontend login/role/access-denied states; full CI.
 - **Definition of done:** documented secure account provisioning; protected endpoints enforce roles and per-user analysis access; admin actions are audited and tested; no secrets are committed; `Memory.md` records verification and handoff.
+- **Status:** implementation and checks complete on `phase-17/auth-admin`; pull request review and merge are pending.

@@ -329,6 +329,13 @@ def _process(connection: psycopg.Connection[Any], row: tuple[Any, ...], config: 
     if not commits:
         limitations.append("no_observed_commits_in_180_days")
     with connection.transaction():
+        changed = connection.execute(
+            """UPDATE analysis_jobs SET status = 'succeeded', finished_at = now(),
+               lease_until = NULL WHERE id = %s AND status = 'running' RETURNING id""",
+            (job_id,),
+        ).fetchone()
+        if changed is None:
+            return
         connection.execute(
             """INSERT INTO analysis_results
                (job_id, repository_full_name, model_version_id, probability, risk_category,
@@ -349,11 +356,6 @@ def _process(connection: psycopg.Connection[Any], row: tuple[Any, ...], config: 
                 Jsonb(prediction["indicators"]),
                 total_requests,
             ),
-        )
-        connection.execute(
-            """UPDATE analysis_jobs SET status = 'succeeded', finished_at = now(),
-               lease_until = NULL WHERE id = %s""",
-            (job_id,),
         )
 
 
@@ -424,7 +426,7 @@ def run_worker(config_path: Path, *, poll_seconds: int = 5, once: bool = False) 
                 connection.execute(
                     """UPDATE analysis_jobs SET status = %s, error_code = %s,
                        finished_at = CASE WHEN %s = 'failed' THEN now() ELSE NULL END,
-                       lease_until = NULL WHERE id = %s""",
+                       lease_until = NULL WHERE id = %s AND status = 'running'""",
                     (status, code, status, job[0]),
                 )
             if once:

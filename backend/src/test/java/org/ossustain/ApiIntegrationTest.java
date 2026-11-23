@@ -14,9 +14,13 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 
 import java.net.URI;
+import java.net.CookieManager;
+import java.net.CookiePolicy;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -34,6 +38,8 @@ class ApiIntegrationTest {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
+        registry.add("ossustain.security.bootstrap-admin-username", () -> "phase17admin");
+        registry.add("ossustain.security.bootstrap-admin-password", () -> "test-bootstrap-password-2026");
     }
 
     @Autowired
@@ -44,6 +50,8 @@ class ApiIntegrationTest {
 
     private long alphaId;
     private long betaId;
+    private final CookieManager cookies = new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+    private final HttpClient client = HttpClient.newBuilder().cookieHandler(cookies).build();
 
     @BeforeEach
     void seedResearchData() {
@@ -172,12 +180,13 @@ class ApiIntegrationTest {
 
     @Test
     void analysisSubmissionIsBoundedDurableAndReadable() throws Exception {
+        loginAsAdmin();
         HttpResponse<String> invalid = post("/api/v1/analyses", "{\"repository\":\"https://github.com/acme/repo\"}");
         assertThat(invalid.statusCode()).isEqualTo(400);
         assertThat(invalid.body()).contains("invalid_repository");
 
         HttpResponse<String> accepted = post("/api/v1/analyses", "{\"repository\":\"Acme/PublicRepo\"}");
-        assertThat(accepted.statusCode()).isEqualTo(202);
+        assertThat(accepted.statusCode()).as(accepted.body()).isEqualTo(202);
         assertThat(accepted.body()).contains("\"repository\":\"acme/publicrepo\"", "\"status\":\"queued\"");
         String id = accepted.body().replaceAll(".*\\\"id\\\":\\\"([^\\\"]+)\\\".*", "$1");
 
@@ -194,6 +203,104 @@ class ApiIntegrationTest {
         HttpResponse<String> status = get("/api/v1/analyses/" + id);
         assertThat(status.statusCode()).isEqualTo(200);
         assertThat(status.body()).contains("\"status\":\"queued\"");
+    }
+
+    @Test
+    void analysisRequiresAuthenticationWhileResearchReadsRemainPublic() throws Exception {
+        assertThat(get("/api/v1/repositories?page=0&pageSize=1").statusCode()).isEqualTo(200);
+        assertThat(get("/api/v1/analyses/00000000-0000-0000-0000-000000000001").statusCode())
+                .isEqualTo(401);
+        assertThat(post("/api/v1/analyses", "{\"repository\":\"acme/publicrepo\"}").statusCode())
+                .isEqualTo(401);
+        assertThat(get("/api/v1/admin/users").statusCode()).isEqualTo(401);
+    }
+
+    @Test
+    void administratorCanCreateResearcherAndDisableIsAudited() throws Exception {
+        loginAsAdmin();
+        HttpResponse<String> created = post("/api/v1/admin/users",
+                "{\"username\":\"researcher-one\",\"role\":\"RESEARCHER\"}");
+        assertThat(created.statusCode()).isEqualTo(201);
+        assertThat(created.body()).contains("researcher-one", "RESEARCHER", "temporaryPassword");
+        Matcher idMatcher = Pattern.compile("\\\"id\\\":(\\d+)").matcher(created.body());
+        assertThat(idMatcher.find()).isTrue();
+        long userId = Long.parseLong(idMatcher.group(1));
+        CookieManager researcherCookies = new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+        HttpClient researcherClient = HttpClient.newBuilder().cookieHandler(researcherCookies).build();
+        loginAs(researcherClient, "researcher-one", temporaryPassword(created.body()));
+
+        HttpResponse<String> users = get("/api/v1/admin/users?page=0&pageSize=10");
+        assertThat(users.statusCode()).isEqualTo(200);
+        assertThat(users.body()).contains("researcher-one", "phase17admin");
+
+        HttpResponse<String> disabled = patch("/api/v1/admin/users/" + userId + "/enabled",
+                "{\"enabled\":false}");
+        assertThat(disabled.statusCode()).isEqualTo(200);
+        assertThat(disabled.body()).contains("\"enabled\":false");
+        assertThat(get(researcherClient, "/api/v1/auth/me").statusCode()).isEqualTo(401);
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM admin_audit_events WHERE target_id = ? AND action = 'user_disabled'",
+                Integer.class, Long.toString(userId))).isEqualTo(1);
+
+        HttpResponse<String> lastAdmin = patch("/api/v1/admin/users/" +
+                jdbcTemplate.queryForObject("SELECT id FROM app_users WHERE username = 'phase17admin'", Long.class) +
+                "/enabled", "{\"enabled\":false}");
+        assertThat(lastAdmin.statusCode()).isEqualTo(409);
+        assertThat(lastAdmin.body()).contains("last_admin");
+    }
+
+    @Test
+    void analysisJobsArePrivateToTheirOwnerAndAdministratorsCanCancelThem() throws Exception {
+        loginAsAdmin();
+        HttpResponse<String> firstCreated = post("/api/v1/admin/users",
+                "{\"username\":\"owner-one\",\"role\":\"RESEARCHER\"}");
+        assertThat(firstCreated.statusCode()).isEqualTo(201);
+        String firstPassword = temporaryPassword(firstCreated.body());
+        CookieManager firstCookies = new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+        HttpClient firstClient = HttpClient.newBuilder().cookieHandler(firstCookies).build();
+        loginAs(firstClient, "owner-one", firstPassword);
+
+        HttpResponse<String> csrfRejected = sendPost(firstClient, "/api/v1/analyses",
+                "{\"repository\":\"acme/owner-private\"}", "");
+        assertThat(csrfRejected.statusCode()).isEqualTo(403);
+        assertThat(get(firstClient, "/api/v1/admin/users").statusCode()).isEqualTo(403);
+        HttpResponse<String> submitted = sendPost(firstClient, "/api/v1/analyses",
+                "{\"repository\":\"acme/owner-private\"}", csrfToken(firstClient));
+        assertThat(submitted.statusCode()).as(submitted.body()).isEqualTo(202);
+        String jobId = analysisId(submitted.body());
+        assertThat(get(firstClient, "/api/v1/analyses/" + jobId).statusCode()).isEqualTo(200);
+
+        HttpResponse<String> secondCreated = post("/api/v1/admin/users",
+                "{\"username\":\"owner-two\",\"role\":\"RESEARCHER\"}");
+        assertThat(secondCreated.statusCode()).isEqualTo(201);
+        CookieManager secondCookies = new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+        HttpClient secondClient = HttpClient.newBuilder().cookieHandler(secondCookies).build();
+        loginAs(secondClient, "owner-two", temporaryPassword(secondCreated.body()));
+        HttpResponse<String> hidden = get(secondClient, "/api/v1/analyses/" + jobId);
+        assertThat(hidden.statusCode()).isEqualTo(404);
+        assertThat(hidden.body()).contains("analysis_not_found");
+
+        HttpResponse<String> cancelled = post("/api/v1/admin/analyses/" + jobId + "/cancel", "{}");
+        assertThat(cancelled.statusCode()).isEqualTo(200);
+        assertThat(cancelled.body()).contains("\"status\":\"failed\"", "cancelled_by_admin");
+        assertThat(jdbcTemplate.queryForObject(
+                "SELECT count(*) FROM admin_audit_events WHERE target_id = ? AND action = 'analysis_cancelled'",
+                Integer.class, jobId)).isEqualTo(1);
+    }
+
+    @Test
+    void loginRejectsInvalidCredentialsAndLogoutInvalidatesTheSession() throws Exception {
+        CookieManager unauthenticatedCookies = new CookieManager(null, CookiePolicy.ACCEPT_ORIGINAL_SERVER);
+        HttpClient unauthenticatedClient = HttpClient.newBuilder().cookieHandler(unauthenticatedCookies).build();
+        HttpResponse<String> denied = sendPost(unauthenticatedClient, "/api/v1/auth/login",
+                "{\"username\":\"missing-user\",\"password\":\"wrong-password\"}",
+                csrfToken(unauthenticatedClient));
+        assertThat(denied.statusCode()).isEqualTo(401);
+        assertThat(denied.body()).contains("invalid_credentials");
+
+        loginAsAdmin();
+        assertThat(post("/api/v1/auth/logout", "{}").statusCode()).isEqualTo(204);
+        assertThat(get("/api/v1/auth/me").statusCode()).isEqualTo(401);
     }
 
     @Test
@@ -321,16 +428,85 @@ class ApiIntegrationTest {
     }
 
     private HttpResponse<String> get(String path) throws Exception {
+        return get(client, path);
+    }
+
+    private HttpResponse<String> get(HttpClient httpClient, String path) throws Exception {
         HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                 .GET().build();
-        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     private HttpResponse<String> post(String path, String body) throws Exception {
+        return sendPost(client, path, body, csrfToken(client));
+    }
+
+    private HttpResponse<String> patch(String path, String body) throws Exception {
         HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
                 .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                .header("X-CSRF-TOKEN", csrfToken(client))
+                .method("PATCH", HttpRequest.BodyPublishers.ofString(body)).build();
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private HttpResponse<String> sendPost(HttpClient httpClient, String path, String body, String csrf)
+            throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + path))
+                .header(HttpHeaders.CONTENT_TYPE, "application/json")
+                .header("X-CSRF-TOKEN", csrf)
                 .POST(HttpRequest.BodyPublishers.ofString(body)).build();
-        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        return httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+    }
+
+    private String csrfToken(HttpClient httpClient) throws Exception {
+        HttpRequest request = HttpRequest.newBuilder(URI.create("http://localhost:" + port + "/api/v1/auth/csrf"))
+                .GET().build();
+        HttpResponse<String> response = httpClient.send(request, HttpResponse.BodyHandlers.ofString());
+        assertThat(response.statusCode()).isEqualTo(200);
+        Matcher matcher = Pattern.compile("\\\"token\\\":\\\"([^\\\"]+)\\\"").matcher(response.body());
+        assertThat(matcher.find()).isTrue();
+        return matcher.group(1);
+    }
+
+    private void loginAsAdmin() throws Exception {
+        HttpResponse<String> login = sendPost(client, "/api/v1/auth/login",
+                "{\"username\":\"phase17admin\",\"password\":\"test-bootstrap-password-2026\"}",
+                csrfToken(client));
+        if (login.statusCode() == 401) {
+            login = sendPost(client, "/api/v1/auth/login",
+                    "{\"username\":\"phase17admin\",\"password\":\"test-research-admin-password-2026\"}",
+                    csrfToken(client));
+        }
+        assertThat(login.statusCode()).isEqualTo(200);
+        if (login.body().contains("\"mustChangePassword\":true")) {
+            HttpResponse<String> changed = post("/api/v1/auth/password",
+                    "{\"currentPassword\":\"test-bootstrap-password-2026\",\"newPassword\":\"test-research-admin-password-2026\"}");
+            assertThat(changed.statusCode()).isEqualTo(200);
+        }
+    }
+
+    private void loginAs(HttpClient httpClient, String username, String password) throws Exception {
+        HttpResponse<String> login = sendPost(httpClient, "/api/v1/auth/login",
+                "{\"username\":\"" + username + "\",\"password\":\"" + password + "\"}",
+                csrfToken(httpClient));
+        assertThat(login.statusCode()).as(login.body()).isEqualTo(200);
+        assertThat(login.body()).contains("\"mustChangePassword\":true");
+        HttpResponse<String> changed = sendPost(httpClient, "/api/v1/auth/password",
+                "{\"currentPassword\":\"" + password + "\",\"newPassword\":\"researcher-new-password-2026\"}",
+                csrfToken(httpClient));
+        assertThat(changed.statusCode()).as(changed.body()).isEqualTo(200);
+    }
+
+    private static String temporaryPassword(String responseBody) {
+        Matcher matcher = Pattern.compile("\\\"temporaryPassword\\\":\\\"([^\\\"]+)\\\"").matcher(responseBody);
+        assertThat(matcher.find()).isTrue();
+        return matcher.group(1);
+    }
+
+    private static String analysisId(String responseBody) {
+        Matcher matcher = Pattern.compile("\\\"id\\\":\\\"([^\\\"]+)\\\"").matcher(responseBody);
+        assertThat(matcher.find()).isTrue();
+        return matcher.group(1);
     }
 
     private HttpResponse<String> options(String path, String origin) throws Exception {
@@ -339,7 +515,7 @@ class ApiIntegrationTest {
                 .header(HttpHeaders.ACCESS_CONTROL_REQUEST_METHOD, "GET")
                 .method("OPTIONS", HttpRequest.BodyPublishers.noBody())
                 .build();
-        return HttpClient.newHttpClient().send(request, HttpResponse.BodyHandlers.ofString());
+        return client.send(request, HttpResponse.BodyHandlers.ofString());
     }
 
     private long insertRepository(long githubId, String fullName, String sizeGroup, int stars) {

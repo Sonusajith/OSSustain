@@ -31,6 +31,9 @@ services:
       FRONTEND_ORIGIN: ${FRONTEND_ORIGIN:?Set FRONTEND_ORIGIN in deploy/.env.production}
       FRONTEND_URL: ${FRONTEND_URL:?Set FRONTEND_URL in deploy/.env.production}
       OSSUSTAIN_ANALYSIS_IP_HASH_SECRET: ${OSSUSTAIN_ANALYSIS_IP_HASH_SECRET:?Set OSSUSTAIN_ANALYSIS_IP_HASH_SECRET in deploy/.env.production}
+      OSSUSTAIN_ADMIN_USERNAME: ${OSSUSTAIN_ADMIN_USERNAME:?Set OSSUSTAIN_ADMIN_USERNAME in deploy/.env.production}
+      OSSUSTAIN_ADMIN_PASSWORD: ${OSSUSTAIN_ADMIN_PASSWORD:?Set OSSUSTAIN_ADMIN_PASSWORD in deploy/.env.production}
+      SESSION_COOKIE_SECURE: "true"
     depends_on:
       postgres:
         condition: service_healthy

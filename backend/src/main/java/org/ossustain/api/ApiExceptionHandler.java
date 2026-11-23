@@ -8,23 +8,28 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.HttpRequestMethodNotSupportedException;
 import org.springframework.web.bind.MissingServletRequestParameterException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 import org.springframework.web.method.annotation.MethodArgumentTypeMismatchException;
 import org.springframework.web.servlet.resource.NoResourceFoundException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.time.OffsetDateTime;
 import java.time.ZoneOffset;
 
 @RestControllerAdvice
 public class ApiExceptionHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(ApiExceptionHandler.class);
+
     @ExceptionHandler(ApiException.class)
     ResponseEntity<ApiErrorResponse> handleApiException(ApiException error, HttpServletRequest request) {
         return response(error.status(), error.code(), error.getMessage(), request);
     }
 
     @ExceptionHandler({MethodArgumentTypeMismatchException.class, MissingServletRequestParameterException.class,
-            HttpMessageNotReadableException.class})
+            HttpMessageNotReadableException.class, MethodArgumentNotValidException.class})
     ResponseEntity<ApiErrorResponse> handleInvalidParameter(Exception error, HttpServletRequest request) {
         return response(HttpStatus.BAD_REQUEST, "invalid_parameter",
                 "A request value has an invalid format or type.", request);
@@ -44,12 +49,14 @@ public class ApiExceptionHandler {
 
     @ExceptionHandler(DataAccessException.class)
     ResponseEntity<ApiErrorResponse> handleDatabaseFailure(DataAccessException error, HttpServletRequest request) {
+        LOGGER.error("Database request failed for {}", request.getRequestURI(), error);
         return response(HttpStatus.INTERNAL_SERVER_ERROR, "data_access_error",
                 "The requested data could not be read.", request);
     }
 
     @ExceptionHandler(Exception.class)
     ResponseEntity<ApiErrorResponse> handleUnexpectedFailure(Exception error, HttpServletRequest request) {
+        LOGGER.error("Unhandled request failure for {}", request.getRequestURI(), error);
         return response(HttpStatus.INTERNAL_SERVER_ERROR, "internal_error",
                 "The request could not be completed.", request);
     }
