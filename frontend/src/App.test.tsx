@@ -207,6 +207,58 @@ function renderApp(entry = '/') {
 }
 
 describe('Dashboard screens', () => {
+  it('compares two selected repositories using stored metrics', async () => {
+    const user = userEvent.setup()
+    installApi()
+    server.use(http.get('*/api/v1/repositories', async () => {
+      await delay(100)
+      return HttpResponse.json({ content: repositoryRows, page: 0, pageSize: 100, totalElements: repositoryRows.length, totalPages: 1 })
+    }))
+    server.use(http.get('*/api/v1/compare', ({ request }) => {
+      const url = new URL(request.url)
+      expect(url.searchParams.get('ids')).toBe('11,12')
+      return HttpResponse.json({
+        repositories: [
+          { repository: repositoryRows[0], latestMetrics: { predictionDate: '2024-02-01', metrics: { commits_30d: 12, commits_90d: 25, active_contributors_90d: 7, newcomer_retention_rate_90d: 0.5 }, completeness: {} } },
+          { repository: repositoryRows[1], latestMetrics: null },
+        ],
+      })
+    }))
+    renderApp('/compare')
+
+    expect(screen.getByText('Loading the current cohort…')).toBeInTheDocument()
+    expect(await screen.findByRole('heading', { name: 'Compare repositories' })).toBeInTheDocument()
+    await user.click(await screen.findByRole('checkbox', { name: /acme\/alpha/i }))
+    expect(screen.getByText('1 of 4 selected · choose at least 2')).toBeInTheDocument()
+    await user.click(screen.getByRole('checkbox', { name: /acme\/beta/i }))
+
+    const table = await screen.findByRole('table', { name: 'Repository comparison metrics' })
+    expect(screen.getByRole('heading', { name: 'Side-by-side metrics' })).toBeInTheDocument()
+    expect(within(table).getByText('Commits · 30 days')).toBeInTheDocument()
+    expect(within(table).getByText('12')).toBeInTheDocument()
+    expect(within(table).getAllByText('Not available').length).toBeGreaterThan(0)
+    expect(screen.getByLabelText('Current URL query')).toHaveTextContent('ids=11%2C12')
+  })
+
+  it('shows comparison API errors with retry and an empty cohort state', async () => {
+    const user = userEvent.setup()
+    installApi()
+    server.use(http.get('*/api/v1/compare', () => HttpResponse.json({ message: 'Comparison unavailable.' }, { status: 503 })))
+    renderApp('/compare?ids=11,12')
+
+    expect(await screen.findByText('Comparison unavailable.')).toBeInTheDocument()
+    server.use(http.get('*/api/v1/compare', () => HttpResponse.json({ repositories: [
+      { repository: repositoryRows[0], latestMetrics: null },
+      { repository: repositoryRows[1], latestMetrics: null },
+    ] })))
+    await user.click(screen.getByRole('button', { name: 'Try again' }))
+    expect(await screen.findByRole('heading', { name: 'Side-by-side metrics' })).toBeInTheDocument()
+
+    server.use(http.get('*/api/v1/repositories', () => HttpResponse.json({ content: [], page: 0, pageSize: 100, totalElements: 0, totalPages: 0 })))
+    renderApp('/compare')
+    expect(await screen.findByText('There are no repositories in the current cohort.')).toBeInTheDocument()
+  })
+
   it('loads the live cohort and dataset summary', async () => {
     installApi()
     renderApp()

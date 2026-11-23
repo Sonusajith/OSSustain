@@ -200,6 +200,32 @@ class ApiIntegrationTest {
     }
 
     @Test
+    void comparisonEndpointReturnsSelectedCohortRepositoriesInRequestOrder() throws Exception {
+        HttpResponse<String> response = get("/api/v1/compare?ids=" + betaId + "," + alphaId);
+        assertThat(response.statusCode()).isEqualTo(200);
+        assertThat(response.body()).contains("test/beta", "test/alpha", "\"commits_90d\":30",
+                "\"latestRiskCategory\":\"high\"");
+        assertThat(response.body().indexOf("test/beta"))
+                .isLessThan(response.body().indexOf("test/alpha"));
+
+        response = get("/api/v1/compare?ids=" + alphaId);
+        assertThat(response.statusCode()).isEqualTo(400);
+        assertThat(response.body()).contains("invalid_parameter");
+
+        response = get("/api/v1/compare?ids=" + alphaId + "," + betaId + "," + alphaId + "," + betaId + "," + alphaId);
+        assertThat(response.statusCode()).isEqualTo(400);
+        assertThat(response.body()).contains("between 2 and 4");
+
+        response = get("/api/v1/compare?ids=" + alphaId + "," + alphaId);
+        assertThat(response.statusCode()).isEqualTo(400);
+        assertThat(response.body()).contains("unique");
+
+        response = get("/api/v1/compare?ids=" + alphaId + ",999999");
+        assertThat(response.statusCode()).isEqualTo(404);
+        assertThat(response.body()).contains("repository_not_found");
+    }
+
+    @Test
     void researchEndpointsReturnModelsEvaluationsImportanceAndVersionedDefinitions() throws Exception {
         HttpResponse<String> response = get("/api/v1/research/models");
         assertThat(response.statusCode()).isEqualTo(200);
@@ -251,7 +277,7 @@ class ApiIntegrationTest {
         HttpResponse<String> response = get("/api/v1");
         assertThat(response.statusCode()).isEqualTo(200);
         assertThat(response.body()).contains("OSSustain Read API", "http://localhost:5173",
-                "/api/v1/research", "/openapi.yaml");
+                "/api/v1/research", "/api/v1/compare", "/openapi.yaml");
 
         response = options("/api/v1/repositories", "http://localhost:5173");
         assertThat(response.statusCode()).isEqualTo(200);
@@ -263,7 +289,7 @@ class ApiIntegrationTest {
 
         response = get("/openapi.yaml");
         assertThat(response.statusCode()).isEqualTo(200);
-        assertThat(response.body()).contains("openapi: 3.1.0", "/research/models");
+        assertThat(response.body()).contains("openapi: 3.1.0", "/research/models", "/compare");
     }
 
     private HttpResponse<String> get(String path) throws Exception {

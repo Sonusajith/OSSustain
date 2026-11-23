@@ -4,6 +4,7 @@ export type Repository = components['schemas']['RepositorySummary']
 export type RepositoryDetail = components['schemas']['RepositoryDetail']
 export type RepositoryPage = paths['/repositories']['get']['responses'][200]['content']['application/json']
 export type RepositoryMetrics = paths['/repositories/{id}/metrics']['get']['responses'][200]['content']['application/json']
+export type RepositoryComparison = paths['/compare']['get']['responses'][200]['content']['application/json']
 export type Prediction = components['schemas']['Prediction']
 export type PredictionDetail = components['schemas']['PredictionDetail']
 export type PredictionIndicator = PredictionDetail['indicators'][number]
@@ -81,6 +82,11 @@ export function getRepositoryDetail(repositoryId: number, signal?: AbortSignal):
 
 export function getRepositoryMetrics(repositoryId: number, signal?: AbortSignal): Promise<RepositoryMetrics> {
   return getJson<RepositoryMetrics>(`/repositories/${repositoryId}/metrics`, signal)
+}
+
+export function getRepositoryComparison(repositoryIds: number[], signal?: AbortSignal): Promise<RepositoryComparison> {
+  const query = new URLSearchParams({ ids: repositoryIds.join(',') })
+  return getJson<RepositoryComparison>(`/compare?${query.toString()}`, signal)
 }
 
 export function getPredictionHistory(repositoryId: number, signal?: AbortSignal): Promise<PredictionHistory> {
