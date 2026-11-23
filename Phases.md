@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 15: SHAP and Robustness Analyses
-**Current Status:** Phase 14 merged to `main` in PR #14 (`70a21a3`). Phase 15 implementation and local verification are complete on `phase-15/shap-robustness`; PR review/merge is pending.
+**Current Phase:** Phase 16: On-Demand Repository Analysis
+**Current Status:** Phase 15 merged to `main` in PR #15 (`0b961cc`, implementation `9eb0564`). Phase 16 is at architecture design on `phase-16/on-demand-analysis`; implementation awaits explicit architecture approval.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
@@ -163,7 +163,11 @@ Phase 1 is complete. Work proceeds in order; do not start a phase before its dep
 - **Definition of done:** stored explanations and robustness metrics use the declared protocols, are served and displayed with clear method labels, targeted tests pass, and `Memory.md` records verification.
 
 ### Phase 16: On-Demand Repository Analysis
-Collection and prediction for user-submitted repositories (requires an architecture revision: job handling, live-inference path, rate-limit strategy). Depends on Phase 13; requires an explicit approved architecture change first.
+- **Goal:** Collect data and produce a prediction for a user-submitted public GitHub repository.
+- **Architecture gate:** Requires an explicitly approved Architecture.md revision before implementation. Resolve durable job handling, live-inference path, GitHub token ownership, rate limits/abuse controls, data retention, and deployment.
+- **Dependencies:** Phase 13; API, collection pipeline, trained model artifacts, and prediction code from earlier phases.
+- **Current status:** Design only. No endpoint, schema, worker, or UI implementation may begin until the architecture revision is approved.
+- **Definition of done:** To be specified in the approved architecture revision before implementation starts.
 
 ### Phase 17: Authentication and Admin (conditional)
 Only if Phase 16 or admin features are adopted. Spring Security, roles, protected endpoints.

@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python offline pipeline → PostgreSQL → Spring Boot read API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–14 are complete and merged to `main`; Phase 14 merged in PR #14 (`70a21a3`). Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–15 are complete and merged to `main`; Phase 15 merged in PR #15 (`0b961cc`, implementation `9eb0564`). Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 15: SHAP and Robustness Analyses
+Phase 16: On-Demand Repository Analysis
 
 ## Current Task
-Phase 14 is complete and merged in PR #14 (`70a21a3`). Phase 15 is implemented on `phase-15/shap-robustness`: pinned SHAP probability explanations, held-out target-definition sensitivity analyses, API method labels, and research dashboard results. Local pipeline/backend/frontend checks pass; the Phase 15 branch is ready for PR review.
+Phase 15 SHAP and Robustness Analyses is complete and merged in PR #15 (`0b961cc`, implementation `9eb0564`). Phase 16 On-Demand Repository Analysis is the current phase on `phase-16/on-demand-analysis`. No implementation has started: `Phases.md` and `Architecture.md` require an explicitly approved architecture change covering job handling, live inference, and GitHub rate limits. The architecture proposal is awaiting owner approval.
 
 ## Last Completed Task
-Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
+Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
 
 ## Completed Phases
 Phase 1: Foundation
@@ -32,6 +32,7 @@ Phase 11: Repository Detail Screen — merged to main in PR #11 (`85f6e65`)
 Phase 12: Research Dashboard, Methodology, and Documentation — merged to main in PR #12 (`271b24b`)
 Phase 13: Production Readiness — merged to main in PR #13 (`9f27bb2`)
 Phase 14: Repository Comparison — merged to main in PR #14 (`70a21a3`)
+Phase 15: SHAP and Robustness Analyses — merged to main in PR #15 (`0b961cc`)
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -45,11 +46,12 @@ Phase 14: Repository Comparison — merged to main in PR #14 (`70a21a3`)
 - Phase 15 implementation: selected fitted models use probability-scale SHAP attributions with a validation-only background; the rule baseline retains its separately named substitution explanation. The research dashboard compares fixed selected-model test scores against θ 0.30/0.70 and commits-plus-merged-PR outcomes, with repository-cluster intervals.
 
 ## Features In Progress
-Phase 15 implementation and local verification are complete on `phase-15/shap-robustness`; PR review/merge is pending.
+Phase 16 is at architecture design. Awaiting explicit approval of the on-demand job, inference, deployment, and rate-limit architecture before implementation.
 
 ## Pending Tasks
-- Open the Phase 15 PR from `phase-15/shap-robustness` and review/merge it.
-- Phase 15 has no Stitch design in `UIUX/`; additions extend existing screens and need visual review if a new reference is supplied.
+- Approve the Phase 16 architecture proposal before implementation; the existing architecture prohibits runtime analysis without this decision.
+- Review `docs/phase16-architecture-proposal.md`; its recommended DB-backed worker design, limits, retention, public access, and model artifact delivery need owner approval or revision.
+- Phase 15 has no Stitch design in `UIUX/`; additions extend existing screens and can receive visual review if a reference is supplied.
 - Phase 13 release follow-ups: retry the full backend container OS scan (Docker Scout stalled while indexing and prior attempts could not retrieve Java/base-image vulnerability metadata); perform the keyboard walkthrough and Lighthouse audit when a deployment URL is selected.
 - The Phase 12 full pipeline rebuild against a clean database was not repeated; documented pipeline steps and existing live dataset/API verification are available.
 - Local detailed reports remain ignored in `pipeline/data/reports/`; aggregate results are committed in `docs/phase4-data-quality.md` and `docs/phase5-snapshots.md`.
@@ -58,7 +60,7 @@ Phase 15 implementation and local verification are complete on `phase-15/shap-ro
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-GitHub CLI is unavailable, so create the Phase 15 PR through GitHub’s compare page. A full backend container OS scan could not complete: Docker Scout stalled during local image indexing and earlier attempts could not fetch Java/base-image vulnerability metadata. This is a Phase 13 release follow-up, not a Phase 15 blocker. Port 8080 returned 403 in a previous workstation session, so the isolated production smoke deployment uses port 8088. The Stitch HTML contains unsupported sample claims and figures; it was used only as visual reference, and displayed results come from the real API records.
+Phase 16 implementation is blocked pending explicit architecture approval for the new job flow, live inference path, and rate-limit policy. GitHub CLI is unavailable, but Phase 15 was merged as PR #15. A full backend container OS scan could not complete: Docker Scout stalled while indexing and prior attempts could not fetch Java/base-image vulnerability metadata. This is a Phase 13 release follow-up. The Stitch HTML contains unsupported sample claims and figures; it was used only as visual reference, and displayed results come from real API records.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -143,7 +145,7 @@ Phase 13 local stack passed container smoke checks at `http://localhost:8088`; f
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Open [the Phase 15 comparison](https://github.com/Sonusajith/OSSustain/compare/main...phase-15/shap-robustness?expand=1), then review and merge the PR. Local tests, lint, build, and dependency audit passed. Hosted GitHub Actions remain to run; the Phase 13 backend image scan and hosted keyboard/Lighthouse audit remain follow-ups.
+Review the Phase 16 architecture proposal and explicitly approve the job, inference, and rate-limit design before implementation. Phase 15 is merged in PR #15 (`0b961cc`).
 
 ## Last Updated
-2026-11-23, `phase-15/shap-robustness` — completed SHAP/robustness implementation and refreshed local results; 82 pipeline and 15 backend tests, 19 frontend tests, lint/build, and dependency audit passed.
+2026-11-23, `phase-16/on-demand-analysis` — verified Phase 15 merged in PR #15 (`0b961cc`), synced `main`, and began Phase 16 architecture discovery; implementation awaits explicit architecture approval.
