@@ -12,7 +12,7 @@ Phases 1–15 are complete and merged to `main`; Phase 15 merged in PR #15 (`0b9
 Phase 16: On-Demand Repository Analysis
 
 ## Current Task
-Phase 15 is merged in PR #15 (`0b961cc`, implementation `9eb0564`). Phase 16 is implemented and verified on `phase-16/on-demand-analysis`; the approved DB-backed worker design is documented in `Architecture.md`. The branch is ready to push for review.
+Phase 15 is merged in PR #15 (`0b961cc`, implementation `9eb0564`). Phase 16 is implemented, verified, and pushed to `phase-16/on-demand-analysis` at `b0c87ee`; the approved DB-backed worker design is documented in `Architecture.md`. Open the compare link in the GitHub web UI to create the PR.
 
 ## Last Completed Task
 Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
@@ -47,10 +47,10 @@ Phase 15: SHAP and Robustness Analyses — merged to main in PR #15 (`0b961cc`)
 - Phase 16: Flyway V11 stores durable public-repository analysis jobs/results outside the frozen research dataset. Spring exposes `POST /api/v1/analyses` and `GET /api/v1/analyses/{id}`; the Python worker claims jobs with `SKIP LOCKED`, verifies public visibility, collects a 180-day window, reserves job/global request budgets transactionally, and scores with the validation-selected artifact. React `/analyze` submits and polls jobs and displays results, limitations, and indicators. Raw responses stay in memory; metadata expires after 30 days and successful compact results are reused for 24 hours.
 
 ## Features In Progress
-Phase 16 implementation and verification are complete; ready to push for review. No Phase 17 work has started.
+Phase 16 implementation and verification are complete; branch `phase-16/on-demand-analysis` is pushed for review. No Phase 17 work has started.
 
 ## Pending Tasks
-- Push the completed Phase 16 branch and open its pull request. GitHub CLI is unavailable; use the branch compare page to open the PR.
+- Open and review the Phase 16 pull request from `https://github.com/Sonusajith/OSSustain/compare/main...phase-16/on-demand-analysis?expand=1`; GitHub CLI is unavailable in the workspace.
 - Before release, run one live public-repository analysis against the configured local stack and selected model artifacts; CI intentionally uses no live GitHub calls.
 - Phase 16 has no dedicated Stitch design; screen follows the current dashboard style and should receive visual review.
 - Phase 15 has no Stitch design in `UIUX/`; additions extend existing screens and can receive visual review if a reference is supplied.
@@ -62,7 +62,7 @@ Phase 16 implementation and verification are complete; ready to push for review.
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-No Phase 16 implementation blockers. A live GitHub analysis has not been run. GitHub CLI is unavailable, so the pull request must be opened through GitHub's web interface. Phase 13 release follow-ups remain: hosted keyboard/Lighthouse audit when a deployment URL exists and a full backend container OS scan. The Stitch HTML remains visual reference only; unsupported sample claims and figures were not used.
+No Phase 16 implementation blockers. A live GitHub analysis has not been run. GitHub CLI is unavailable, so create the pull request through GitHub's web interface. Phase 13 release follow-ups remain: hosted keyboard/Lighthouse audit when a deployment URL exists and a full backend container OS scan. The Stitch HTML remains visual reference only; unsupported sample claims and figures were not used.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -149,7 +149,7 @@ Phase 13 local stack passed container smoke checks at `http://localhost:8088`; f
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Push the completed Phase 16 branch and open its pull request. After merge, confirm before beginning the conditional Phase 17 authentication work.
+Open and review the Phase 16 pull request at `https://github.com/Sonusajith/OSSustain/compare/main...phase-16/on-demand-analysis?expand=1`. After it is merged, confirm before beginning the conditional Phase 17 authentication work.
 
 ## Last Updated
-2026-11-23, `phase-16/on-demand-analysis` — implemented database-backed public-repository jobs, bounded Python inference worker, analysis UI, V11 schema, and setup docs; pipeline 86 passed/1 skipped, backend 16 passed, frontend 21 passed, Compose and worker artifact path validated.
+2026-11-23, `phase-16/on-demand-analysis` — pushed Phase 16 as `b0c87ee`; database-backed public-repository jobs, bounded Python inference worker, analysis UI, V11 schema, and setup docs; pipeline 86 passed/1 skipped, backend 16 passed, frontend 21 passed, Compose and worker artifact path validated.
