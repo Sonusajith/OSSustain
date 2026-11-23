@@ -5,7 +5,7 @@
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
-**Classification:** Foundation: Phase 1. MVP: Phases 2–12. **MVP completion milestone:** end of Phase 12. Production readiness: Phase 13. Post-MVP: Phases 14–17.
+**Classification:** Foundation: Phase 1. MVP: Phases 2–12. **MVP completion milestone:** end of Phase 12. Production readiness: Phase 13. Post-MVP: Phases 14–17. All defined phases are complete; the next phase has not been scoped.
 
 ---
 
@@ -170,11 +170,11 @@ Phase 1 is complete. Work proceeds in order; do not start a phase before its dep
 - **Definition of done:** public-only repository submission and status API; durable bounded jobs and results isolated from research data; a restart-safe Python worker collects within the approved budget and scores with an existing selected artifact; accessible UI with loading/empty/error/success states; setup and retention documented; backend, worker, and frontend verification passes; `Memory.md` records handoff.
 
 ### Phase 17: Authentication and Admin (conditional)
-Phase 16 has been adopted, so this phase is active.
+Phase 16 was adopted and Phase 17 is complete.
 - **Goal:** Add account authentication and role-based access around on-demand analysis and administrative operations.
-- **Proposed scope:** Spring Security; researcher and administrator roles; protected analysis operations with ownership checks; an administrator interface for account and job oversight; no public self-registration.
+- **Scope:** Spring Security; researcher and administrator roles; protected analysis operations with ownership checks; an administrator interface for account and job oversight; no public self-registration.
 - **Architecture decision:** approved by the project owner: invite-only accounts, environment-bootstrapped first administrator, PostgreSQL-backed sessions, public research reads, owned analysis access, and audited administrator account/job controls. See `docs/phase17-architecture-proposal.md`.
 - **Dependencies:** Phase 16 and its analysis job/result schema.
 - **Testing:** backend authorization and session integration tests; migration tests; frontend login/role/access-denied states; full CI.
 - **Definition of done:** documented secure account provisioning; protected endpoints enforce roles and per-user analysis access; admin actions are audited and tested; no secrets are committed; `Memory.md` records verification and handoff.
-- **Status:** implementation and checks complete on `phase-17/auth-admin`; pull request review and merge are pending.
+- **Status:** merged in PR #17 (`815f1fd`, implementation commit `35cbae0`). Local PostgreSQL applied V12; first-admin sign-in, forced password rotation, logout, and sign-in with the rotated password were verified. Local credentials remain in ignored `.env`.
