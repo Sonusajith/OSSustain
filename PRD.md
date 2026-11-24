@@ -1,6 +1,6 @@
 # OSSustain: Product Requirements Document
 
-**Status:** Planning. Development has not started.
+**Status:** Living specification. Phases 1–17 are complete; Phase 18 is approved and scoped; Phase 19 is proposed and awaits approval.
 **Scope note:** Visual design is produced separately in Google Stitch. This document defines product behavior and functional UX requirements only.
 
 ## 1. Project Overview
@@ -33,7 +33,7 @@ A transparent, reproducible early-warning dashboard for contribution-activity de
 - Claiming causation. Explanations describe predictive association only.
 - Real-time monitoring, alerts, or notifications.
 - User accounts, authentication, or personalization (MVP).
-- Analyzing arbitrary user-submitted repositories on demand (MVP).
+- Analyzing arbitrary user-submitted repositories on demand was outside the original MVP; bounded analysis for public repositories was added in Phase 16.
 - Private repositories.
 - Natural-language or LLM features.
 - Multi-service or microservice architecture.
@@ -55,6 +55,7 @@ A transparent, reproducible early-warning dashboard for contribution-activity de
 - **UC5:** Review feature importance, performance by repository size group, and calibration.
 - **UC6:** Read the definitions, label threshold, data limitations, and methodology.
 - **UC7 (operator):** Run collection, feature building, training, and evaluation from the command line, and reproduce a result from a recorded dataset and model version.
+- **UC8 (researcher):** Find a public GitHub repository by name or URL, select it, submit a bounded analysis, follow its progress, and review the resulting estimate.
 
 ## 8. Main User Journey
 
@@ -63,6 +64,8 @@ A transparent, reproducible early-warning dashboard for contribution-activity de
 3. They review trends, then the current risk estimate, indicators, and limitations.
 4. They navigate to Research Results to see whether extended features improved prediction.
 5. They open Methodology to understand definitions and caveats.
+
+**On-demand journey:** A signed-in researcher searches for a public repository or pastes its GitHub URL, confirms the repository identity, starts an analysis, follows queued/running status, and reviews the estimate, indicators, limitations, and request usage.
 
 ## 9. User Stories
 
@@ -73,10 +76,12 @@ A transparent, reproducible early-warning dashboard for contribution-activity de
 - As an OSS observer, I want to see why a repository is flagged, shown as associations, not causes.
 - As an OSS observer, I want to know when a prediction is unreliable (low activity, missing data).
 - As the operator, I want each model and prediction tied to a dataset version and configuration so results are reproducible.
+- As a researcher, I want to search for a repository by name or paste its URL so I can start an analysis without memorizing `owner/repository` syntax.
+- As a researcher, I want the selected repository carried into the existing progress and result flow so I do not need to re-enter it or configure operator secrets.
 
 ## 10. MVP Scope
 
-The MVP is a complete vertical slice: a documented cohort → collected data → snapshots and labels → features → trained and evaluated models → stored predictions and explanations → research dashboard, plus a bounded asynchronous workflow for user-submitted public repositories.
+The MVP is a complete vertical slice: a documented cohort → collected data → snapshots and labels → features → trained and evaluated models → stored predictions and explanations → research dashboard. The bounded asynchronous workflow for user-submitted public repositories was added after the MVP in Phase 16.
 
 ### Core Features (MVP)
 
@@ -102,9 +107,16 @@ The MVP is a complete vertical slice: a documented cohort → collected data →
 
 Phase 17 is complete and merged in PR #17. Its approved architecture and operational details are recorded in `docs/phase17-architecture-proposal.md`.
 
+### Planned post-MVP follow-up
+- Phase 18 (approved): repository discovery and a guided search/select/analyze flow, reusing the Phase 16 job pipeline.
+- Phase 19 (proposed; not approved): one-time operator readiness and setup diagnostics so researchers do not configure tokens, model artifacts, or local services themselves.
+
 ### Future Ideas (not planned)
 - Scheduled data refresh and drift monitoring.
 - Features borrowed from related proposals (ReviewPulse, FirstCommit). These are separate research ideas and are **not** part of OSSustain unless explicitly adopted.
+- One-click “Analyze in OSSustain” links or a GitHub App/browser integration.
+- Recent analyses, saved repositories, and shareable result links with access controls.
+- A first-run walkthrough, clearer wait-time/status guidance, and in-app explanations of rate limits and analysis limitations.
 
 ## 11. Functional Requirements
 
@@ -132,6 +144,7 @@ Phase 17 is complete and merged in PR #17. Its approved architecture and operati
 - FR17: Methodology & Limitations: show the label definition and parameters, feature dictionary, split design, and known limitations, loaded from backend data where possible so they cannot drift from the real configuration.
 - FR18: Every prediction display shall show the prediction date, model version, and a statement that the prediction concerns contribution-activity decline only.
 - FR19: The backend shall accept a canonical public `owner/repository`, enqueue a durable analysis, and expose its status/result; a separate Python worker shall collect at most 180 days of data and score it with an existing validation-selected model without changing research tables.
+- FR20 (Phase 18): A researcher shall be able to search public GitHub repositories by name or paste a GitHub repository URL, inspect the selected repository identity, and pass its canonical `owner/repository` into the existing bounded analysis flow. Search must be rate-limit aware, use no browser-visible GitHub token, and preserve existing analysis quotas and authorization.
 
 ## 12. Non-Functional Requirements
 
@@ -181,6 +194,7 @@ See "Planning Notes and Assumptions" (delivered alongside these documents). Key:
 | Research Results | Model and feature-group comparison | Phase 12 |
 | Methodology & Limitations | Definitions, splits, caveats | Phase 12 |
 | Repository Comparison *(post-MVP)* | Side-by-side metrics | Phase 14 |
+| Repository Discovery and Analysis *(post-MVP)* | Find a public repository and submit/follow an on-demand analysis | Phase 18 |
 
 **Navigation:** a persistent top-level navigation with Cohort, Research, and Methodology; Repository Detail reached from the cohort list and via URL (`/repositories/:id`).
 **Required states on every data-driven screen:** loading, empty, error (with retry), and success.
@@ -208,3 +222,4 @@ See "Planning Notes and Assumptions" (delivered alongside these documents). Key:
 | F9 | Four screens load real data; loading, empty, and error states implemented; accessibility checks pass |
 | F10 | Any displayed result can be traced to a model version and dataset version |
 | F11 | A new developer can set up and run the pipeline and app by following the README |
+| FR20 / Phase 18 | A signed-in researcher can search public repositories or paste a URL, verify the selected repository, submit it without retyping, and follow the existing bounded job to its result; loading, no-result, invalid/private, rate-limit, error, and success states are accessible and tested |
