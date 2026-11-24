@@ -1,7 +1,7 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 17: Authentication and Admin
-**Current Status:** Phase 16 merged to `main` in PR #16 (`be80014`, implementation `b0c87ee`). Phase 17 is approved to begin; authentication/session and admin scope is being proposed before implementation.
+**Current Phase:** Phase 17: Authentication and Admin (complete)
+**Current Status:** Phase 17 merged to `main` in PR #17 (`815f1fd`); the sign-in API configuration follow-up merged in PR #19 (`0da099b`). All defined phases are complete; release follow-ups remain in `Memory.md` and no Phase 18 is scoped.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 

@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python research pipeline and bounded on-demand worker → PostgreSQL → Spring Boot API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–17 are complete and merged to `main`; Phase 17 merged in PR #17 (`815f1fd`, implementation `35cbae0`). Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–17 are complete and merged to `main`; Phase 17 merged in PR #17 (`815f1fd`, implementation `35cbae0`), and the sign-in API configuration follow-up merged in PR #19 (`0da099b`). Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
 All defined phases through Phase 17 are complete. No Phase 18 is planned yet.
 
 ## Current Task
-Fix Phase 17 local sign-in connectivity after PR #17 merged. Root `.env` points Vite to the updated OSSustain API at `http://localhost:8081/api/v1`; `frontend/vite.config.ts` loads that root environment for development while pinning Vitest's mock API base to port 8080. The updated backend and Vite are running locally. Health, CSRF, CORS, and administrator sign-in checks passed. No next phase is defined in `Phases.md`.
+No feature phase is in progress. The Phase 17 sign-in API configuration fix merged in PR #19 and its health, CSRF, CORS, and administrator sign-in checks passed. On 2026-11-24, latest `main` (`0da099b`) passed 20 backend tests, 86 Python tests (one opt-in database test skipped), Ruff, 25 frontend tests, ESLint, TypeScript, and production build. In the current local environment PostgreSQL is healthy, but `.env` is absent and the backend/frontend are not running. No Phase 18 is scoped.
 
 ## Last Completed Task
-Phase 17 Authentication and Admin merged in PR #17 (`815f1fd`); local V12/bootstrap sign-in and password rotation verified. Phase 16 On-Demand Repository Analysis merged in PR #16 (`be80014`), including the durable analysis queue, bounded worker, API, and `/analyze` UI. Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
+Phase 17 Authentication and Admin merged in PR #17 (`815f1fd`); local V12/bootstrap sign-in and password rotation verified. The Phase 17 sign-in API configuration fix merged in PR #19 (`0da099b`). Phase 16 On-Demand Repository Analysis merged in PR #16 (`be80014`), including the durable analysis queue, bounded worker, API, and `/analyze` UI. Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
 
 ## Completed Phases
 Phase 1: Foundation
@@ -54,8 +54,8 @@ No feature phase is currently in progress. Phase 17 is merged; the next phase ne
 
 ## Pending Tasks
 - Before release, run one live public-repository analysis against the configured local stack and selected model artifacts; CI intentionally uses no live GitHub calls.
-- The local admin account `ossustain-admin` was bootstrapped and rotated; its current password remains only in ignored `.env`. Set a separate private bootstrap password for each deployment environment.
-- Refresh the local sign-in page at `http://localhost:5173/login` if it is still open; the corrected Vite and Phase 17 backend are currently running on ports 5173 and 8081.
+- To run the local sign-in flow, create the ignored `.env` from `.env.example` and provide private bootstrap credentials; do not commit or print secrets. The current review environment has no `.env`, and backend/Vite are not running.
+- After configuring `.env` and starting the backend/frontend, verify sign-in at `http://localhost:5173/login`; the PR #19 API base configuration fix is merged and was previously smoke-tested.
 - Phase 16 has no dedicated Stitch design; screen follows the current dashboard style and should receive visual review.
 - Phase 15 has no Stitch design in `UIUX/`; additions extend existing screens and can receive visual review if a reference is supplied.
 - Phase 13 release follow-ups: retry the full backend container OS scan (Docker Scout stalled while indexing and prior attempts could not retrieve Java/base-image vulnerability metadata); perform the keyboard walkthrough and Lighthouse audit when a deployment URL is selected.
@@ -66,7 +66,7 @@ No feature phase is currently in progress. Phase 17 is merged; the next phase ne
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-No Phase 17 implementation blocker remains; PR #17 is merged. No Phase 18 is currently specified. A live GitHub analysis from Phase 16 has not been run. Phase 13 release follow-ups remain: hosted keyboard/Lighthouse audit when a deployment URL exists and a full backend container OS scan. The Stitch HTML remains visual reference only; unsupported sample claims and figures were not used.
+No implementation blocker remains for Phases 1–17. The current checkout needs a private `.env` and running backend/frontend to exercise the local sign-in flow; a live GitHub analysis from Phase 16 has not been run. Phase 13 release follow-ups remain: hosted keyboard/Lighthouse audit when a deployment URL exists and a full backend container OS scan. The Stitch HTML remains visual reference only; unsupported sample claims and figures were not used.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -157,7 +157,7 @@ Phase 13 local stack passed container smoke checks at `http://localhost:8088`; f
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Refresh `http://localhost:5173/login` and verify sign-in using the local admin account. Review and merge the Phase 17 sign-in configuration fix; no Phase 18 is currently planned.
+For a local demo, configure a private ignored `.env`, start the backend and frontend following `README.md`, then verify sign-in at `/login`. Before release, complete the live analysis smoke test and the listed security/accessibility follow-ups. No Phase 18 is currently planned.
 
 ## Last Updated
-2026-11-23, `phase-17/sign-in-api-config` — fixed local Vite API configuration and verified frontend tests/build plus live Phase 17 sign-in.
+2026-11-24, `phase-17/completion-handoff` — reconciled Phase 17 and PR #19 status; latest-main backend, pipeline, and frontend checks passed; current local environment has PostgreSQL only, with no `.env` or API/UI processes.
