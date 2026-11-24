@@ -57,6 +57,7 @@ No feature implementation is currently in progress. Phase 18 is approved and rea
 - Phase 19 operator-readiness proposal requires owner approval before implementation.
 - Before release, run one live public-repository analysis using operator-provided GitHub credentials and selected model artifacts; CI intentionally uses no live GitHub calls.
 - Local sign-in still requires ignored `.env` bootstrap credentials; never commit or print secrets. The current database has no versioned research dataset, and this machine has no pipeline config, collection cache, or model artifacts.
+- After configuring the ignored `.env`, verify sign-in at `/login`; the PR #19 API base configuration fix is merged and was previously smoke-tested.
 - Phase 18 has no dedicated Stitch design; use the current dashboard visual language and record design review in `Memory.md`.
 - Phase 16 has no dedicated Stitch design; screen follows the current dashboard style and should receive visual review.
 - Phase 15 has no Stitch design in `UIUX/`; additions extend existing screens and can receive visual review if a reference is supplied.
