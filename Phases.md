@@ -1,11 +1,11 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 17: Authentication and Admin (complete)
-**Current Status:** Phase 17 merged to `main` in PR #17 (`815f1fd`); the sign-in API configuration follow-up merged in PR #19 (`0da099b`). All defined phases are complete; release follow-ups remain in `Memory.md` and no Phase 18 is scoped.
+**Current Phase:** Phase 18: GitHub Repository Discovery and Guided Analysis (approved; not started)
+**Current Status:** Phases 1–17 are complete. Phase 18 is approved for planning and implementation after this scope is reviewed by the team; Phase 19 is proposed as a follow-on and is not approved to begin. Release follow-ups remain in `Memory.md`.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
-**Classification:** Foundation: Phase 1. MVP: Phases 2–12. **MVP completion milestone:** end of Phase 12. Production readiness: Phase 13. Post-MVP: Phases 14–17. All defined phases are complete; the next phase has not been scoped.
+**Classification:** Foundation: Phase 1. MVP: Phases 2–12. **MVP completion milestone:** end of Phase 12. Production readiness: Phase 13. Post-MVP: Phases 14–18 (Phase 18 approved); Phase 19 is proposed and awaits approval.
 
 ---
 
@@ -178,3 +178,26 @@ Phase 16 was adopted and Phase 17 is complete.
 - **Testing:** backend authorization and session integration tests; migration tests; frontend login/role/access-denied states; full CI.
 - **Definition of done:** documented secure account provisioning; protected endpoints enforce roles and per-user analysis access; admin actions are audited and tested; no secrets are committed; `Memory.md` records verification and handoff.
 - **Status:** merged in PR #17 (`815f1fd`, implementation commit `35cbae0`). Local PostgreSQL applied V12; first-admin sign-in, forced password rotation, logout, and sign-in with the rotated password were verified. Local credentials remain in ignored `.env`.
+
+### Phase 18: GitHub Repository Discovery and Guided Analysis (approved; not started)
+- **Goal:** Let a signed-in researcher find a public GitHub repository or paste its URL, select it, submit an analysis, follow progress, and review the result in one clear flow.
+- **Dependencies:** Phases 16 and 17 (complete).
+- **Existing work to reuse:** Phase 16 already provides the bounded analysis job API, Python worker, 180-day collection, model scoring, progress states, and result display. Phase 17 already provides invite-only accounts and analysis ownership. This phase adds repository discovery and flow polish; it does not rebuild analysis processing.
+- **Scope:** Search public GitHub repositories by name or full URL; accept canonical `owner/repository` input; present enough repository identity to avoid selecting the wrong project; launch the existing analysis job from the selected result; retain progress, retry, and result behavior with clear error states.
+- **Constraints:** public repositories only; keep GitHub credentials out of the browser and Spring API; reuse the existing 300-request job cap and job/rate limits; do not put on-demand data into the frozen research cohort. No new dependencies or services are approved by this phase.
+- **Architecture decision required before implementation:** choose and document a bounded way to perform repository search that fits the current boundaries. The Spring API does not call GitHub and the worker currently claims analysis jobs from PostgreSQL. Evaluate an unauthenticated public search through the typed frontend API layer versus extending an existing backend/worker boundary. Check GitHub CORS and search quotas; do not expose the worker token. If the choice changes `Architecture.md`, explain it and obtain owner approval first.
+- **UX requirements:** searchable field with debounce and keyboard access; paste URL and owner/repository support; loading, no-results, invalid/private/unavailable repository, rate-limit, error/retry, queued, running, failed, and succeeded states; preserve the selected repository when moving into analysis; usable at 360 px; semantic accessible results. Keep existing risk caveats and make clear this is an activity-decline estimate, not a causal claim.
+- **Design:** no dedicated Stitch design exists for repository discovery or analysis. Review existing dashboard screens and keep the current visual language; record the missing reference in `Memory.md`.
+- **Tests:** frontend tests for search, URL parsing, selection, submit, job progress, and each result/error state using MSW; backend/worker tests only if their contracts change; full frontend and relevant backend suites. No CI tests against live GitHub. Do a manual smoke test with a public repository and the opt-in live credentials/model artifact.
+- **Acceptance criteria:** a researcher can search or paste a public repo, select the intended result, start one analysis, follow its real job status, and view the real result without retyping the repository; invalid/private repos and GitHub rate limits produce actionable messages; user sees no token or operator-only setup; existing quotas, authorization, result ownership, and limitations remain enforced.
+- **Definition of done:** search integration decision is documented; accessible flow and tests pass; live analysis smoke test succeeds using operator-provided configuration and selected model artifact; README and `Memory.md` are updated. Any unavailable live prerequisite is recorded as a blocker and the phase remains incomplete.
+- **Estimate:** roughly 2–4 developer-days for the search-and-selection flow if existing analysis prerequisites are available; operational setup is tracked separately in proposed Phase 19.
+
+### Phase 19: On-Demand Analysis Operator Readiness (proposed; not approved)
+- **Goal:** Make one-time operator setup predictable so researchers can use the analysis flow without configuring tokens, artifacts, or local services themselves.
+- **Dependencies:** Phase 18 and the existing Phase 13/16/17 deployment, worker, and account setup (complete).
+- **Scope proposal:** document and validate PostgreSQL/API/worker startup; required environment variables; selected model artifact availability and mount path; worker connectivity; first-admin provisioning; safe startup/preflight diagnostics; clean-machine setup and troubleshooting. Reuse the existing Compose worker and architecture; do not add a service, queue, or dependency without separate approval.
+- **Tasks:** audit `.env.example`, README, local and production Compose configuration; add preflight checks that report missing configuration without echoing secret values; document operator-only one-time setup versus researcher usage; perform a clean-environment end-to-end analysis using an operator-provided GitHub token and selected model artifact.
+- **Testing:** Compose/config validation; negative preflight cases for missing DB, token, worker, and artifact; successful fixture-based startup checks; opt-in live GitHub analysis smoke test.
+- **Acceptance criteria:** an operator can follow the documented setup once and verify readiness; a researcher with an invited account can analyze a public repository without local secrets or model files; missing prerequisites fail early with safe, actionable messages; no credentials are returned to frontend or logged.
+- **Definition of done:** clean setup and end-to-end run are verified, docs and `Memory.md` are updated, and no secret or model artifact is committed. This phase needs owner approval before work begins.
