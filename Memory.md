@@ -6,16 +6,16 @@
 OSSustain studies whether public GitHub repositories face significant contribution-activity decline over 90 days. Architecture: Python research pipeline and bounded on-demand worker → PostgreSQL → Spring Boot API → React + TypeScript dashboard. See `PRD.md` and `Architecture.md`.
 
 ## Development Status
-Phases 1–17 are complete and merged to `main`; Phase 17 merged in PR #17 (`815f1fd`, implementation `35cbae0`), and the sign-in API configuration follow-up merged in PR #19 (`0da099b`). Phase 18 (GitHub Repository Discovery and Guided Analysis) implementation and verification are complete on `phase-18/guided-analysis`, pending review/merge. Phase 19 (On-Demand Analysis Operator Readiness) is a proposal and is not approved to begin. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
+Phases 1–18 are complete and merged to `main`; Phase 18 merged in PR #23 (`4c124c6`). Phase 19 (On-Demand Analysis Operator Readiness) was approved on 2026-11-26 and is in progress on `phase-19/operator-readiness`. Earlier phases and research dataset details are preserved below. Phase 5 produced 2,300 versioned snapshots across all 50 repositories: 395 labeled, 1,755 below the reference-activity minimum, and 150 with incomplete futures. Excluding purge gaps leaves 342 labeled train/validation/test snapshots. Phase 6 stored 23 features for every snapshot. PostgreSQL contains metadata and full commit histories for the 50-repository cohort (55,206 unique commits; 2,638 anonymized contributors), plus Phase 4 collaboration data (2,659 pull requests, 2,285 reviews, 17,647 non-PR issues). Collection completed for all 50 repositories within the approved caps. The quality report records four flags: two one-record differences from frozen screening counts and two repositories with zero collaboration events.
 
 ## Current Phase
-Phase 18: GitHub Repository Discovery and Guided Analysis is implemented and verified; review/merge is pending. Phase 19: On-Demand Analysis Operator Readiness is proposed and awaits owner approval.
+Phase 19: On-Demand Analysis Operator Readiness is approved and in progress. Phase 18 merged in PR #23.
 
 ## Current Task
-Phase 18's repository discovery flow is implemented using the typed frontend API client and GitHub's unauthenticated REST API. The UI supports name search and repository URLs, selection with identity details, and submission through the existing bounded analysis API. The worker-backed live smoke test succeeded for `typicode/lowdb` using 12 GitHub requests. A first try with `vitejs/vite` hit the existing 300-request per-job cap and correctly failed without producing a result. Local PostgreSQL, Spring API, and the analysis-worker container are running.
+Phase 19 adds an operator preflight command for required secrets, PostgreSQL and selected model artifact, local/production Compose configuration, Spring health, and worker-to-database connectivity. It adds a PowerShell helper to load ignored `.env` values for Spring Boot, documents operator setup versus researcher use, and avoids overwriting existing local setup files. Local readiness passes with PostgreSQL, API, artifact, and worker running. Phase 18 is complete and merged in PR #23 (`4c124c6`).
 
 ## Last Completed Task
-Phase 18 GitHub Repository Discovery and Guided Analysis implementation completed on `phase-18/guided-analysis`; search, selection, submit, retry, 34 frontend tests, and a successful live analysis smoke test verified. Review/merge is pending. Phase 17 Authentication and Admin merged in PR #17 (`815f1fd`); local V12/bootstrap sign-in and password rotation verified. The Phase 17 sign-in API configuration fix merged in PR #19 (`0da099b`). Phase 16 On-Demand Repository Analysis merged in PR #16 (`be80014`), including the durable analysis queue, bounded worker, API, and `/analyze` UI. Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
+Phase 18 repository discovery and guided analysis merged in PR #23 (`4c124c6`), after search, selection, submit, retry, 34 frontend tests, and a successful live analysis smoke test. Phase 17 Authentication and Admin merged in PR #17 (`815f1fd`); local V12/bootstrap sign-in and password rotation verified. The Phase 17 sign-in API configuration fix merged in PR #19 (`0da099b`). Phase 16 On-Demand Repository Analysis merged in PR #16 (`be80014`), including the durable analysis queue, bounded worker, API, and `/analyze` UI. Phase 15 SHAP and Robustness Analyses merged in PR #15 (`0b961cc`), including validation-background probability SHAP, test-set target sensitivity, V10 explanation-method labels, and live dashboard results. Phase 14 Repository Comparison merged in PR #14 (`70a21a3`). Phase 13 Production Readiness merged in PR #13 (`9f27bb2`), including production containers and configuration, backup/restore, security checks, and GitHub Actions. The backend image vulnerability scan and hosted keyboard/Lighthouse audit remain release follow-ups; no hosted URL is configured.
 
 ## Completed Phases
 Phase 1: Foundation
@@ -35,6 +35,7 @@ Phase 14: Repository Comparison — merged to main in PR #14 (`70a21a3`)
 Phase 15: SHAP and Robustness Analyses — merged to main in PR #15 (`0b961cc`)
 Phase 16: On-Demand Repository Analysis — merged to main in PR #16 (`be80014`)
 Phase 17: Authentication and Admin — merged to main in PR #17 (`815f1fd`, implementation `35cbae0`)
+Phase 18: GitHub Repository Discovery and Guided Analysis — merged to main in PR #23 (`4c124c6`)
 
 ## Completed Features
 - Phase 1 foundation: PostgreSQL Compose, Spring Boot/Flyway health API, Python pipeline CLI/config/DB scaffold, and React/TypeScript routing shell with lint/test/build tooling.
@@ -51,13 +52,11 @@ Phase 17: Authentication and Admin — merged to main in PR #17 (`815f1fd`, impl
 - Phase 18 implementation: public repository name search and URL/`owner/repository` lookup through an unauthenticated typed GitHub REST client; repository identity selection; canonical selected repository passed into existing bounded analysis submission; loading, empty, invalid, private/unavailable, rate-limit, retry, job-progress, and result states. No dependency or backend/schema/service change.
 
 ## Features In Progress
-Phase 18 repository discovery and guided analysis implementation is complete on `phase-18/guided-analysis`, pending review/merge; Phase 19 remains a proposal pending approval.
+Phase 19: operator readiness preflight, safe PowerShell environment loading, and setup/troubleshooting documentation.
 
 ## Pending Tasks
-- Phase 18: review and merge the completed `phase-18/guided-analysis` branch. No coding or live smoke-test blocker remains.
-- Phase 19 operator-readiness proposal requires owner approval before implementation.
+- Phase 19: run final branch sync, tests, commit, and push for review.
 - Local `.env` contains secrets and remains ignored; never commit or print its values. Local PostgreSQL has one versioned dataset and 16 model versions; 12 local model files are present.
-- Phase 18 has no dedicated Stitch design; use the current dashboard visual language and record design review in `Memory.md`.
 - Phase 16 has no dedicated Stitch design; screen follows the current dashboard style and should receive visual review.
 - Phase 15 has no Stitch design in `UIUX/`; additions extend existing screens and can receive visual review if a reference is supplied.
 - Phase 13 release follow-ups: retry the full backend container OS scan (Docker Scout stalled while indexing and prior attempts could not retrieve Java/base-image vulnerability metadata); perform the keyboard walkthrough and Lighthouse audit when a deployment URL is selected.
@@ -68,7 +67,7 @@ Phase 18 repository discovery and guided analysis implementation is complete on 
 The frozen screen and final collection differ by one issue for `protobuf-net/protobuf-net` and one pull request for `longitachi/ZLPhotoBrowser`. Two repositories (`kubernetes/client-go` and `hoochanlon/hamuleite`) have zero collaboration events, matching their frozen zero counts. These are recorded as quality flags; no stage is incomplete.
 
 ## Current Blockers
-No implementation blocker remains for Phase 18. The frontend typed client uses unauthenticated GitHub REST search/lookup; GitHub search requests are debounced, capped to eight results, and honor rate-limit headers without automatic retries. The worker-backed live test succeeded. Phase 13 release follow-ups remain: hosted keyboard/Lighthouse audit when a deployment URL exists and a full backend container OS scan. No Stitch design exists for Phase 18; retain current dashboard styling.
+No Phase 19 implementation blocker. Local operator preflight passed all checks, including real worker-to-database connectivity. Phase 13 release follow-ups remain: hosted keyboard/Lighthouse audit when a deployment URL exists and a full backend container OS scan.
 
 ## Technical Decisions
 - PostgreSQL 16.15 image; schema ownership remains with Flyway in `backend/`.
@@ -130,6 +129,7 @@ Phase 15 SHAP and robustness additions: no dedicated Stitch design found; additi
 Maven and Docker Desktop work locally. Use the quoted JVM timezone option for Windows backend tests. GitHub CLI is absent and the collection token cannot create PRs (HTTP 403); PR #5 was created through the signed-in browser without expanding token permissions.
 
 ## Testing Status
+- Phase 19: Python pipeline — 94 passed, 1 existing opt-in snapshot DB test skipped; Ruff checks and formatting passed. Live preflight passed required environment checks, PostgreSQL/selected model artifact, local and production Compose configuration, Spring health on port 8081, and worker connectivity to the analysis-job table. `git diff --check` passed. Phase 18's live worker analysis smoke test is recorded below.
 - Phase 18: full frontend suite — 34 passed; ESLint passed; TypeScript/Vite production build passed. Node 22.18 emits the existing package requirement warning (>=22.19). Live unauthenticated GitHub search returned `typicode/lowdb` and `Access-Control-Allow-Origin: *`; authenticated job completed successfully with the running worker and selected random-forest artifact in 12 GitHub requests. The `vitejs/vite` attempt reached the approved 300-request cap and was marked `request_limit`.
 - Phase 17: Maven/Testcontainers — 20 passed including V12, failed/successful login, forced password change, logout, CSRF rejection, disabled-session invalidation, per-account job access, admin cancellation/audit, last-admin protection, and public research access. Pipeline — 86 passed, 1 existing opt-in database test skipped; Ruff passed. Frontend — 25 passed, ESLint passed, TypeScript/Vite production build passed; local Node is 22.18 and emits the existing >=22.19 engine warning. OpenAPI types regenerated and production Compose config validated. `mvn clean` could not remove the shared target directory while the existing API process had loaded classes; a full-source recompilation and complete Maven suite passed without stopping that process.
 - Post-merge local check: Flyway applied V11 and V12 to local PostgreSQL. The bootstrap account signed in, passed the required password rotation, logged out, and signed back in using the rotated credentials; its password is kept in ignored `.env`. The earlier stale API process was replaced by the merged Phase 17 backend on port 8081 in this fix.
@@ -160,7 +160,7 @@ Phase 13 local stack passed container smoke checks at `http://localhost:8088`; f
 - Use only chronological evaluation and leakage-safe features in later research phases.
 
 ## Recommended Next Action
-Review and merge Phase 18 from `phase-18/guided-analysis`. Do not start proposed Phase 19 until the owner approves it. The local Phase 18 search-to-analysis flow and worker are available for review.
+Review and merge Phase 19 from `phase-19/operator-readiness`; Phase 18 is already merged. Phase 13 hosted release follow-ups remain separate.
 
 ## Last Updated
-2026-11-26, `phase-18/guided-analysis` — completed public GitHub discovery, verified all frontend checks, and passed a live worker-backed analysis smoke test.
+2026-11-26, `phase-19/operator-readiness` — implemented safe operator preflight and setup docs; local readiness checks and 94 pipeline tests passed.

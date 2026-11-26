@@ -20,6 +20,7 @@ from ossustain_pipeline.modeling.config import load_modeling_config
 from ossustain_pipeline.modeling.runner import train_and_evaluate
 from ossustain_pipeline.on_demand import run_worker
 from ossustain_pipeline.predictions.runner import generate_explanations, generate_predictions
+from ossustain_pipeline.preflight import run_preflight
 from ossustain_pipeline.snapshots.runner import build_snapshots
 
 
@@ -41,6 +42,19 @@ def build_parser() -> argparse.ArgumentParser:
     worker_parser.add_argument("--poll-seconds", type=int, default=5)
     worker_parser.add_argument(
         "--once", action="store_true", help="Process at most one available job."
+    )
+    preflight_parser = commands.add_parser(
+        "preflight",
+        help="Run safe operator checks for on-demand analysis readiness.",
+    )
+    preflight_parser.add_argument(
+        "--env-file",
+        type=Path,
+        help="Private environment file to check (default: repository .env).",
+    )
+    preflight_parser.add_argument(
+        "--api-health-url",
+        help="Override the backend /actuator/health URL.",
     )
     select_parser = commands.add_parser(
         "select-cohort",
@@ -192,7 +206,21 @@ def build_parser() -> argparse.ArgumentParser:
 def main() -> None:
     parser = build_parser()
     args = parser.parse_args()
-    if args.command == "worker":
+    if args.command == "preflight":
+        report = run_preflight(
+            args.config,
+            api_health_url=args.api_health_url,
+            env_path=args.env_file,
+        )
+        for check in report.checks:
+            status = "PASS" if check.passed else "FAIL"
+            print(f"{status} {check.name}: {check.message}")
+        if report.ready:
+            print("On-demand analysis is ready.")
+        else:
+            print("On-demand analysis is not ready; resolve the failed checks above.")
+            raise SystemExit(1)
+    elif args.command == "worker":
         if args.poll_seconds < 1 or args.poll_seconds > 60:
             parser.error("--poll-seconds must be between 1 and 60")
         try:

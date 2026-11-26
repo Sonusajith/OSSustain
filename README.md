@@ -13,7 +13,10 @@ OSSustain is a research-oriented early-warning system for contribution-activity 
 
 ### Configure and start PostgreSQL
 
-From the repository root, copy `.env.example` to `.env` (PowerShell: `Copy-Item .env.example .env`) and start PostgreSQL 16:
+From the repository root, copy `.env.example` to `.env` only if `.env` does not
+already exist (PowerShell: `if (-not (Test-Path .env)) { Copy-Item .env.example .env }`).
+Keep `.env` private and replace every placeholder before starting the analysis
+worker. Then start PostgreSQL 16:
 
 ```sh
 docker compose up -d postgres
@@ -46,7 +49,7 @@ Create and activate a virtual environment, then install its pinned dependencies:
 python -m venv .venv
 # PowerShell
 .venv\Scripts\Activate.ps1
-Copy-Item pipeline/config.example.yaml pipeline/config.yaml
+if (-not (Test-Path pipeline/config.yaml)) { Copy-Item pipeline/config.example.yaml pipeline/config.yaml }
 python -m pip install -r pipeline/requirements.lock
 python -m pip install --no-deps -e pipeline
 ossustain-pipeline --help
@@ -55,6 +58,58 @@ python -m ruff check pipeline/src pipeline/tests
 ```
 
 The pipeline reads the local `.env` for `GITHUB_TOKEN` and `OSSUSTAIN_HASH_SECRET`. The research commands use the configured PostgreSQL database. The Phase 16 worker is separate from the Spring API and can be run locally with `ossustain-pipeline --config pipeline/config.yaml worker`.
+
+### On-demand analysis operator setup
+
+An operator configures `.env`, maintains the database and selected model files,
+and starts the API and worker. Invited researchers only sign in to the dashboard
+and use `/analyze`; they do not need a GitHub token, model files, or local
+operator credentials. Repository search in the browser is public and
+unauthenticated; the GitHub token is passed only to the worker container.
+
+For a clean local setup, first copy `pipeline/config.example.yaml` to
+`pipeline/config.yaml` if it is missing. Replace the blank or example values in
+`.env`, including `GITHUB_TOKEN`, `OSSUSTAIN_HASH_SECRET` (at least 32 random
+characters), `OSSUSTAIN_ANALYSIS_IP_HASH_SECRET` (a stable random value of at
+least 32 characters), and the first administrator credentials. Use a private
+password of at least 16 characters. Do not paste secrets into chat or commit
+`.env`. Start PostgreSQL before the API so Flyway can apply its migrations:
+
+```powershell
+docker compose up -d postgres
+```
+
+To load the private values into the PowerShell terminal that starts Spring Boot,
+run:
+
+```powershell
+. .\scripts\load-env.ps1
+mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.jvmArguments=-Duser.timezone=Asia/Kolkata"
+```
+
+Ensure the database contains the versioned research dataset and selected
+model-version records, and that the matching trained files exist under
+`pipeline/artifacts/`. These files and database contents are not committed to
+Git; a newly initialized database and an empty artifact folder cannot process
+analyses. Start the worker:
+
+```powershell
+docker compose up -d --build analysis-worker
+```
+
+After PostgreSQL, the API, and the worker are running, check operator readiness:
+
+```powershell
+ossustain-pipeline --config pipeline/config.yaml preflight
+```
+
+The check validates required settings without displaying their values, database
+connectivity, the validation-selected model and artifact, local and production
+Compose configuration, backend health, and the running worker's database
+connectivity to the analysis-job table. If the backend
+uses a different host or port than `VITE_API_BASE_URL`, pass its health URL with
+`--api-health-url http://localhost:8081/actuator/health`. Fix each failed check
+and rerun preflight before inviting researchers to analyze repositories.
 
 ### Start the frontend dashboard
 
@@ -286,12 +341,11 @@ change the initial password when prompted. An administrator can then create
 researcher or administrator accounts; each generated temporary password is
 shown once and must be changed at first sign-in. Keep these credentials private.
 
-For PowerShell development, set the variables in the backend terminal before
-starting Spring Boot:
+For PowerShell development, load the private environment file before starting
+Spring Boot (or set equivalent variables directly):
 
 ```powershell
-$env:OSSUSTAIN_ADMIN_USERNAME = "your-admin-name"
-$env:OSSUSTAIN_ADMIN_PASSWORD = Read-Host "Enter a unique password (16+ characters)"
+. .\scripts\load-env.ps1
 mvn -f backend/pom.xml spring-boot:run "-Dspring-boot.run.jvmArguments=-Duser.timezone=Asia/Kolkata"
 ```
 

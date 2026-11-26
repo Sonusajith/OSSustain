@@ -1,6 +1,6 @@
 # OSSustain: Product Requirements Document
 
-**Status:** Living specification. Phases 1–17 are complete; Phase 18 implementation is complete and pending review; Phase 19 is proposed and awaits approval.
+**Status:** Living specification. Phases 1–18 are complete and merged; Phase 19 (operator readiness) is approved and in progress.
 **Scope note:** Visual design is produced separately in Google Stitch. This document defines product behavior and functional UX requirements only.
 
 ## 1. Project Overview
@@ -108,8 +108,8 @@ The MVP is a complete vertical slice: a documented cohort → collected data →
 Phase 17 is complete and merged in PR #17. Its approved architecture and operational details are recorded in `docs/phase17-architecture-proposal.md`.
 
 ### Planned post-MVP follow-up
-- Phase 18 (approved): repository discovery and a guided search/select/analyze flow, reusing the Phase 16 job pipeline.
-- Phase 19 (proposed; not approved): one-time operator readiness and setup diagnostics so researchers do not configure tokens, model artifacts, or local services themselves.
+- Phase 18 (complete, merged in PR #23): repository discovery and a guided search/select/analyze flow, reusing the Phase 16 job pipeline.
+- Phase 19 (approved; in progress): one-time operator readiness and setup diagnostics so researchers do not configure tokens, model artifacts, or local services themselves.
 
 ### Future Ideas (not planned)
 - Scheduled data refresh and drift monitoring.

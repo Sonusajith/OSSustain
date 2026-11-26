@@ -1,11 +1,11 @@
 # OSSustain: Development Phases
 
-**Current Phase:** Phase 18: GitHub Repository Discovery and Guided Analysis (implementation complete; review pending)
-**Current Status:** Phases 1–17 are complete. Phase 18 implementation and verification are complete on `phase-18/guided-analysis`; review and merge are pending. Phase 19 is proposed as a follow-on and is not approved to begin. Release follow-ups remain in `Memory.md`.
+**Current Phase:** Phase 19: On-Demand Analysis Operator Readiness (approved; implementation in progress)
+**Current Status:** Phases 1–18 are complete and merged. Phase 18 merged in PR #23 (`4c124c6`). Phase 19 was approved by the project owner on 2026-11-26 and is in progress on `phase-19/operator-readiness`. Release follow-ups remain in `Memory.md`.
 
 Phase 1 is complete. Work proceeds in order; do not start a phase before its dependencies are done. Indicative effort assumes about one month total; the research phases (2–8) are the critical path.
 
-**Classification:** Foundation: Phase 1. MVP: Phases 2–12. **MVP completion milestone:** end of Phase 12. Production readiness: Phase 13. Post-MVP: Phases 14–18 (Phase 18 approved); Phase 19 is proposed and awaits approval.
+**Classification:** Foundation: Phase 1. MVP: Phases 2–12. **MVP completion milestone:** end of Phase 12. Production readiness: Phase 13. Post-MVP: Phases 14–19 (Phase 18 and 19 approved).
 
 ---
 
@@ -179,7 +179,7 @@ Phase 16 was adopted and Phase 17 is complete.
 - **Definition of done:** documented secure account provisioning; protected endpoints enforce roles and per-user analysis access; admin actions are audited and tested; no secrets are committed; `Memory.md` records verification and handoff.
 - **Status:** merged in PR #17 (`815f1fd`, implementation commit `35cbae0`). Local PostgreSQL applied V12; first-admin sign-in, forced password rotation, logout, and sign-in with the rotated password were verified. Local credentials remain in ignored `.env`.
 
-### Phase 18: GitHub Repository Discovery and Guided Analysis (approved; implementation complete, review pending)
+### Phase 18: GitHub Repository Discovery and Guided Analysis (approved; complete, merged)
 - **Goal:** Let a signed-in researcher find a public GitHub repository or paste its URL, select it, submit an analysis, follow progress, and review the result in one clear flow.
 - **Dependencies:** Phases 16 and 17 (complete).
 - **Existing work to reuse:** Phase 16 already provides the bounded analysis job API, Python worker, 180-day collection, model scoring, progress states, and result display. Phase 17 already provides invite-only accounts and analysis ownership. This phase adds repository discovery and flow polish; it does not rebuild analysis processing.
@@ -192,12 +192,13 @@ Phase 16 was adopted and Phase 17 is complete.
 - **Acceptance criteria:** a researcher can search or paste a public repo, select the intended result, start one analysis, follow its real job status, and view the real result without retyping the repository; invalid/private repos and GitHub rate limits produce actionable messages; user sees no token or operator-only setup; existing quotas, authorization, result ownership, and limitations remain enforced.
 - **Definition of done:** search integration decision is documented; accessible flow and tests pass; live analysis smoke test succeeds using operator-provided configuration and selected model artifact; README and `Memory.md` are updated. Any unavailable live prerequisite is recorded as a blocker and the phase remains incomplete.
 - **Estimate:** roughly 2–4 developer-days for the search-and-selection flow if existing analysis prerequisites are available; operational setup is tracked separately in proposed Phase 19.
+- **Status:** complete and merged to `main` in PR #23 (`4c124c6`). Search, selection, submission flow, frontend checks, and live worker analysis are recorded in `Memory.md`.
 
-### Phase 19: On-Demand Analysis Operator Readiness (proposed; not approved)
+### Phase 19: On-Demand Analysis Operator Readiness (approved; implementation in progress)
 - **Goal:** Make one-time operator setup predictable so researchers can use the analysis flow without configuring tokens, artifacts, or local services themselves.
 - **Dependencies:** Phase 18 and the existing Phase 13/16/17 deployment, worker, and account setup (complete).
 - **Scope proposal:** document and validate PostgreSQL/API/worker startup; required environment variables; selected model artifact availability and mount path; worker connectivity; first-admin provisioning; safe startup/preflight diagnostics; clean-machine setup and troubleshooting. Reuse the existing Compose worker and architecture; do not add a service, queue, or dependency without separate approval.
-- **Tasks:** audit `.env.example`, README, local and production Compose configuration; add preflight checks that report missing configuration without echoing secret values; document operator-only one-time setup versus researcher usage; perform a clean-environment end-to-end analysis using an operator-provided GitHub token and selected model artifact.
+- **Tasks:** audit `.env.example`, README, local and production Compose configuration; add preflight checks that report missing configuration without echoing secret values; document operator-only one-time setup versus researcher usage; perform an end-to-end analysis using operator-provided GitHub credentials and a selected model artifact.
 - **Testing:** Compose/config validation; negative preflight cases for missing DB, token, worker, and artifact; successful fixture-based startup checks; opt-in live GitHub analysis smoke test.
 - **Acceptance criteria:** an operator can follow the documented setup once and verify readiness; a researcher with an invited account can analyze a public repository without local secrets or model files; missing prerequisites fail early with safe, actionable messages; no credentials are returned to frontend or logged.
-- **Definition of done:** clean setup and end-to-end run are verified, docs and `Memory.md` are updated, and no secret or model artifact is committed. This phase needs owner approval before work begins.
+- **Definition of done:** documented setup and end-to-end readiness are verified, docs and `Memory.md` are updated, and no secret or model artifact is committed. Owner approval was recorded on 2026-11-26.
