@@ -89,12 +89,18 @@ The Repository Comparison screen at `/compare` lets you select two to four
 repositories from the latest cohort and compare their stored estimates and
 latest monthly metrics in an accessible table.
 
-The on-demand screen at `/analyze` accepts a public GitHub `owner/repository`,
-shows durable job status, and displays its result and limitations. To run the
-worker in Docker, first ensure the selected trained model artifacts are present
-under `pipeline/artifacts/`, set `GITHUB_TOKEN` and `OSSUSTAIN_HASH_SECRET` in
-`.env`, then run `docker compose up -d --build analysis-worker`. The worker has
-read-only access to model artifacts and never stores raw GitHub responses.
+The signed-in on-demand screen at `/analyze` searches public GitHub repositories
+by name or accepts a GitHub repository URL. It shows the repository identity
+before selection, then submits that selection to the existing analysis flow.
+Search calls GitHub's public REST API without authentication, so no GitHub token
+is sent from the browser; searches are debounced and respect GitHub rate limits.
+Unauthenticated repository search is limited to 10 requests per minute; the
+client pauses when GitHub's response headers indicate that limit was reached.
+To run the worker in Docker, first ensure the selected trained model artifacts
+are present under `pipeline/artifacts/`, set `GITHUB_TOKEN` and
+`OSSUSTAIN_HASH_SECRET` in `.env`, then run
+`docker compose up -d --build analysis-worker`. The worker has read-only access
+to model artifacts and never stores raw GitHub responses.
 Production deployments also require a stable `OSSUSTAIN_ANALYSIS_IP_HASH_SECRET`
 and `MODEL_ARTIFACTS_DIR`; see `deploy/production.env.example`. The UI and API
 enforce public-only submissions, a 300-request job cap, a 1,000-request hourly

@@ -24,12 +24,15 @@ import {
   getAdminAnalyses,
   cancelAdminAnalysis,
 } from './client'
+import { getPublicRepository, searchPublicRepositories } from './githubRepositories'
 
 export const cohortQueryKeys = {
   currentUser: ['auth', 'current-user'] as const,
   adminUsers: ['admin', 'users'] as const,
   adminAnalyses: ['admin', 'analyses'] as const,
   analysis: (id: string) => ['analysis', id] as const,
+  repositorySearch: (query: string) => ['github', 'repository-search', query] as const,
+  publicRepository: (owner: string, repository: string) => ['github', 'repository', owner, repository] as const,
   repositories: ['cohort', 'repositories'] as const,
   datasetSummary: ['cohort', 'dataset-summary'] as const,
   repository: (id: number) => ['repository', id] as const,
@@ -41,6 +44,26 @@ export const cohortQueryKeys = {
   researchEvaluations: ['research', 'evaluations'] as const,
   researchImportance: (modelVersionId: number) => ['research', 'importance', modelVersionId] as const,
   researchLabelDefinition: ['research', 'label-definition'] as const,
+}
+
+export function usePublicRepositorySearch(query: string, enabled: boolean) {
+  return useQuery({
+    queryKey: cohortQueryKeys.repositorySearch(query),
+    queryFn: ({ signal }) => searchPublicRepositories(query, signal),
+    enabled,
+    staleTime: 60_000,
+    retry: false,
+  })
+}
+
+export function usePublicRepository(owner: string, repository: string, enabled: boolean) {
+  return useQuery({
+    queryKey: cohortQueryKeys.publicRepository(owner, repository),
+    queryFn: ({ signal }) => getPublicRepository(owner, repository, signal),
+    enabled,
+    staleTime: 60_000,
+    retry: false,
+  })
 }
 
 export function useCurrentUser() {

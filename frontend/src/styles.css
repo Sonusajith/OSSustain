@@ -181,9 +181,26 @@ a { color: inherit; }
 .analysis-intro { max-width: 680px; color: var(--text-secondary); font-size: 14px; line-height: 1.6; }
 .analysis-form, .analysis-card { margin-top: 28px; border: 1px solid var(--border); border-radius: 8px; padding: 22px; background: #fff; }
 .analysis-form label { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 650; }
-.analysis-input-row { display: flex; gap: 10px; }
-.analysis-input-row input { min-width: 0; min-height: 40px; flex: 1; border: 1px solid #cbd5e1; border-radius: 5px; padding: 8px 11px; }
+.repository-discovery > input { width: 100%; min-width: 0; min-height: 44px; border: 1px solid #cbd5e1; border-radius: 5px; padding: 9px 11px; }
 .analysis-form p, .analysis-caveat { color: var(--text-muted); font-size: 11px; line-height: 1.6; }
+.repository-discovery-results { display: grid; gap: 9px; margin-top: 14px; }
+.repository-discovery-hint { margin: 4px 0; color: var(--text-secondary) !important; }
+.repository-discovery-error { border-left: 3px solid #b91c1c; padding: 3px 11px; color: #991b1b; }
+.repository-discovery-error p { margin: 4px 0; color: inherit; }
+.discovered-repository, .repository-selection { display: flex; align-items: center; justify-content: space-between; gap: 16px; border: 1px solid var(--border); border-radius: 6px; padding: 14px; background: #fff; }
+.discovered-repository h3, .repository-selection h2 { margin: 0; overflow-wrap: anywhere; font-size: 15px; }
+.discovered-repository p, .repository-selection p { margin: 5px 0 0; }
+.discovered-repository .repository-summary { color: var(--text-secondary); }
+.discovered-repository .repository-description { color: var(--text-muted); }
+.discovered-repository .repository-archived { color: #92400e; font-weight: 600; }
+.discovered-repository > button { flex: 0 0 auto; }
+.repository-selection { display: block; margin-top: 4px; background: var(--surface-subtle); }
+.repository-selection .eyebrow { margin: 0 0 6px; }
+.repository-selection-actions { display: flex; align-items: center; flex-wrap: wrap; gap: 14px; margin-top: 14px; }
+.repository-selection-actions a { color: var(--blue); font-size: 12px; }
+.analysis-submit-actions { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 12px; margin-top: 14px; }
+.analysis-submit-actions p { margin: 0; }
+.analysis-submit-actions .primary-button { overflow-wrap: anywhere; }
 .analysis-result { margin-top: 20px; }
 .analysis-message { margin: 0; border-radius: 6px; padding: 16px; background: #fff; }
 .analysis-card h2 { margin-top: 0; }
@@ -194,7 +211,7 @@ a { color: inherit; }
 .analysis-features { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 8px; }
 .analysis-features div { display: flex; flex-direction: column; gap: 6px; }
 .analysis-card ul { padding-left: 20px; color: var(--text-secondary); font-size: 12px; text-transform: capitalize; }
-@media (max-width: 600px) { .analysis-page { width: min(100% - 32px, 960px); padding-top: 28px; } .analysis-form, .analysis-card { padding: 16px; } .analysis-input-row { align-items: stretch; flex-direction: column; } .analysis-card dl, .analysis-features { grid-template-columns: 1fr; } }
+@media (max-width: 600px) { .analysis-page { width: min(100% - 32px, 960px); padding-top: 28px; } .analysis-form, .analysis-card { padding: 16px; } .discovered-repository { align-items: stretch; flex-direction: column; } .discovered-repository > button { align-self: flex-start; } .analysis-card dl, .analysis-features { grid-template-columns: 1fr; } }
 .auth-page, .admin-page { width: min(100% - 40px, 900px); min-height: 65vh; margin: 0 auto; padding: 48px 0 64px; }
 .auth-page { max-width: 480px; }
 .auth-page h1, .admin-page h1 { margin: 4px 0 8px; font-family: Newsreader, Georgia, serif; font-size: clamp(29px, 4vw, 40px); font-weight: 500; }

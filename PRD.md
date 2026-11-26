@@ -1,6 +1,6 @@
 # OSSustain: Product Requirements Document
 
-**Status:** Living specification. Phases 1–17 are complete; Phase 18 is approved and scoped; Phase 19 is proposed and awaits approval.
+**Status:** Living specification. Phases 1–17 are complete; Phase 18 implementation is complete and pending review; Phase 19 is proposed and awaits approval.
 **Scope note:** Visual design is produced separately in Google Stitch. This document defines product behavior and functional UX requirements only.
 
 ## 1. Project Overview
