@@ -1,16 +1,25 @@
 import { type FormEvent, useState } from 'react'
 
 import { useAnalysis, useSubmitAnalysis } from '../../api/queries'
+import type { PublicGitHubRepository } from '../../api/githubRepositories'
+import { RepositoryDiscovery } from './RepositoryDiscovery'
 
 export function AnalysisPage() {
-  const [repository, setRepository] = useState('')
+  const [selectedRepository, setSelectedRepository] = useState<PublicGitHubRepository | null>(null)
   const [jobId, setJobId] = useState<string>()
   const submit = useSubmitAnalysis()
   const job = useAnalysis(jobId)
 
   function handleSubmit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
-    submit.mutate(repository.trim(), { onSuccess: (response) => setJobId(response.id) })
+    if (!selectedRepository) return
+    submit.mutate(selectedRepository.full_name, { onSuccess: (response) => setJobId(response.id) })
+  }
+
+  function retryAnalysis() {
+    if (!selectedRepository) return
+    setJobId(undefined)
+    submit.mutate(selectedRepository.full_name, { onSuccess: (response) => setJobId(response.id) })
   }
 
   const result = job.data?.result
@@ -26,12 +35,17 @@ export function AnalysisPage() {
       <h1>Analyze a public repository</h1>
       <p className="analysis-intro">Get a bounded, on-demand estimate using up to 180 days of public activity and the current validation-selected model.</p>
       <form className="analysis-form" onSubmit={handleSubmit}>
-        <label htmlFor="repository-name">GitHub repository</label>
-        <div className="analysis-input-row">
-          <input id="repository-name" value={repository} onChange={(event) => setRepository(event.target.value)} placeholder="owner/repository" required pattern="[A-Za-z0-9_.-]{1,100}/[A-Za-z0-9_.-]{1,100}" aria-describedby="analysis-help" />
-          <button className="primary-button" type="submit" disabled={submit.isPending}>Analyze</button>
-        </div>
-        <p id="analysis-help">Public repositories only. Each analysis is limited to 300 GitHub requests. Results are an activity risk estimate, not a causal claim.</p>
+        <RepositoryDiscovery
+          selectedRepository={selectedRepository}
+          onSelect={(selected) => { setSelectedRepository(selected); setJobId(undefined); submit.reset() }}
+          onClear={() => { setSelectedRepository(null); setJobId(undefined); submit.reset() }}
+        />
+        {selectedRepository && <div className="analysis-submit-actions">
+          <p>Analysis uses up to 180 days of public activity and is limited to 300 GitHub requests.</p>
+          <button className="primary-button" type="submit" disabled={submit.isPending || !selectedRepository}>
+            {submit.isPending ? 'Submitting…' : `Analyze ${selectedRepository.full_name}`}
+          </button>
+        </div>}
       </form>
       {submit.isError && <div className="analysis-message error-panel" role="alert">{submit.error.message}</div>}
       {jobId && <section className="analysis-result" aria-live="polite" aria-busy={job.isFetching}>
@@ -39,7 +53,7 @@ export function AnalysisPage() {
         {job.isError && <div className="analysis-message error-panel" role="alert"><p>{job.error.message}</p><button className="primary-button" onClick={() => void job.refetch()}>Retry</button></div>}
         {job.data?.status === 'queued' && <p>Analysis is queued. This page will update automatically.</p>}
         {job.data?.status === 'running' && <p>Collecting public activity and calculating the estimate…</p>}
-        {job.data?.status === 'failed' && <div className="analysis-message error-panel" role="alert"><h2>Analysis could not be completed</h2><p>{job.data.errorCode === 'request_limit' ? 'The available GitHub request budget was reached before collection was complete. Try again later.' : job.data.errorCode === 'model_unavailable' ? 'The selected trained model artifact is not available to the worker.' : job.data.errorCode === 'repository_unavailable' ? 'The repository was not found or could not be accessed as a public repository.' : job.data.errorCode === 'github_rate_limit' ? 'GitHub is temporarily rate limiting analysis. Try again later.' : job.data.errorCode === 'github_auth_failed' ? 'The worker’s GitHub credentials were rejected. Contact the project administrator.' : 'The repository could not be analyzed. Check that it is public and try again.'}</p><p>Reference: {job.data.id}</p></div>}
+        {job.data?.status === 'failed' && <div className="analysis-message error-panel" role="alert"><h2>Analysis could not be completed</h2><p>{job.data.errorCode === 'request_limit' ? 'The available GitHub request budget was reached before collection was complete. Try again later.' : job.data.errorCode === 'model_unavailable' ? 'The selected trained model artifact is not available to the worker.' : job.data.errorCode === 'repository_unavailable' ? 'The repository was not found or could not be accessed as a public repository.' : job.data.errorCode === 'github_rate_limit' ? 'GitHub is temporarily rate limiting analysis. Try again later.' : job.data.errorCode === 'github_auth_failed' ? 'The worker’s GitHub credentials were rejected. Contact the project administrator.' : 'The repository could not be analyzed. Check that it is public and try again.'}</p><p>Reference: {job.data.id}</p><button className="secondary-button" type="button" onClick={retryAnalysis} disabled={submit.isPending}>{submit.isPending ? 'Submitting…' : 'Try this repository again'}</button></div>}
         {job.data?.status === 'succeeded' && result && <div className="analysis-card">
           <h2>{job.data.repository}</h2>
           <p><strong>{(result.probability * 100).toFixed(1)}%</strong> estimated risk of significant contribution activity decline in the next 90 days</p>
